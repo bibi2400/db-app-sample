@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-electron",
+    "rootDir": "./",
+    "module": "commonjs",
+    "target": "es2020",
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "./**/*.ts"
+, "src/services/cal-journal.servicets"  ]
+}

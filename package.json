@@ -1,0 +1,85 @@
+{
+  "name": "mighty-quality-manager",
+  "version": "1.1.0",
+  "main": "electron/dist-electron/main.js",
+  "author": "bibi",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --port 4202",
+    "build": "npx ng build",
+    "electron:build": "npx tsc -p electron/tsconfig.json",
+    "electron:dev": "npm run electron:build && electron . --serve",
+    "dev": "concurrently \"npm start\" \"npm run electron:dev\"",
+    "build:all": "npm run build && npm run electron:build",
+    "clean:release": "node -e \"require('fs').rmSync('release', {recursive: true, force: true})\"",
+    "package:win": "npm run clean:release && npm run build:all && electron-builder build --win"
+  },
+  "build": {
+    "appId": "com.mighty-quality-manager.app",
+    "productName": "MightyQualityManager",
+    "asar": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/dist-electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "database.sqlite",
+        "to": "database.sqlite"
+      },
+      {
+        "from": "src/assets/splash.html",
+        "to": "splash.html"
+      },
+      {
+        "from": "src/assets/splash.png",
+        "to": "splash.png"
+      }
+    ],
+    "extraFiles": [
+      {
+        "from": "portable",
+        "to": "portable"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.png"
+    }
+  },
+  "private": true,
+  "packageManager": "npm@10.9.0",
+  "dependencies": {
+    "@angular/cdk": "^21.0.2",
+    "@angular/common": "^21.0.0",
+    "@angular/compiler": "^21.0.0",
+    "@angular/core": "^21.0.0",
+    "@angular/forms": "^21.0.0",
+    "@angular/material": "^21.0.2",
+    "@angular/platform-browser": "^21.0.0",
+    "@angular/router": "^21.0.0",
+    "ag-grid-angular": "^35.0.0",
+    "ag-grid-community": "^35.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "~7.8.0",
+    "sqlite3": "^5.1.7",
+    "tslib": "^2.3.0",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.0.2",
+    "@angular/cli": "^21.0.2",
+    "@angular/compiler-cli": "^21.0.0",
+    "concurrently": "^9.2.1",
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12",
+    "jsdom": "^27.1.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8",
+    "wait-on": "^9.0.3"
+  }
+}

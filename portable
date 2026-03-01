@@ -1,0 +1,3 @@
+This file marks the application as portable.
+When this file is present, the app will store the database and backups in the same folder as the executable.
+Remove this file to use the standard installed mode (data in AppData folder).

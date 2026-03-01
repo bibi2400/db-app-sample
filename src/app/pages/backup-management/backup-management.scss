@@ -1,0 +1,182 @@
+.backup-container {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+  }
+
+  .stats-card {
+    margin-bottom: 24px;
+
+    .stats {
+      display: flex;
+      gap: 48px;
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        mat-icon {
+          font-size: 36px;
+          width: 36px;
+          height: 36px;
+          color: #1976d2;
+        }
+
+        .stat-label {
+          font-size: 12px;
+          color: rgba(0, 0, 0, 0.6);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: 600;
+          color: #1976d2;
+        }
+      }
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    gap: 16px;
+
+    p {
+      margin: 0;
+      color: rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  .backup-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .backup-section {
+      mat-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        mat-icon {
+          color: #1976d2;
+        }
+
+        mat-card-title {
+          font-size: 20px;
+          font-weight: 500;
+        }
+      }
+
+      .empty-message {
+        text-align: center;
+        padding: 32px;
+        color: rgba(0, 0, 0, 0.5);
+        font-style: italic;
+      }
+
+      .backup-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .backup-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          border: 1px solid rgba(0, 0, 0, 0.12);
+          border-radius: 8px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-color: rgba(0, 0, 0, 0.2);
+          }
+
+          .backup-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+
+            .backup-type-icon {
+              color: rgba(0, 0, 0, 0.54);
+            }
+
+            .backup-details {
+              flex: 1;
+
+              .backup-name {
+                font-size: 14px;
+                font-weight: 500;
+                margin-bottom: 4px;
+              }
+
+              .backup-meta {
+                font-size: 12px;
+                color: rgba(0, 0, 0, 0.6);
+              }
+            }
+          }
+
+          .backup-actions {
+            display: flex;
+            gap: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  .processing-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 1000;
+
+    p {
+      margin: 0;
+      font-size: 16px;
+      color: rgba(0, 0, 0, 0.7);
+    }
+  }
+}
