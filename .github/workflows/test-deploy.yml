@@ -1,0 +1,42 @@
+name: Build and Release Windows App
+
+on:
+  # La pipeline parte automaticamente quando crei un tag che inizia con "v" (es. v1.0.0)
+  push:
+    tags:
+      - 'v*'
+  # Permette di far partire la pipeline anche manualmente dall'interfaccia di GitHub
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest # Fondamentale per la build di Electron su Windows (--win)
+
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Sostituisci con la tua versione di Node (es. 18 o 20)
+          cache: 'npm'
+
+      - name: Installazione dipendenze
+        run: npm ci # Usa 'npm install' se non hai il package-lock.json nel repository
+
+      - name: Build dell'app Electron
+        run: npm run package:win
+
+      - name: Creazione GitHub Release e upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          # Qui diciamo a GitHub quali file allegare alla release.
+          # Cambia "release" con "dist" se electron-builder salva gli .exe in dist.
+          files: |
+            release/**/*.exe
+            release/**/*.zip
+            release/**/*.blockmap
+            release/**/latest.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
