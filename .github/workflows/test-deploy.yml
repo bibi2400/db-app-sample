@@ -1,42 +1,58 @@
 name: Build and Release Windows App
 
 on:
-  # La pipeline parte automaticamente quando crei un tag che inizia con "v" (es. v1.0.0)
+  # La pipeline parte automaticamente ad ogni push o merge sul branch "main"
   push:
-    tags:
-      - 'v*'
-  # Permette di far partire la pipeline anche manualmente dall'interfaccia di GitHub
+    branches:
+      - main
+  # Permette di far partire la pipeline anche manualmente dall'interfaccia di GitHub (tab Actions)
   workflow_dispatch:
 
 jobs:
   build-and-release:
-    runs-on: windows-latest # Fondamentale per la build di Electron su Windows (--win)
+    # Fondamentale usare windows-latest per la build di Electron su Windows (--win)
+    runs-on: windows-latest
 
     steps:
       - name: Checkout del codice
+        # Scarica il codice del tuo repository nella macchina virtuale
         uses: actions/checkout@v4
 
       - name: Setup Node.js
+        # Prepara l'ambiente Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Sostituisci con la tua versione di Node (es. 18 o 20)
+          node-version: '20' # Assicurati che corrisponda alla versione che usi in locale (es. 18 o 20)
           cache: 'npm'
 
       - name: Installazione dipendenze
-        run: npm ci # Usa 'npm install' se non hai il package-lock.json nel repository
+        # Usa 'npm ci' per installazioni pulite ed esatte basate sul package-lock.json
+        run: npm ci 
 
       - name: Build dell'app Electron
+        # Lancia lo script che hai definito nel tuo package.json
         run: npm run package:win
+        env:
+          # Fornisce a electron-builder le credenziali per interfacciarsi con le API di GitHub
+          # Questo risolve l'errore "GitHub Personal Access Token is not set"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Creazione GitHub Release e upload asset
+        # Usa l'azione ufficiale per creare la release sul repository
         uses: softprops/action-gh-release@v2
         with:
+          # Visto che non c'è un tag di partenza fisso, ne generiamo uno in automatico
+          # basato sul numero di esecuzione della pipeline (es. v0.0.1, v0.0.2)
+          tag_name: v0.0.${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          
           # Qui diciamo a GitHub quali file allegare alla release.
-          # Cambia "release" con "dist" se electron-builder salva gli .exe in dist.
+          # Cerca i file generati da electron-builder all'interno della cartella 'release'
           files: |
             release/**/*.exe
             release/**/*.zip
             release/**/*.blockmap
             release/**/latest.yml
         env:
+          # Token necessario a questa specifica azione per avere i permessi di scrittura sul repository
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
