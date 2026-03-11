@@ -12,7 +12,9 @@ jobs:
   build-and-release:
     # Fondamentale usare windows-latest per la build di Electron su Windows (--win)
     runs-on: windows-latest
-
+    permissions:
+      contents: write
+      
     steps:
       - name: Checkout del codice
         # Scarica il codice del tuo repository nella macchina virtuale
