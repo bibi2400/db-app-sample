@@ -1,82 +1,84 @@
 name: Build and Release Windows App
 
 on:
-  # La pipeline parte automaticamente ad ogni push o merge sul branch "main"
+  # La pipeline parte ad ogni push o merge sul branch "main"
   push:
     branches:
       - main
-  # Permette di far partire la pipeline anche manualmente dall'interfaccia di GitHub (tab Actions)
+  # Permette sempre di far partire la pipeline manualmente
   workflow_dispatch:
 
 jobs:
   build-and-release:
-    # Fondamentale usare windows-latest per la build di Electron su Windows (--win)
+    # Usiamo windows-latest per la build di Electron
     runs-on: windows-latest
     
-    # Aggiunto per risolvere l'errore 403 (Resource not accessible by integration)
+    # Permessi necessari per creare il tag e la release su GitHub
     permissions:
       contents: write
 
     steps:
       - name: Checkout del codice
-        # Scarica il codice del tuo repository nella macchina virtuale
         uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 è fondamentale qui per far scaricare a git l'intera cronologia 
+          # inclusi i tag, così possiamo controllare se la versione esiste già.
+          fetch-depth: 0 
+
+      - name: Leggi versione e controlla se il tag esiste
+        # Diamo un ID a questo step per poter usare il suo risultato (output) negli step successivi
+        id: version_check
+        shell: bash
+        run: |
+          # Estrae la versione dal package.json (es. 1.0.0)
+          VERSION=$(node -p "require('./package.json').version")
+          TAG_NAME="v$VERSION"
+          
+          # Salviamo il nome del tag in una variabile globale per gli step successivi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          
+          # Controlla se il tag esiste già nel repository remoto
+          if git ls-remote --tags origin refs/tags/$TAG_NAME | grep -q $TAG_NAME; then
+            echo "Il tag $TAG_NAME esiste già. La versione non è stata incrementata."
+            echo "skip_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "Il tag $TAG_NAME NON esiste. Procedo con la build e la release!"
+            echo "skip_build=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Setup Node.js
-        # Prepara l'ambiente Node.js
+        # Questo e i prossimi step partono SOLO se skip_build è 'false'
+        if: steps.version_check.outputs.skip_build == 'false'
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Assicurati che corrisponda alla versione che usi in locale (es. 18 o 20)
+          node-version: '20' 
           cache: 'npm'
 
       - name: Installazione dipendenze
-        # Usa 'npm ci' per installazioni pulite ed esatte basate sul package-lock.json
-        run: npm ci 
-
-      - name: Leggi la versione da package.json
-        # Estrae la versione (es. 1.0.0) e la salva in una variabile d'ambiente (APP_VERSION=v1.0.0)
-        shell: bash
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
-
-      - name: Controlla se la release esiste già
-        # Interroga GitHub tramite la CLI ufficiale (gh) per vedere se la release esiste.
-        # Se esiste, stampa un messaggio e va in errore (exit 1) bloccando la pipeline.
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if gh release view "$APP_VERSION" > /dev/null 2>&1; then
-            echo "Errore: La release $APP_VERSION esiste già! Ricordati di incrementare la versione nel package.json."
-            exit 1
-          else
-            echo "La release $APP_VERSION non esiste. Procedo con la build..."
-          fi
+        if: steps.version_check.outputs.skip_build == 'false'
+        run: npm ci
 
       - name: Build dell'app Electron
-        # Lancia lo script che hai definito nel tuo package.json
+        if: steps.version_check.outputs.skip_build == 'false'
         run: npm run package:win
         env:
-          # Fornisce a electron-builder le credenziali per interfacciarsi con le API di GitHub
-          # Questo risolve l'errore "GitHub Personal Access Token is not set"
+          # Risolve l'errore "GitHub Personal Access Token is not set" di electron-builder
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Creazione GitHub Release e upload asset
-        # Usa l'azione ufficiale per creare la release sul repository
+        if: steps.version_check.outputs.skip_build == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          # Usa la versione appena letta dal package.json per il nome e il tag
-          tag_name: ${{ env.APP_VERSION }}
-          name: Release ${{ env.APP_VERSION }}
+          # Se il tag specificato non esiste su Git, questa azione di GitHub lo crea
+          # automaticamente sul commit che ha fatto partire la pipeline.
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
           
-          # Qui diciamo a GitHub quali file allegare alla release.
-          # Cerca i file generati da electron-builder all'interno della cartella 'release'
+          # Cerca i file generati da electron-builder
           files: |
             release/**/*.exe
             release/**/*.zip
             release/**/*.blockmap
             release/**/latest.yml
         env:
-          # Token necessario a questa specifica azione per avere i permessi di scrittura sul repository
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
