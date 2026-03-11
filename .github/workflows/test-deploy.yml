@@ -68,7 +68,7 @@ jobs:
           
           # Cerca i file generati da electron-builder
           files: |
-            release/**/*.exe
-            release/**/*.zip
-            release/**/*.blockmap
-            release/**/latest.yml
+            release/*.exe
+            release/*.zip
+            release/*.blockmap
+            release/latest.yml
