@@ -1,10 +1,11 @@
 name: Build and Release Windows App
 
 on:
-  # La pipeline parte ad ogni push o merge sul branch "main"
+  # La pipeline parte ad ogni push o merge sui branch "main" e "staging"
   push:
     branches:
       - main
+      - staging
   # Permette sempre di far partire la pipeline manualmente
   workflow_dispatch:
 
@@ -24,12 +25,30 @@ jobs:
           # fetch-depth: 0 è fondamentale per scaricare tutta la cronologia, inclusi i tag
           fetch-depth: 0 
 
-      - name: Leggi versione e controlla se il tag esiste
+      - name: Calcola versione, aggiorna package.json e controlla tag
         shell: bash
         run: |
-          # Estrae la versione dal package.json (es. 1.0.0)
-          VERSION=$(node -p "require('./package.json').version")
-          TAG_NAME="v$VERSION"
+          # Estrae la versione base dal package.json (es. 1.1.0)
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          
+          # Controlla in quale branch è stata attivata la pipeline
+          if [ "${{ github.ref_name }}" == "staging" ]; then
+            # Se siamo in staging, aggiungiamo -beta.NUMERO_ESECUZIONE (es. 1.1.0-beta.42)
+            # github.run_number è perfetto perché è un numero che cresce sempre ad ogni build
+            FULL_VERSION="${BASE_VERSION}-beta.${{ github.run_number }}"
+            
+            # Questo comando aggiorna temporaneamente il package.json della macchina virtuale
+            # senza creare commit. Serve per far generare a electron-builder il file beta.yml
+            npm --no-git-tag-version version $FULL_VERSION
+            
+            echo "🔧 Versione impostata per lo staging: $FULL_VERSION"
+          else
+            # Se siamo su main, usiamo la versione pulita
+            FULL_VERSION=$BASE_VERSION
+            echo "🚀 Versione impostata per la produzione: $FULL_VERSION"
+          fi
+          
+          TAG_NAME="v$FULL_VERSION"
           
           # Salviamo il nome del tag in una variabile globale per gli step successivi
           echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
@@ -37,7 +56,7 @@ jobs:
           # Controlla se il tag esiste già nel repository remoto
           if git ls-remote --tags origin refs/tags/$TAG_NAME | grep -q $TAG_NAME; then
             echo "❌ Errore: Il tag $TAG_NAME esiste già!"
-            echo "Ricordati di incrementare la versione nel package.json prima di fare push su main."
+            echo "Ricordati di incrementare la versione nel package.json prima di fare push."
             exit 1 # Questo comando blocca istantaneamente la pipeline mandandola in errore
           else
             echo "✅ Il tag $TAG_NAME NON esiste. Procedo con la build e la release!"
@@ -66,9 +85,14 @@ jobs:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
           
-          # Cerca i file generati da electron-builder
+          # Se il branch è 'staging', questa opzione spunta automaticamente la casella
+          # "Set as a pre-release" sulla pagina di GitHub
+          prerelease: ${{ github.ref_name == 'staging' }}
+          
+          # Cerca i file generati da electron-builder (nella root per ignorare gli .exe inutili)
+          # Nota: *.yml prende sia latest.yml (se main) che beta.yml (se staging)
           files: |
             release/*.exe
             release/*.zip
             release/*.blockmap
-            release/latest.yml
+            release/*.yml
