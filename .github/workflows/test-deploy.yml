@@ -88,6 +88,9 @@ jobs:
           # Se il branch è 'staging', questa opzione spunta automaticamente la casella
           # "Set as a pre-release" sulla pagina di GitHub
           prerelease: ${{ github.ref_name == 'staging' }}
+
+          #Chiede a GitHub di generare automaticamente le note di rilascio!
+          generate_release_notes: true
           
           # Cerca i file generati da electron-builder (nella root per ignorare gli .exe inutili)
           # Nota: *.yml prende sia latest.yml (se main) che beta.yml (se staging)
