@@ -21,13 +21,10 @@ jobs:
       - name: Checkout del codice
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0 è fondamentale qui per far scaricare a git l'intera cronologia 
-          # inclusi i tag, così possiamo controllare se la versione esiste già.
+          # fetch-depth: 0 è fondamentale per scaricare tutta la cronologia, inclusi i tag
           fetch-depth: 0 
 
       - name: Leggi versione e controlla se il tag esiste
-        # Diamo un ID a questo step per poter usare il suo risultato (output) negli step successivi
-        id: version_check
         shell: bash
         run: |
           # Estrae la versione dal package.json (es. 1.0.0)
@@ -39,38 +36,33 @@ jobs:
           
           # Controlla se il tag esiste già nel repository remoto
           if git ls-remote --tags origin refs/tags/$TAG_NAME | grep -q $TAG_NAME; then
-            echo "Il tag $TAG_NAME esiste già. La versione non è stata incrementata."
-            echo "skip_build=true" >> $GITHUB_OUTPUT
+            echo "❌ Errore: Il tag $TAG_NAME esiste già!"
+            echo "Ricordati di incrementare la versione nel package.json prima di fare push su main."
+            exit 1 # Questo comando blocca istantaneamente la pipeline mandandola in errore
           else
-            echo "Il tag $TAG_NAME NON esiste. Procedo con la build e la release!"
-            echo "skip_build=false" >> $GITHUB_OUTPUT
+            echo "✅ Il tag $TAG_NAME NON esiste. Procedo con la build e la release!"
           fi
 
       - name: Setup Node.js
-        # Questo e i prossimi step partono SOLO se skip_build è 'false'
-        if: steps.version_check.outputs.skip_build == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: '20' 
           cache: 'npm'
 
       - name: Installazione dipendenze
-        if: steps.version_check.outputs.skip_build == 'false'
         run: npm ci
 
       - name: Build dell'app Electron
-        if: steps.version_check.outputs.skip_build == 'false'
         run: npm run package:win
         env:
           # Risolve l'errore "GitHub Personal Access Token is not set" di electron-builder
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Creazione GitHub Release e upload asset
-        if: steps.version_check.outputs.skip_build == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          # Se il tag specificato non esiste su Git, questa azione di GitHub lo crea
-          # automaticamente sul commit che ha fatto partire la pipeline.
+          # Se arriviamo a questo step, l'azione di GitHub crea in automatico il tag 
+          # e lo associa alla release caricando i file.
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
           
@@ -80,5 +72,3 @@ jobs:
             release/**/*.zip
             release/**/*.blockmap
             release/**/latest.yml
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
