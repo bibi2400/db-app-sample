@@ -12,9 +12,11 @@ jobs:
   build-and-release:
     # Fondamentale usare windows-latest per la build di Electron su Windows (--win)
     runs-on: windows-latest
+    
+    # Aggiunto per risolvere l'errore 403 (Resource not accessible by integration)
     permissions:
       contents: write
-      
+
     steps:
       - name: Checkout del codice
         # Scarica il codice del tuo repository nella macchina virtuale
@@ -31,6 +33,27 @@ jobs:
         # Usa 'npm ci' per installazioni pulite ed esatte basate sul package-lock.json
         run: npm ci 
 
+      - name: Leggi la versione da package.json
+        # Estrae la versione (es. 1.0.0) e la salva in una variabile d'ambiente (APP_VERSION=v1.0.0)
+        shell: bash
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
+      - name: Controlla se la release esiste già
+        # Interroga GitHub tramite la CLI ufficiale (gh) per vedere se la release esiste.
+        # Se esiste, stampa un messaggio e va in errore (exit 1) bloccando la pipeline.
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$APP_VERSION" > /dev/null 2>&1; then
+            echo "Errore: La release $APP_VERSION esiste già! Ricordati di incrementare la versione nel package.json."
+            exit 1
+          else
+            echo "La release $APP_VERSION non esiste. Procedo con la build..."
+          fi
+
       - name: Build dell'app Electron
         # Lancia lo script che hai definito nel tuo package.json
         run: npm run package:win
@@ -43,10 +66,9 @@ jobs:
         # Usa l'azione ufficiale per creare la release sul repository
         uses: softprops/action-gh-release@v2
         with:
-          # Visto che non c'è un tag di partenza fisso, ne generiamo uno in automatico
-          # basato sul numero di esecuzione della pipeline (es. v0.0.1, v0.0.2)
-          tag_name: v0.0.${{ github.run_number }}
-          name: Release ${{ github.run_number }}
+          # Usa la versione appena letta dal package.json per il nome e il tag
+          tag_name: ${{ env.APP_VERSION }}
+          name: Release ${{ env.APP_VERSION }}
           
           # Qui diciamo a GitHub quali file allegare alla release.
           # Cerca i file generati da electron-builder all'interno della cartella 'release'
