@@ -4,9 +4,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
-import { AppDataSource, getDbPath } from './src/db/data-source';
+import { AppDataSource } from './src/db/data-source';
 import { BackupService } from "./src/services/backup.service";
 import log from 'electron-log';
+
+const env = process.env as { [key: string]: string | undefined };
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -17,7 +19,7 @@ const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 
 const appConfig = {
-  name: "DB App Sample Updated",
+  name: "DB App Sample",
   mainWindow: {
     width: 1200,
     height: 800,
@@ -123,6 +125,15 @@ autoUpdater.on('update-downloaded', () => {
 // Errore
 autoUpdater.on('error', (error) => {
   log.error('Update error:', error);
+});
+
+// Nuovo aggiornamento disponibile
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'bibi2400',
+  repo: 'db-app-sample',
+  private: true,
+  token: env['GH_TOKEN'] ?? '',
 });
 
 //// Functions

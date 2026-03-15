@@ -49,3 +49,6 @@ release
 
 # Programmino
 db-config.json
+
+# Environment files
+.env

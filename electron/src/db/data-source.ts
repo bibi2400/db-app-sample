@@ -16,7 +16,3 @@ export const AppDataSource = new DataSource({
 	migrations: [],
 	subscribers: [],
 });
-
-export function getDbPath() {
-	return dbPath;
-}
