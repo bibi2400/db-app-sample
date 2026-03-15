@@ -7,8 +7,7 @@ import { registerAllControllers } from './src/controllers';
 import { AppDataSource } from './src/db/data-source';
 import { BackupService } from "./src/services/backup.service";
 import log from 'electron-log';
-
-const env = process.env as { [key: string]: string | undefined };
+import { RUNTIME_CONFIG } from './src/runtime-config';
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -133,7 +132,7 @@ autoUpdater.setFeedURL({
   owner: 'bibi2400',
   repo: 'db-app-sample',
   private: true,
-  token: env['GH_TOKEN'] ?? '',
+  token: RUNTIME_CONFIG.GH_TOKEN,
 });
 
 //// Functions

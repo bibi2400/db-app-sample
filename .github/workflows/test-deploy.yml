@@ -74,8 +74,8 @@ jobs:
       - name: Build dell'app Electron
         run: npm run package:win
         env:
-          # Risolve l'errore "GitHub Personal Access Token is not set" di electron-builder
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPDATE_TOKEN: ${{ secrets.UPDATE_TOKEN }}
 
       - name: Creazione GitHub Release e upload asset
         uses: softprops/action-gh-release@v2
