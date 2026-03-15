@@ -1,6 +1,6 @@
 {
   "name": "db-app-sample",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "main": "electron/dist-electron/main.js",
   "author": "bibi",
   "scripts": {
@@ -18,6 +18,7 @@
   "build": {
     "appId": "com.db-app-sample.app",
     "productName": "Db App Sample",
+    "artifactName": "Db-App-Sample-Setup-${version}.${ext}",
     "asar": false,
     "directories": {
       "output": "release"
