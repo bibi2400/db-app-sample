@@ -7,6 +7,7 @@ import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
 import { AppDataSource, getDbPath } from './src/db/data-source';
 import { BackupService } from "./src/services/backup.service";
+import log from 'electron-log';
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -75,9 +76,9 @@ app.whenReady().then(async () => {
   });
 
   autoUpdater.checkForUpdates().then((updateCheckResult) => {
-    console.log('Update check completed:', updateCheckResult);
+    log.log('Update check completed:', updateCheckResult);
   }).catch((err) => {
-    console.error('Errore durante il controllo degli aggiornamenti:', err);
+    log.error('Errore durante il controllo degli aggiornamenti:', err);
   });
 
   // Inizializza il database DOPO che l'app è pronta
@@ -103,26 +104,26 @@ app.on('before-quit', async () => {
 // Gestione aggiornamenti
 // Nuovo aggiornamento disponibile
 autoUpdater.on('update-available', (info) => {
-  console.log('Aggiornamento disponibile:', info);
+  log.log('Aggiornamento disponibile:', info);
 });
 
 // Nessun aggiornamento disponibile
 autoUpdater.on('update-not-available', () => {
-  console.info('App is up to date.');
+  log.info('App is up to date.');
 });
 
 // Progresso download
 autoUpdater.on('download-progress', (progress) => {
-  console.log(`Download progress: ${progress.percent.toFixed(2)}%`);
+  log.log(`Download progress: ${progress.percent.toFixed(2)}%`);
 });
 
 autoUpdater.on('update-downloaded', () => {
-  console.log('Update downloaded');
+  log.log('Update downloaded');
 });
 
 // Errore
 autoUpdater.on('error', (error) => {
-  console.error('Update error:', error);
+  log.error('Update error:', error);
 });
 
 //// Functions
@@ -141,10 +142,10 @@ async function waitForDevServer(url: string, maxAttempts = 30): Promise<void> {
           }
         }).on('error', reject);
       });
-      console.log('Dev server is ready!');
+      log.log('Dev server is ready!');
       return;
     } catch (error) {
-      console.log(`Waiting for dev server... (attempt ${i + 1}/${maxAttempts})`);
+      log.log(`Waiting for dev server... (attempt ${i + 1}/${maxAttempts})`);
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
@@ -171,7 +172,7 @@ function createSplashScreen() {
     : path.join(process.resourcesPath, 'splash.html');
 
   splash.loadFile(splashPath).catch((err) => {
-    console.error('Failed to load splash:', err);
+    log.error('Failed to load splash:', err);
   });
 }
 
@@ -191,17 +192,17 @@ async function createWindow() {
 
   // Registra l'evento PRIMA di caricare la pagina
   win.once('ready-to-show', () => {
-    console.log('✓ Window ready to show');
+    log.log('✓ Window ready to show');
     setTimeout(() => {
       if (splash && !splash.isDestroyed()) {
         splash.close();
         splash = null;
-        console.log('✓ Splash closed');
+        log.log('✓ Splash closed');
       }
       if (win && !win.isDestroyed()) {
         win.show();
         win.focus();
-        console.log('✓ Main window shown');
+        log.log('✓ Main window shown');
       }
     }, 300);
   });
@@ -231,10 +232,10 @@ async function createWindow() {
     // In produzione, usa il protocollo custom 'app://' per routing senza hash
     const appUrl = 'app://./';
     indexFilePath = appUrl; // Salva per i reload
-    console.log('=== LOADING APP ===');
-    console.log('Loading URL:', appUrl);
+    log.log('=== LOADING APP ===');
+    log.log('Loading URL:', appUrl);
     await win.loadURL(appUrl);
-    console.log('✓ App loaded successfully');
+    log.log('✓ App loaded successfully');
   }
 
   win.on('closed', () => { win = null; });
@@ -242,40 +243,40 @@ async function createWindow() {
 
 async function initializeApp() {
   try {
-    console.log('=== STARTING DATABASE INITIALIZATION ===');
-    console.log('Process resource path:', process.resourcesPath);
-    console.log('__dirname:', __dirname);
+    log.log('=== STARTING DATABASE INITIALIZATION ===');
+    log.log('Process resource path:', process.resourcesPath);
+    log.log('__dirname:', __dirname);
 
     await AppDataSource.initialize();
-    console.log("✓ Connessione a SQLite stabilita.");
+    log.log("✓ Connessione a SQLite stabilita.");
 
     registerAllControllers();
-    console.log("✓ Controllers registered");
+    log.log("✓ Controllers registered");
 
     // TODO: make this a controller
     // Registra l'handler per il reload dell'app
     ipcMain.handle('app:reload', async () => {
       if (win && !win.isDestroyed()) {
-        console.log('Reloading app...');
+        log.log('Reloading app...');
         if (serve && loadedUrl) {
           win.reload();
         } else if (indexFilePath) {
-          console.log('Reloading from:', indexFilePath);
+          log.log('Reloading from:', indexFilePath);
           await win.loadURL(indexFilePath);
         }
       }
     });
-    console.log("✓ App handlers registered");
+    log.log("✓ App handlers registered");
 
     const backupService = new BackupService();
     await backupService.autoBackup();
-    console.log("✓ Startup backup completed");
+    log.log("✓ Startup backup completed");
 
-    console.log('=== DATABASE INITIALIZATION COMPLETED ===');
+    log.log('=== DATABASE INITIALIZATION COMPLETED ===');
   } catch (error) {
-    console.error("✗ ERRORE inizializzazione database:", error);
+    log.error("✗ ERRORE inizializzazione database:", error);
     if (error instanceof Error) {
-      console.error("Error stack:", error.stack);
+      log.error("Error stack:", error.stack);
     }
   }
 }

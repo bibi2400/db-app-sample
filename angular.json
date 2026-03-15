@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "mighty-quality-manager": {
+    "db-app-sample": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -68,10 +68,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "mighty-quality-manager:build:production"
+              "buildTarget": "db-app-sample:build:production"
             },
             "development": {
-              "buildTarget": "mighty-quality-manager:build:development"
+              "buildTarget": "db-app-sample:build:development"
             }
           },
           "defaultConfiguration": "development"
