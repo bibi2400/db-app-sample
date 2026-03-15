@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import packageJson from '../package.json';
 import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -18,7 +17,7 @@ const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 
 const appConfig = {
-  name: packageJson.build.productName,
+  name: "DB App Sample",
   mainWindow: {
     width: 1200,
     height: 800,
@@ -64,7 +63,7 @@ app.whenReady().then(async () => {
     }
 
     const basePath = app.getAppPath();
-    const distPath = path.join(basePath, 'dist', packageJson.name, 'browser');
+    const distPath = path.join(basePath, 'dist', appConfig.name, 'browser');
     let filePath = path.join(distPath, pathname);
 
     // Se è una route Angular (non un file fisico), serve index.html
