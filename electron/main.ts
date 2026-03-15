@@ -17,7 +17,7 @@ const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 
 const appConfig = {
-  name: "DB App Sample",
+  name: "DB App Sample Updated",
   mainWindow: {
     width: 1200,
     height: 800,
