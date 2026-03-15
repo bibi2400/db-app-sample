@@ -78,6 +78,10 @@ app.whenReady().then(async () => {
 
   autoUpdater.checkForUpdates().then((updateCheckResult) => {
     log.log('Update check completed:', updateCheckResult);
+    if (updateCheckResult?.isUpdateAvailable) {
+      log.log('New version available:', updateCheckResult.updateInfo.version);
+      autoUpdater.quitAndInstall(false, true);
+    }
   }).catch((err) => {
     log.error('Errore durante il controllo degli aggiornamenti:', err);
   });
