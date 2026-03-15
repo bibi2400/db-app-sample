@@ -1,8 +1,9 @@
 import "reflect-metadata";
-
-import { app, BrowserWindow, ipcMain, protocol } from 'electron';
+import packageJson from '../package.json';
+import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
+import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
 import { AppDataSource, getDbPath } from './src/db/data-source';
 import { BackupService } from "./src/services/backup.service";
@@ -14,6 +15,19 @@ let indexFilePath: string | null = null; // Path del file index.html per reload 
 
 const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
+
+const appConfig = {
+  name: packageJson.build.productName,
+  mainWindow: {
+    width: 1200,
+    height: 800,
+  },
+  splashScreen: {
+    width: 600,
+    height: 400,
+  }
+}
+
 
 // Registra il protocollo come privilegiato PRIMA di app.ready()
 // Questo permette l'uso della History API (pushState, replaceState)
@@ -28,6 +42,90 @@ protocol.registerSchemesAsPrivileged([
     }
   }
 ]);
+
+autoUpdater.autoDownload = true; // scarica solo se l'utente accetta
+
+app.whenReady().then(async () => {
+  // Registra protocollo custom per servire file locali senza hash routing
+  protocol.handle('app', (request) => {
+    // Parse URL correttamente per gestire pathnames
+    const url = new URL(request.url);
+    let pathname = url.pathname;
+
+    // Rimuovi lo slash iniziale
+    if (pathname.startsWith('/')) {
+      pathname = pathname.substring(1);
+    }
+
+    // Se pathname è vuoto o è solo './', servi index.html
+    if (!pathname || pathname === './' || pathname === '.') {
+      pathname = 'index.html';
+    }
+
+    const basePath = app.getAppPath();
+    const distPath = path.join(basePath, 'dist', packageJson.name, 'browser');
+    let filePath = path.join(distPath, pathname);
+
+    // Se è una route Angular (non un file fisico), serve index.html
+    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(distPath, 'index.html');
+    }
+
+    return net.fetch(filePath);
+  });
+
+  autoUpdater.checkForUpdates().then((updateCheckResult) => {
+    console.log('Update check completed:', updateCheckResult);
+  }).catch((err) => {
+    console.error('Errore durante il controllo degli aggiornamenti:', err);
+  });
+
+  // Inizializza il database DOPO che l'app è pronta
+  await initializeApp();
+
+  createSplashScreen();
+  // Aspetta un attimo per mostrare la splash prima di caricare tutto
+  setTimeout(() => {
+    createWindow();
+  }, 100);
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', async () => {
+  if (AppDataSource.isInitialized) {
+    await AppDataSource.destroy();
+  }
+});
+
+// Gestione aggiornamenti
+// Nuovo aggiornamento disponibile
+autoUpdater.on('update-available', (info) => {
+  console.log('Aggiornamento disponibile:', info);
+});
+
+// Nessun aggiornamento disponibile
+autoUpdater.on('update-not-available', () => {
+  console.info('App is up to date.');
+});
+
+// Progresso download
+autoUpdater.on('download-progress', (progress) => {
+  console.log(`Download progress: ${progress.percent.toFixed(2)}%`);
+});
+
+autoUpdater.on('update-downloaded', () => {
+  console.log('Update downloaded');
+});
+
+// Errore
+autoUpdater.on('error', (error) => {
+  console.error('Update error:', error);
+});
+
+//// Functions
 
 async function waitForDevServer(url: string, maxAttempts = 30): Promise<void> {
   const http = await import('http');
@@ -55,8 +153,8 @@ async function waitForDevServer(url: string, maxAttempts = 30): Promise<void> {
 
 function createSplashScreen() {
   splash = new BrowserWindow({
-    width: 600,
-    height: 400,
+    width: appConfig.splashScreen.width,
+    height: appConfig.splashScreen.height,
     transparent: true,
     frame: false,
     alwaysOnTop: true,
@@ -79,9 +177,9 @@ function createSplashScreen() {
 
 async function createWindow() {
   win = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    title: 'KATO Quality Manager',
+    width: appConfig.mainWindow.width,
+    height: appConfig.mainWindow.height,
+    title: appConfig.name,
     icon: path.join(__dirname, '../../src/assets/icon.png'),
     show: false, // Non mostrare subito, mostra dopo splash screen
     webPreferences: {
@@ -154,6 +252,7 @@ async function initializeApp() {
     registerAllControllers();
     console.log("✓ Controllers registered");
 
+    // TODO: make this a controller
     // Registra l'handler per il reload dell'app
     ipcMain.handle('app:reload', async () => {
       if (win && !win.isDestroyed()) {
@@ -180,52 +279,3 @@ async function initializeApp() {
     }
   }
 }
-
-app.whenReady().then(async () => {
-  // Registra protocollo custom per servire file locali senza hash routing
-  protocol.registerFileProtocol('app', (request, callback) => {
-    // Parse URL correttamente per gestire pathnames
-    const url = new URL(request.url);
-    let pathname = url.pathname;
-
-    // Rimuovi lo slash iniziale
-    if (pathname.startsWith('/')) {
-      pathname = pathname.substring(1);
-    }
-
-    // Se pathname è vuoto o è solo './', servi index.html
-    if (!pathname || pathname === './' || pathname === '.') {
-      pathname = 'index.html';
-    }
-
-    const basePath = app.getAppPath();
-    const distPath = path.join(basePath, 'dist', 'mighty-quality-manager', 'browser');
-    let filePath = path.join(distPath, pathname);
-
-    // Se è una route Angular (non un file fisico), serve index.html
-    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      filePath = path.join(distPath, 'index.html');
-    }
-
-    callback({ path: filePath });
-  });
-
-  // Inizializza il database DOPO che l'app è pronta
-  await initializeApp();
-
-  createSplashScreen();
-  // Aspetta un attimo per mostrare la splash prima di caricare tutto
-  setTimeout(() => {
-    createWindow();
-  }, 100);
-});
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('before-quit', async () => {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
-  }
-});
