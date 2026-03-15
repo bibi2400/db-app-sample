@@ -19,6 +19,7 @@ const serve = args.some(val => val === '--serve');
 
 const appConfig = {
   name: "DB App Sample",
+  slug: "db-app-sample",
   mainWindow: {
     width: 1200,
     height: 800,
@@ -64,7 +65,7 @@ app.whenReady().then(async () => {
     }
 
     const basePath = app.getAppPath();
-    const distPath = path.join(basePath, 'dist', appConfig.name, 'browser');
+    const distPath = path.join(basePath, 'dist', appConfig.slug, 'browser');
     let filePath = path.join(distPath, pathname);
 
     // Se è una route Angular (non un file fisico), serve index.html
