@@ -80,7 +80,8 @@ app.whenReady().then(async () => {
     log.log('Update check completed:', updateCheckResult);
     if (updateCheckResult?.isUpdateAvailable) {
       log.log('New version available:', updateCheckResult.updateInfo.version);
-      autoUpdater.quitAndInstall(false, true);
+      // Il download parte automaticamente grazie ad autoDownload = true
+      // quitAndInstall verrà chiamato da update-downloaded
     }
   }).catch((err) => {
     log.error('Errore durante il controllo degli aggiornamenti:', err);
@@ -123,7 +124,8 @@ autoUpdater.on('download-progress', (progress) => {
 });
 
 autoUpdater.on('update-downloaded', () => {
-  log.log('Update downloaded');
+  log.log('Update downloaded, installing...');
+  autoUpdater.quitAndInstall(false, true);
 });
 
 // Errore
