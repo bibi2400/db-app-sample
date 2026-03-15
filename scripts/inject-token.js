@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// In CI usa UPDATE_TOKEN (PAT dedicato), in locale usa GH_TOKEN dal .env
+// In CI usa ELECTRON_UPDATE_TOKEN (PAT dedicato), in locale usa GH_TOKEN dal .env
 const token = process.env.ELECTRON_UPDATE_TOKEN ||  '';
 
 if (!token) {
