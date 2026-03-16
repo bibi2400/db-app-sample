@@ -1,4 +1,4 @@
-# TODO
+# MIGHTY TODO
 
 - [ ] revamp della procedura di installazione
   - [SETUP] tramite NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
