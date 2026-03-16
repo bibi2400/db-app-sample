@@ -1,7 +1,8 @@
 # MIGHTY TODO
+- [ ] trovare un modo per gestire nome app centralizzato (il più possibile)
 
 - [ ] revamp della procedura di installazione
-  - [SETUP] tramite NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
+  - [SETUP] tramite script NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
 
 - [ ] migliorare servizi con dependency injection
 
@@ -18,17 +19,22 @@
 - [ ] strutturazione altre classi
   - Logger
 
+- [ ] per implementare la progress bar di update serve strutturare un sistema di eventi da backend a frontend
+
 - [ ] strutturare aggiornamenti automatici con frontend
   l'utente deve essere notificato con la presenza di aggiornameti
   l'utente deve essere in grado di decidere quando effettuare gli aggiornamenti
 
   Dettagli implentativi:
+    - creare diagramma di flusso del processo di aggiornamento
     - [ELECTRON] relegare autoUpdater in un service
     - [ELECTRON] creare dei controller per comunicare gli aggiornamenti col frontend dietro richiesta
+    - [ELECTRON] creare sistema per notificare a frontend lo stato del download degli aggiornamenti
     - [ANGULAR] creare sezione aggiornamenti
-    - [ANGULAR] mostrare versione attuale, aggiornamenti disponibili e stato aggiornamento corrente
+    - [ANGULAR] mostrare versione attuale, aggiornamenti disponibili e stato aggiornamento corrente (progress bar)
     - [ANGULAR] implementare bottone check for updates
-    - [ANGULAR] implementare bottone aggiorna ora
+    - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
+    - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
 
 - [ ] valutare uso di electron-store per gestire gli app file come la configurazione o la cache
 
