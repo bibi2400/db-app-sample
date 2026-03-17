@@ -5,9 +5,11 @@ import * as path from 'path';
 import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
 import { AppDataSource } from './src/db/data-source';
-import { BackupService } from "./src/services/backup.service";
 import { RUNTIME_CONFIG } from './src/config/runtime-config';
 import { Logger } from "./src/helpers/logger";
+import { Injector } from "./src/helpers/mini-pie/injector";
+import { SERVICES } from "./src/services";
+import { BackupService } from "./src/services/backup.service";
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -31,7 +33,6 @@ const appConfig = {
     height: 400,
   }
 }
-
 
 // Registra il protocollo come privilegiato PRIMA di app.ready()
 // Questo permette l'uso della History API (pushState, replaceState)
@@ -77,6 +78,8 @@ app.whenReady().then(async () => {
 
     return net.fetch(filePath);
   });
+
+  await Injector.load(SERVICES);
 
   autoUpdater.checkForUpdates().then((updateCheckResult) => {
     Logger.info('Update check completed:', updateCheckResult);
@@ -286,7 +289,7 @@ async function initializeApp() {
     });
     Logger.info("✓ App handlers registered");
 
-    const backupService = new BackupService();
+    const backupService = Injector.inject(BackupService);
     await backupService.autoBackup();
     Logger.info("✓ Startup backup completed");
 

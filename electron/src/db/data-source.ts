@@ -1,8 +1,9 @@
 import { DataSource } from "typeorm";
 import { DbConfigService } from "../services/db-config.service";
 import { Test } from "./entities/test";
+import { Injector } from "../helpers/mini-pie/injector";
 
-const dbConfigService = new DbConfigService();
+const dbConfigService = Injector.inject(DbConfigService);
 const dbPath = dbConfigService.readDbConfigFile();
 
 export const AppDataSource = new DataSource({

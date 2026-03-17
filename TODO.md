@@ -4,7 +4,8 @@
 - [x] revamp della procedura di installazione
   - [SETUP] tramite script NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
 
-- [ ] migliorare servizi con dependency injection
+- [x] migliorare servizi con dependency injection
+  - [ ] mettere la dependency injection automatica sui controller
 
 - [ ] strutturazione servizi main Electron
   - updater service (gestione updates)
