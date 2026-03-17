@@ -1,7 +1,9 @@
 import fs from "fs";
+import { Injectable } from "../helpers/mini-pie/decorators";
 
+@Injectable()
 export class DbConfigService {
-  
+
   private configDbPath = "./db-config.json";
   private defaultDbPath = "./database.sqlite";
 

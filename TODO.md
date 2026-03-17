@@ -36,7 +36,7 @@
     - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
     - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
 
-- [ ] valutare uso di electron-store per gestire gli app file come la configurazione o la cache
+- [ ] valutare uso di electron-store per gestire gli app file come la configurazione, la cache, o i backup
 
 - [ ] gestione chiusura gentile dell'app
 

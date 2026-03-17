@@ -6,8 +6,8 @@ import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
 import { AppDataSource } from './src/db/data-source';
 import { BackupService } from "./src/services/backup.service";
-import log from 'electron-log';
-import { RUNTIME_CONFIG } from './src/runtime-config';
+import { RUNTIME_CONFIG } from './src/config/runtime-config';
+import { Logger } from "./src/helpers/logger";
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -77,14 +77,14 @@ app.whenReady().then(async () => {
   });
 
   autoUpdater.checkForUpdates().then((updateCheckResult) => {
-    log.log('Update check completed:', updateCheckResult);
+    Logger.info('Update check completed:', updateCheckResult);
     if (updateCheckResult?.isUpdateAvailable) {
-      log.log('New version available:', updateCheckResult.updateInfo.version);
+      Logger.info('New version available:', updateCheckResult.updateInfo.version);
       // Il download parte automaticamente grazie ad autoDownload = true
       // quitAndInstall verrà chiamato da update-downloaded
     }
   }).catch((err) => {
-    log.error('Errore durante il controllo degli aggiornamenti:', err);
+    Logger.error('Errore durante il controllo degli aggiornamenti:', err);
   });
 
   // Inizializza il database DOPO che l'app è pronta
@@ -110,27 +110,27 @@ app.on('before-quit', async () => {
 // Gestione aggiornamenti
 // Nuovo aggiornamento disponibile
 autoUpdater.on('update-available', (info) => {
-  log.log('Aggiornamento disponibile:', info);
+  Logger.info('Aggiornamento disponibile:', info);
 });
 
 // Nessun aggiornamento disponibile
 autoUpdater.on('update-not-available', () => {
-  log.info('App is up to date.');
+  Logger.info('App is up to date.');
 });
 
 // Progresso download
 autoUpdater.on('download-progress', (progress) => {
-  log.log(`Download progress: ${progress.percent.toFixed(2)}%`);
+  Logger.info(`Download progress: ${progress.percent.toFixed(2)}%`);
 });
 
 autoUpdater.on('update-downloaded', () => {
-  log.log('Update downloaded, installing...');
+  Logger.info('Update downloaded, installing...');
   autoUpdater.quitAndInstall(false, true);
 });
 
 // Errore
 autoUpdater.on('error', (error) => {
-  log.error('Update error:', error);
+  Logger.error('Update error:', error);
 });
 
 // Nuovo aggiornamento disponibile
@@ -158,10 +158,10 @@ async function waitForDevServer(url: string, maxAttempts = 30): Promise<void> {
           }
         }).on('error', reject);
       });
-      log.log('Dev server is ready!');
+      Logger.info('Dev server is ready!');
       return;
     } catch (error) {
-      log.log(`Waiting for dev server... (attempt ${i + 1}/${maxAttempts})`);
+      Logger.info(`Waiting for dev server... (attempt ${i + 1}/${maxAttempts})`);
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
@@ -188,7 +188,7 @@ function createSplashScreen() {
     : path.join(process.resourcesPath, 'splash.html');
 
   splash.loadFile(splashPath).catch((err) => {
-    log.error('Failed to load splash:', err);
+    Logger.error('Failed to load splash:', err);
   });
 }
 
@@ -208,17 +208,17 @@ async function createWindow() {
 
   // Registra l'evento PRIMA di caricare la pagina
   win.once('ready-to-show', () => {
-    log.log('✓ Window ready to show');
+    Logger.info('✓ Window ready to show');
     setTimeout(() => {
       if (splash && !splash.isDestroyed()) {
         splash.close();
         splash = null;
-        log.log('✓ Splash closed');
+        Logger.info('✓ Splash closed');
       }
       if (win && !win.isDestroyed()) {
         win.show();
         win.focus();
-        log.log('✓ Main window shown');
+        Logger.info('✓ Main window shown');
       }
     }, 300);
   });
@@ -248,10 +248,10 @@ async function createWindow() {
     // In produzione, usa il protocollo custom 'app://' per routing senza hash
     const appUrl = 'app://./';
     indexFilePath = appUrl; // Salva per i reload
-    log.log('=== LOADING APP ===');
-    log.log('Loading URL:', appUrl);
+    Logger.info('=== LOADING APP ===');
+    Logger.info('Loading URL:', appUrl);
     await win.loadURL(appUrl);
-    log.log('✓ App loaded successfully');
+    Logger.info('✓ App loaded successfully');
   }
 
   win.on('closed', () => { win = null; });
@@ -259,40 +259,40 @@ async function createWindow() {
 
 async function initializeApp() {
   try {
-    log.log('=== STARTING DATABASE INITIALIZATION ===');
-    log.log('Process resource path:', process.resourcesPath);
-    log.log('__dirname:', __dirname);
+    Logger.info('=== STARTING DATABASE INITIALIZATION ===');
+    Logger.info('Process resource path:', process.resourcesPath);
+    Logger.info('__dirname:', __dirname);
 
     await AppDataSource.initialize();
-    log.log("✓ Connessione a SQLite stabilita.");
+    Logger.info("✓ Connessione a SQLite stabilita.");
 
     registerAllControllers();
-    log.log("✓ Controllers registered");
+    Logger.info("✓ Controllers registered");
 
     // TODO: make this a controller
     // Registra l'handler per il reload dell'app
     ipcMain.handle('app:reload', async () => {
       if (win && !win.isDestroyed()) {
-        log.log('Reloading app...');
+        Logger.info('Reloading app...');
         if (serve && loadedUrl) {
           win.reload();
         } else if (indexFilePath) {
-          log.log('Reloading from:', indexFilePath);
+          Logger.info('Reloading from:', indexFilePath);
           await win.loadURL(indexFilePath);
         }
       }
     });
-    log.log("✓ App handlers registered");
+    Logger.info("✓ App handlers registered");
 
     const backupService = new BackupService();
     await backupService.autoBackup();
-    log.log("✓ Startup backup completed");
+    Logger.info("✓ Startup backup completed");
 
-    log.log('=== DATABASE INITIALIZATION COMPLETED ===');
+    Logger.info('=== DATABASE INITIALIZATION COMPLETED ===');
   } catch (error) {
-    log.error("✗ ERRORE inizializzazione database:", error);
+    Logger.error("✗ ERRORE inizializzazione database:", error);
     if (error instanceof Error) {
-      log.error("Error stack:", error.stack);
+      Logger.error("Error stack:", error.stack);
     }
   }
 }

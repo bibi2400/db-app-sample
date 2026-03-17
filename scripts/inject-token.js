@@ -15,7 +15,7 @@ export const RUNTIME_CONFIG = {
 };
 `;
 
-const outDir = path.join(__dirname, '..', 'electron', 'src');
+const outDir = path.join(__dirname, '..', 'electron', 'src', 'config');
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'runtime-config.ts'), content);
 console.log('✓ runtime-config.ts injected');
