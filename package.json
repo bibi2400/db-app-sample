@@ -1,6 +1,6 @@
 {
   "name": "db-app-sample",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "main": "electron/dist-electron/main.js",
   "author": "bibi",
   "scripts": {
@@ -47,7 +47,7 @@
     "extraFiles": [],
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "allowToChangeInstallationDirectory": false,
       "include": "build/installer.nsh"
     },
     "win": {
