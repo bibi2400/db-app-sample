@@ -1,5 +1,5 @@
 # MIGHTY TODO
-- [ ] trovare un modo per gestire nome app centralizzato (il più possibile)
+- [x] trovare un modo per gestire nome app centralizzato (il più possibile)
 
 - [ ] revamp della procedura di installazione
   - [SETUP] tramite script NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio

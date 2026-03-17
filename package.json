@@ -13,7 +13,8 @@
     "build:all": "npm run build && npm run electron:build",
     "clean:release": "node -e \"require('fs').rmSync('release', {recursive: true, force: true})\"",
     "inject:token": "node scripts/inject-token.js",
-    "package:win": "npm run clean:release && npm run inject:token && npm run build:all && electron-builder build --win"
+    "package:win": "npm run clean:release && npm run inject:token && npm run build:all && electron-builder build --win",
+    "rename-app": "tsx scripts/rename-app.ts"
   },
   "build": {
     "appId": "com.db-app-sample.app",
@@ -83,6 +84,7 @@
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",
     "jsdom": "^27.1.0",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8",
     "wait-on": "^9.0.3"

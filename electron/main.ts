@@ -17,9 +17,11 @@ let indexFilePath: string | null = null; // Path del file index.html per reload 
 const args = process.argv.slice(1);
 const serve = args.some(val => val === '--serve');
 
+const pkg = JSON.parse(fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf-8'));
+
 const appConfig = {
-  name: "DB App Sample",
-  slug: "db-app-sample",
+  name: pkg.build?.productName || pkg.name,
+  slug: pkg.name,
   mainWindow: {
     width: 1200,
     height: 800,
@@ -136,8 +138,8 @@ autoUpdater.on('error', (error) => {
 // Nuovo aggiornamento disponibile
 autoUpdater.setFeedURL({
   provider: 'github',
-  owner: 'bibi2400',
-  repo: 'db-app-sample',
+  owner: pkg.publish?.owner ?? '',
+  repo: pkg.publish?.repo ?? pkg.name,
   private: true,
   token: RUNTIME_CONFIG.GH_TOKEN,
 });
