@@ -42,6 +42,8 @@
 
 - [ ] gestione errori
 
+- [ ] refactor struttura base di angular (app, sidebar, sidenav)
+
 ## Bonus Tracks:
 
 - [ ] implementare gestione notifiche di sistema
