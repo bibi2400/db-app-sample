@@ -4,7 +4,7 @@
     <button
       mat-raised-button
       (click)="checkForUpdates()"
-      [disabled]="isChecking() || isDownloading()">
+      [disabled]="isChecking() || isDownloading() || isPreparingDownload()">
       <mat-icon>refresh</mat-icon>
       Controlla aggiornamenti
     </button>
@@ -26,6 +26,9 @@
             <div>
               <div class="version-label">Nuova versione disponibile</div>
               <div class="version-value">{{ availableVersion() }}</div>
+              @if (releaseDate()) {
+                <div class="release-date">Rilasciata il {{ releaseDate() | date:'dd/MM/yyyy' }}</div>
+              }
             </div>
           </div>
         }
@@ -58,13 +61,20 @@
 
   <div class="action-section">
     @if (hasUpdate()) {
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="downloadUpdate()">
-        <mat-icon>download</mat-icon>
-        Scarica aggiornamento
-      </button>
+      @if (isPreparingDownload()) {
+        <div class="preparing-download">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Preparazione download in corso...</span>
+        </div>
+      } @else {
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="downloadUpdate()">
+          <mat-icon>download</mat-icon>
+          Scarica aggiornamento
+        </button>
+      }
     }
 
     @if (isDownloaded()) {

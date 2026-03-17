@@ -3,10 +3,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ElectronUpdateService } from '../../services/electron-api/electron-update.service';
 import { NavigationService } from '../../services/navigation.service';
 import { DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
+import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 
 @Component({
   selector: 'app-update-management',
@@ -15,6 +19,9 @@ import { DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/up
     MatIcon,
     MatCardModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatDialogModule,
+    DatePipe,
   ],
   templateUrl: './update-management.html',
   styleUrl: './update-management.scss',
@@ -23,13 +30,16 @@ import { DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/up
 export class UpdateManagement implements OnInit, OnDestroy {
   private updateService = inject(ElectronUpdateService);
   private navigationService = inject(NavigationService);
+  private dialog = inject(MatDialog);
   private subscriptions: Subscription[] = [];
 
   status = signal<UpdateStatusType>('idle');
   currentVersion = signal('');
   availableVersion = signal<string | undefined>(undefined);
+  releaseDate = signal<string | undefined>(undefined);
   errorMessage = signal<string | undefined>(undefined);
   downloadPercent = signal(0);
+  isPreparingDownload = signal(false);
 
   hasUpdate = computed(() => this.status() === 'available');
   isChecking = computed(() => this.status() === 'checking');
@@ -89,7 +99,11 @@ export class UpdateManagement implements OnInit, OnDestroy {
     this.status.set(status.status);
     this.currentVersion.set(status.currentVersion);
     this.availableVersion.set(status.availableVersion);
+    this.releaseDate.set(status.releaseDate);
     this.errorMessage.set(status.error);
+    if (status.status === 'downloading' || status.status === 'error') {
+      this.isPreparingDownload.set(false);
+    }
   }
 
   private applyProgress(progress: DownloadProgress): void {
@@ -103,10 +117,22 @@ export class UpdateManagement implements OnInit, OnDestroy {
 
   async downloadUpdate(): Promise<void> {
     this.downloadPercent.set(0);
+    this.isPreparingDownload.set(true);
     await this.updateService.downloadUpdate();
   }
 
-  async installUpdate(): Promise<void> {
-    await this.updateService.installUpdate();
+  installUpdate(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Aggiornamento applicazione',
+        message: 'L\'applicazione verrà riavviata per effettuare l\'aggiornamento. Continuare?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.updateService.installUpdate();
+      }
+    });
   }
 }

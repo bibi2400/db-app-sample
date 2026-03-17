@@ -1,5 +1,6 @@
 .update-container {
-  max-width: 640px;
+  max-width: 1200px;
+  margin: 0 auto;
 
   .header {
     display: flex;
@@ -9,7 +10,7 @@
 
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 500;
     }
   }
@@ -44,6 +45,12 @@
       .version-value {
         font-size: 20px;
         font-weight: 600;
+      }
+
+      .release-date {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
       }
     }
   }
@@ -123,5 +130,14 @@
   .action-section {
     display: flex;
     gap: 12px;
+    align-items: center;
+
+    .preparing-download {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #666;
+      font-size: 14px;
+    }
   }
 }

@@ -7,22 +7,21 @@
 - [x] migliorare servizi con dependency injection
   - [ ] mettere la dependency injection automatica sui controller
 
-- [ ] strutturazione servizi main Electron
-  - updater service (gestione updates)
-  - main render service (gestione main renderer, angular serving)
-  - splash service (gestione splash screen)
-  - db service (gestione db)
-  - electron service (?) (registrazione controller, accesso a API sistema operativo)
-  - config service (gestione configurazione, prevedere file di configurazione?)
-  - shutdown service (gestione graceful shutdown, vedi sotto)
-  - error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
+- strutturazione servizi main Electron
+  - [x] updater service (gestione updates)
+  - [ ] main render service (gestione main renderer, angular serving)
+  - [ ] splash service (gestione splash screen)
+  - [ ] electron service (?) (registrazione controller, accesso a API sistema operativo)
+  - [ ] config service (gestione configurazione, prevedere file di configurazione?)
+  - [ ] shutdown service (gestione graceful shutdown, vedi sotto)
+  - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
 - [x] strutturazione altre classi
   - Logger
 
-- [ ] per implementare la progress bar di update serve strutturare un sistema di eventi da backend a frontend
+- [x] per implementare la progress bar di update serve strutturare un sistema di eventi da backend a frontend
 
-- [ ] strutturare aggiornamenti automatici con frontend
+- [x] strutturare aggiornamenti automatici con frontend
   l'utente deve essere notificato con la presenza di aggiornameti
   l'utente deve essere in grado di decidere quando effettuare gli aggiornamenti
 

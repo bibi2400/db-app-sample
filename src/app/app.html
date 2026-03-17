@@ -21,6 +21,9 @@
                    (click)="clickMenuItem($event, child)">
                   <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
                   <span matListItemTitle>{{ child.title }}</span>
+                  @if (child.route === '/updates' && navigationService.updateAvailable()) {
+                    <span class="update-badge" aria-label="Aggiornamento disponibile"></span>
+                  }
                 </a>
               }
             }

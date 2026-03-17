@@ -4,6 +4,7 @@ export interface UpdateStatus {
   status: UpdateStatusType;
   currentVersion: string;
   availableVersion?: string;
+  releaseDate?: string;
   error?: string;
 }
 

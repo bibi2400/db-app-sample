@@ -15,6 +15,7 @@ export interface UpdateStatus {
   status: UpdateStatusType;
   currentVersion: string;
   availableVersion?: string;
+  releaseDate?: string;
   error?: string;
 }
 
@@ -67,7 +68,7 @@ export class UpdaterService {
 
   private registerEvents(): void {
     autoUpdater.on('update-available', (info: UpdateInfo) => {
-      this.updateStatus({ status: 'available', availableVersion: info.version });
+      this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate });
     });
 
     autoUpdater.on('update-not-available', () => {
@@ -119,6 +120,6 @@ export class UpdaterService {
     if (this.currentStatus.status !== 'downloaded') {
       throw new Error('No update downloaded to install');
     }
-    autoUpdater.quitAndInstall(false, true);
+    autoUpdater.quitAndInstall(true, true);
   }
 }
