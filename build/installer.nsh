@@ -1,7 +1,8 @@
-!include "MUI2.nsh"
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 !include "WordFunc.nsh"
+
+!ifndef BUILD_UNINSTALLER
 
 ; ── Variables for the DB path page ──────────────────────────────
 Var DbPathDialog
@@ -11,8 +12,6 @@ Var DbPathValue
 
 ; ── Page: create UI ─────────────────────────────────────────────
 Function dbPathPageCreate
-  !insertmacro MUI_HEADER_TEXT "Percorso Database" "Seleziona il percorso in cui si trova il database"
-
   nsDialogs::Create 1018
   Pop $DbPathDialog
 
@@ -73,7 +72,11 @@ FunctionEnd
   StrCpy $R0 "$DbPathValue\database.sqlite"
   ${WordReplace} $R0 "\" "/" "+" $R1
 
-  FileOpen $0 "$INSTDIR\db-config.json" w
+  ; Write to %APPDATA%\<name>\db-config.json
+  CreateDirectory "$APPDATA\${APP_PACKAGE_NAME}"
+  FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
   FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
   FileClose $0
 !macroend
+
+!endif ; BUILD_UNINSTALLER

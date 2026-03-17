@@ -1,6 +1,6 @@
 {
   "name": "db-app-sample",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "main": "electron/dist-electron/main.js",
   "author": "bibi",
   "scripts": {
@@ -14,6 +14,7 @@
     "clean:release": "node -e \"require('fs').rmSync('release', {recursive: true, force: true})\"",
     "inject:token": "node scripts/inject-token.js",
     "package:win": "npm run clean:release && npm run inject:token && npm run build:all && electron-builder build --win",
+    "package:win:noUpdateToken": "npm run clean:release && npm run build:all && electron-builder build --win",
     "rename-app": "tsx scripts/rename-app.ts"
   },
   "build": {

@@ -1,7 +1,7 @@
 # MIGHTY TODO
 - [x] trovare un modo per gestire nome app centralizzato (il più possibile)
 
-- [ ] revamp della procedura di installazione
+- [x] revamp della procedura di installazione
   - [SETUP] tramite script NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
 
 - [ ] migliorare servizi con dependency injection
