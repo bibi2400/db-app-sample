@@ -170,6 +170,9 @@ export class Injector {
     const loadList = await buildLoadList(injectables as InjectableConstructor[]);
 
     for (const injectable of loadList) {
+      // Skip items that are not constructors (e.g. instances added by inject() before load())
+      if (typeof injectable !== 'function') continue;
+
       if (!Injector.injectables.find(el => el.constructor.name === injectable.name)) {
         Logger.debug('Loading', injectable.name);
 

@@ -1,0 +1,80 @@
+<div class="update-container">
+  <div class="header">
+    <h1>Aggiornamenti Applicazione</h1>
+    <button
+      mat-raised-button
+      (click)="checkForUpdates()"
+      [disabled]="isChecking() || isDownloading()">
+      <mat-icon>refresh</mat-icon>
+      Controlla aggiornamenti
+    </button>
+  </div>
+
+  <mat-card class="version-card">
+    <mat-card-content>
+      <div class="version-info">
+        <div class="version-item">
+          <mat-icon>info</mat-icon>
+          <div>
+            <div class="version-label">Versione attuale</div>
+            <div class="version-value">{{ currentVersion() }}</div>
+          </div>
+        </div>
+        @if (availableVersion()) {
+          <div class="version-item highlight">
+            <mat-icon>new_releases</mat-icon>
+            <div>
+              <div class="version-label">Nuova versione disponibile</div>
+              <div class="version-value">{{ availableVersion() }}</div>
+            </div>
+          </div>
+        }
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="status-card">
+    <mat-card-content>
+      <div class="status-row">
+        <mat-icon [class]="'status-icon status-' + status()">{{ statusIcon() }}</mat-icon>
+        <span class="status-text">{{ statusLabel() }}</span>
+      </div>
+
+      @if (isError() && errorMessage()) {
+        <div class="error-message">
+          <mat-icon>warning</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      @if (isDownloading()) {
+        <div class="progress-section">
+          <mat-progress-bar mode="determinate" [value]="downloadPercent()"></mat-progress-bar>
+          <span class="progress-text">{{ downloadPercent() }}%</span>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <div class="action-section">
+    @if (hasUpdate()) {
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="downloadUpdate()">
+        <mat-icon>download</mat-icon>
+        Scarica aggiornamento
+      </button>
+    }
+
+    @if (isDownloaded()) {
+      <button
+        mat-raised-button
+        color="accent"
+        (click)="installUpdate()">
+        <mat-icon>restart_alt</mat-icon>
+        Aggiorna Ora
+      </button>
+    }
+  </div>
+</div>

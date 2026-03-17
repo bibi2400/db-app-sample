@@ -15,10 +15,26 @@ const electronAPI = {
     delete: (backupPath: string) => ipcRenderer.invoke('backup:delete', backupPath),
     stats: () => ipcRenderer.invoke('backup:stats')
   },
+  // Update API
+  update: {
+    check: () => ipcRenderer.invoke('update:check'),
+    status: () => ipcRenderer.invoke('update:status'),
+    download: () => ipcRenderer.invoke('update:download'),
+    install: () => ipcRenderer.invoke('update:install'),
+  },
   // App API
   app: {
     reload: () => ipcRenderer.invoke('app:reload')
-  }
+  },
+  // Push events (main → renderer)
+  on: (channel: string, callback: (...args: unknown[]) => void) => {
+    if (!channel.startsWith('push:')) return;
+    ipcRenderer.on(channel, callback);
+  },
+  off: (channel: string, callback: (...args: unknown[]) => void) => {
+    if (!channel.startsWith('push:')) return;
+    ipcRenderer.off(channel, callback);
+  },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
