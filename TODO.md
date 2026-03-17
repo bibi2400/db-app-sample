@@ -16,7 +16,7 @@
   - shutdown service (gestione graceful shutdown, vedi sotto)
   - error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
-- [ ] strutturazione altre classi
+- [x] strutturazione altre classi
   - Logger
 
 - [ ] per implementare la progress bar di update serve strutturare un sistema di eventi da backend a frontend
