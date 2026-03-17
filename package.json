@@ -44,6 +44,11 @@
       }
     ],
     "extraFiles": [],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "include": "build/installer.nsh"
+    },
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.png"
@@ -69,6 +74,7 @@
     "ag-grid-angular": "^35.0.0",
     "ag-grid-community": "^35.0.0",
     "electron-log": "^5.4.3",
+    "electron-store": "^11.0.2",
     "electron-updater": "^6.8.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "~7.8.0",
