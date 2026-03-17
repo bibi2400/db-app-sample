@@ -2,14 +2,14 @@ import "reflect-metadata";
 import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { autoUpdater } from 'electron-updater';
 import { registerAllControllers } from './src/controllers';
 import { AppDataSource } from './src/db/data-source';
-import { RUNTIME_CONFIG } from './src/config/runtime-config';
 import { Logger } from "./src/helpers/logger";
 import { Injector } from "./src/helpers/mini-pie/injector";
+import { PushService } from "./src/services/push.service";
 import { SERVICES } from "./src/services";
 import { BackupService } from "./src/services/backup.service";
+import { UpdaterService } from "./src/services/updater.service";
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -48,8 +48,6 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 
-autoUpdater.autoDownload = true; // scarica solo se l'utente accetta
-
 app.whenReady().then(async () => {
   // Registra protocollo custom per servire file locali senza hash routing
   protocol.handle('app', (request) => {
@@ -81,17 +79,6 @@ app.whenReady().then(async () => {
 
   await Injector.load(SERVICES);
 
-  autoUpdater.checkForUpdates().then((updateCheckResult) => {
-    Logger.info('Update check completed:', updateCheckResult);
-    if (updateCheckResult?.isUpdateAvailable) {
-      Logger.info('New version available:', updateCheckResult.updateInfo.version);
-      // Il download parte automaticamente grazie ad autoDownload = true
-      // quitAndInstall verrà chiamato da update-downloaded
-    }
-  }).catch((err) => {
-    Logger.error('Errore durante il controllo degli aggiornamenti:', err);
-  });
-
   // Inizializza il database DOPO che l'app è pronta
   await initializeApp();
 
@@ -110,41 +97,6 @@ app.on('before-quit', async () => {
   if (AppDataSource.isInitialized) {
     await AppDataSource.destroy();
   }
-});
-
-// Gestione aggiornamenti
-// Nuovo aggiornamento disponibile
-autoUpdater.on('update-available', (info) => {
-  Logger.info('Aggiornamento disponibile:', info);
-});
-
-// Nessun aggiornamento disponibile
-autoUpdater.on('update-not-available', () => {
-  Logger.info('App is up to date.');
-});
-
-// Progresso download
-autoUpdater.on('download-progress', (progress) => {
-  Logger.info(`Download progress: ${progress.percent.toFixed(2)}%`);
-});
-
-autoUpdater.on('update-downloaded', () => {
-  Logger.info('Update downloaded, installing...');
-  autoUpdater.quitAndInstall(false, true);
-});
-
-// Errore
-autoUpdater.on('error', (error) => {
-  Logger.error('Update error:', error);
-});
-
-// Nuovo aggiornamento disponibile
-autoUpdater.setFeedURL({
-  provider: 'github',
-  owner: pkg.publish?.owner ?? '',
-  repo: pkg.publish?.repo ?? pkg.name,
-  private: true,
-  token: RUNTIME_CONFIG.GH_TOKEN,
 });
 
 //// Functions
@@ -259,6 +211,9 @@ async function createWindow() {
     Logger.info('✓ App loaded successfully');
   }
 
+  Injector.inject(PushService).setWindow(win);
+  Logger.info("✓ PushService window set");
+
   win.on('closed', () => { win = null; });
 }
 
@@ -292,6 +247,13 @@ async function initializeApp() {
     const backupService = Injector.inject(BackupService);
     await backupService.autoBackup();
     Logger.info("✓ Startup backup completed");
+
+    // Check for updates in background (non-blocking)
+    const updaterService = Injector.inject(UpdaterService);
+    updaterService.checkForUpdates().catch((err: unknown) => {
+      Logger.error('Startup update check failed:', err);
+    });
+    Logger.info("✓ Startup update check initiated");
 
     Logger.info('=== DATABASE INITIALIZATION COMPLETED ===');
   } catch (error) {

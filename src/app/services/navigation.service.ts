@@ -25,6 +25,11 @@ export class NavigationService {
           title: 'Backup Database',
           icon: 'backup',
           route: '/backup'
+        },
+        {
+          title: 'Aggiornamenti',
+          icon: 'system_update',
+          route: '/updates'
         }
       ]
     }

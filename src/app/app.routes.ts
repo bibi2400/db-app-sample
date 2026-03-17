@@ -16,6 +16,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
   },
   {
+    path: 'updates',
+    loadComponent: () => import('./pages/update-management/update-management').then(m => m.UpdateManagement)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }
