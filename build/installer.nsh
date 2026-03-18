@@ -68,15 +68,18 @@ FunctionEnd
 
 ; ── After installation: write db-config.json ────────────────────
 !macro customInstall
-  ; Build full path and convert backslashes to forward slashes for JSON safety
-  StrCpy $R0 "$DbPathValue\database.sqlite"
-  ${WordReplace} $R0 "\" "/" "+" $R1
+  ; In silent mode (auto-update) preserve the existing db-config.json
+  ${IfNot} ${Silent}
+    ; Build full path and convert backslashes to forward slashes for JSON safety
+    StrCpy $R0 "$DbPathValue\database.sqlite"
+    ${WordReplace} $R0 "\" "/" "+" $R1
 
-  ; Write to %APPDATA%\<name>\db-config.json
-  CreateDirectory "$APPDATA\${APP_PACKAGE_NAME}"
-  FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
-  FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
-  FileClose $0
+    ; Write to %APPDATA%\<name>\db-config.json
+    CreateDirectory "$APPDATA\${APP_PACKAGE_NAME}"
+    FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
+    FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
+    FileClose $0
+  ${EndIf}
 !macroend
 
 !endif ; BUILD_UNINSTALLER
