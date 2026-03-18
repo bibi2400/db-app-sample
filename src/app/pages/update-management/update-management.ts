@@ -37,6 +37,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
   currentVersion = signal('');
   availableVersion = signal<string | undefined>(undefined);
   releaseDate = signal<string | undefined>(undefined);
+  releaseNotes = signal<string | undefined>(undefined);
   errorMessage = signal<string | undefined>(undefined);
   downloadPercent = signal(0);
   isPreparingDownload = signal(false);
@@ -100,6 +101,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
     this.currentVersion.set(status.currentVersion);
     this.availableVersion.set(status.availableVersion);
     this.releaseDate.set(status.releaseDate);
+    this.releaseNotes.set(status.releaseNotes);
     this.errorMessage.set(status.error);
     if (status.status === 'downloading' || status.status === 'error') {
       this.isPreparingDownload.set(false);

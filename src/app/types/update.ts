@@ -5,6 +5,7 @@ export interface UpdateStatus {
   currentVersion: string;
   availableVersion?: string;
   releaseDate?: string;
+  releaseNotes?: string;
   error?: string;
 }
 

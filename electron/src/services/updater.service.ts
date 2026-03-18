@@ -16,6 +16,7 @@ export interface UpdateStatus {
   currentVersion: string;
   availableVersion?: string;
   releaseDate?: string;
+  releaseNotes?: string;
   error?: string;
 }
 
@@ -68,7 +69,8 @@ export class UpdaterService {
 
   private registerEvents(): void {
     autoUpdater.on('update-available', (info: UpdateInfo) => {
-      this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate });
+      const releaseNotes = this.extractReleaseNotes(info.releaseNotes);
+      this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate, releaseNotes });
     });
 
     autoUpdater.on('update-not-available', () => {
@@ -92,6 +94,12 @@ export class UpdaterService {
     autoUpdater.on('error', (error: Error) => {
       this.updateStatus({ status: 'error', error: error.message });
     });
+  }
+
+  private extractReleaseNotes(notes: UpdateInfo['releaseNotes']): string | undefined {
+    if (!notes) return undefined;
+    if (typeof notes === 'string') return notes;
+    return notes.map(n => n.note).filter(Boolean).join('\n\n');
   }
 
   private updateStatus(partial: Partial<UpdateStatus>): void {
