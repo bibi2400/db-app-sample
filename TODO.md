@@ -46,6 +46,8 @@
 
 - [ ] refactor struttura base di angular (app, sidebar, sidenav)
 
+- [ ] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
+
 ## Bonus Tracks:
 
 - [ ] implementare gestione notifiche di sistema
