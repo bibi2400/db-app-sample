@@ -125,7 +125,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Aggiornamento applicazione',
-        message: 'L\'applicazione verrà riavviata per effettuare l\'aggiornamento. Continuare?',
+        message: "L'applicazione verrà riavviata per effettuare l'aggiornamento.\nDurante l'aggiornamento, l'applicazione rimarrà chiusa per diversi minuti e si riaprirà da sola al termine.\nNon tentare di riaprire l'app manualmente! Continuare?",
       },
     });
 
