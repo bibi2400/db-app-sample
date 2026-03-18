@@ -1,4 +1,6 @@
 # MIGHTY TODO
+- [ ] IMPORTANTISSIMO: testare procedura di auto update su citrix
+
 - [x] trovare un modo per gestire nome app centralizzato (il più possibile)
 
 - [x] revamp della procedura di installazione
