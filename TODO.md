@@ -64,3 +64,7 @@
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file downloads (tipo file excel, pdf, altro)
 
 - [ ] indagare su quali altre chicche riservano electron & le sue librerie satellite
+
+- [ ] strutturare sistema di schedulazione task automatici
+
+- [ ] strutturare sistema di rilevazione tempi
