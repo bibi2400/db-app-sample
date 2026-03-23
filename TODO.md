@@ -51,6 +51,8 @@
 
 - [ ][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
 
+- [ ] rivedere sistema di backup
+
 ## Bonus Tracks:
 
 - [ ] implementare gestione notifiche di sistema
