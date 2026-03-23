@@ -47,6 +47,8 @@
 
 - [ ] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
+- [ ][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
+
 ## Bonus Tracks:
 
 - [ ] implementare gestione notifiche di sistema
