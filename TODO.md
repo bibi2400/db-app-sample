@@ -14,7 +14,8 @@
   - [ ] main render service (gestione main renderer, angular serving)
   - [ ] splash service (gestione splash screen)
   - [ ] electron service (?) (registrazione controller, accesso a API sistema operativo)
-  - [ ] config service (gestione configurazione, prevedere file di configurazione?)
+  - [ ] App file service (gestione file dentro %appdata%)
+    - [ ] config service (gestione configurazione, prevedere file di configurazione?)
   - [ ] shutdown service (gestione graceful shutdown, vedi sotto)
   - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
@@ -37,8 +38,6 @@
     - [ANGULAR] implementare bottone check for updates
     - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
     - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
-
-- [ ] valutare uso di electron-store per gestire gli app file come la configurazione, la cache, o i backup
 
 - [ ] gestione chiusura gentile dell'app
 
