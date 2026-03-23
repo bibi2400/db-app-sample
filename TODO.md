@@ -1,5 +1,5 @@
 # MIGHTY TODO
-- [ ] IMPORTANTISSIMO: testare procedura di auto update su citrix
+- [x] IMPORTANTISSIMO: testare procedura di auto update su citrix
 
 - [x] trovare un modo per gestire nome app centralizzato (il più possibile)
 
@@ -52,6 +52,8 @@
 - [ ] implementare gestione notifiche di sistema
 
 - [ ] implementare gestione multifinestra
+
+- [ ] gestire DB path a interfaccia
 
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file uploads (tipo file excel e altro)
 
