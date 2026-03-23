@@ -28,6 +28,8 @@
   l'utente deve essere notificato con la presenza di aggiornameti
   l'utente deve essere in grado di decidere quando effettuare gli aggiornamenti
 
+  - [ ] l'utente deve vedere il changelog della nuova versione prima di installarla
+
   Dettagli implentativi:
     - creare diagramma di flusso del processo di aggiornamento
     - [ELECTRON] relegare autoUpdater in un service
