@@ -19,8 +19,8 @@
   - [ ] shutdown service (gestione graceful shutdown, vedi sotto)
   - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
-- [x] strutturazione altre classi
-  - Logger
+- strutturazione altre classi
+  - [x] Logger
 
 - [x] per implementare la progress bar di update serve strutturare un sistema di eventi da backend a frontend
 
@@ -41,13 +41,13 @@
     - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
     - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
 
-- [ ] gestione chiusura gentile dell'app
+- [ ][ELECTRON] gestione chiusura gentile dell'app
 
-- [ ] gestione errori
+- [ ][ELECTRON] gestione errori
 
-- [ ] refactor struttura base di angular (app, sidebar, sidenav)
+- [ ][ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
 
-- [ ] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
+- [ ][ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
 - [ ][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
 
