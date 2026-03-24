@@ -66,6 +66,9 @@
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.png"
+    },
+    "releaseInfo": {
+      "releaseNotesFile": "changelog.txt"
     }
   },
   "publish": {

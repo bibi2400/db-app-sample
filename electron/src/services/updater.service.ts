@@ -53,6 +53,8 @@ export class UpdaterService {
     this.registerEvents();
   }
 
+  private feedConfig!: { owner: string; repo: string };
+
   private configure(): void {
     autoUpdater.autoDownload = false;
 
@@ -60,10 +62,14 @@ export class UpdaterService {
       fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf-8')
     );
 
-    autoUpdater.setFeedURL({
-      provider: 'github',
+    this.feedConfig = {
       owner: pkg.publish?.owner ?? '',
       repo: pkg.publish?.repo ?? pkg.name,
+    };
+
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      ...this.feedConfig,
       private: true,
       token: RUNTIME_CONFIG.GH_TOKEN,
     });
@@ -71,11 +77,7 @@ export class UpdaterService {
 
   private registerEvents(): void {
     autoUpdater.on('update-available', (info: UpdateInfo) => {
-      Logger.info('[Updater] update-available info:', JSON.stringify(info, null, 2));
-      Logger.info('[Updater] releaseNotes type:', typeof info.releaseNotes);
-      Logger.info('[Updater] releaseNotes raw value:', JSON.stringify(info.releaseNotes));
       const releaseNotes = this.extractReleaseNotes(info.releaseNotes);
-      Logger.info('[Updater] releaseNotes extracted:', releaseNotes);
       this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate, releaseNotes });
     });
 
@@ -103,24 +105,9 @@ export class UpdaterService {
   }
 
   private extractReleaseNotes(notes: UpdateInfo['releaseNotes']): string | undefined {
-    Logger.info('[Updater] extractReleaseNotes input:', notes);
-    if (!notes) {
-      Logger.info('[Updater] extractReleaseNotes: notes is falsy, returning undefined');
-      return undefined;
-    }
-    if (typeof notes === 'string') {
-      Logger.info('[Updater] extractReleaseNotes: notes is string, returning as-is');
-      return notes;
-    }
-    Logger.info('[Updater] extractReleaseNotes: notes is array with', notes.length, 'items');
-    if (Array.isArray(notes)) {
-      notes.forEach((item, index) => {
-        Logger.info(`[Updater] extractReleaseNotes: item[${index}]:`, JSON.stringify(item));
-      });
-    }
-    const result = notes.map(n => n.note).filter(Boolean).join('\n\n');
-    Logger.info('[Updater] extractReleaseNotes result:', result);
-    return result;
+    if (!notes) return undefined;
+    if (typeof notes === 'string') return notes;
+    return notes.map(n => n.note).filter(Boolean).join('\n\n') || undefined;
   }
 
   private updateStatus(partial: Partial<UpdateStatus>): void {
