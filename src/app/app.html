@@ -1,11 +1,11 @@
 <div class="row">
   <mat-sidenav-container class="sidenav">
     <mat-sidenav #sidenav mode="over" [(opened)]="opened">
-      <app-sidebar [version]="version" [author]="author" (closed)="opened = false" />
+      <app-sidebar [version]="version" [author]="author" (closed)="opened.set(false)" />
     </mat-sidenav>
 
     <mat-sidenav-content>
-      <app-toolbar (menuToggled)="opened = true" />
+      <app-toolbar (menuToggled)="opened.set(true)" />
       <div class="main-container">
         <router-outlet />
       </div>

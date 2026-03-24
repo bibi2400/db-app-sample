@@ -1,0 +1,44 @@
+<div class="shortcut-container">
+  <div class="header">
+    <h1>Scorciatoie da Tastiera</h1>
+    <button mat-raised-button (click)="resetAll()">
+      <mat-icon>restart_alt</mat-icon>
+      Ripristina tutte
+    </button>
+  </div>
+
+  @for (category of categories(); track category[0]) {
+    <mat-card class="category-card">
+      <mat-card-header>
+        <mat-card-title>{{ category[0] }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="shortcut-list">
+          @for (shortcut of category[1]; track shortcut.id) {
+            <div class="shortcut-item">
+              <div class="shortcut-info">
+                <div class="shortcut-name">{{ shortcut.name }}</div>
+                <div class="shortcut-description">{{ shortcut.description }}</div>
+              </div>
+              <div class="shortcut-binding">
+                <span class="binding-badge" [class.modified]="isModified(shortcut.id)">
+                  {{ formatBinding(shortcut.currentBinding) }}
+                </span>
+              </div>
+              <div class="shortcut-actions">
+                <button mat-icon-button matTooltip="Modifica" (click)="editShortcut(shortcut)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                @if (isModified(shortcut.id)) {
+                  <button mat-icon-button matTooltip="Ripristina predefinito" (click)="resetShortcut(shortcut)">
+                    <mat-icon>undo</mat-icon>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

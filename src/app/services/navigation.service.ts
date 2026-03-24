@@ -35,6 +35,11 @@ export class NavigationService {
           title: 'Aggiornamenti',
           icon: 'system_update',
           route: '/updates'
+        },
+        {
+          title: 'Scorciatoie',
+          icon: 'keyboard',
+          route: '/shortcuts'
         }
       ]
     }

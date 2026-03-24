@@ -1,0 +1,33 @@
+<h2 mat-dialog-title>Modifica scorciatoia</h2>
+
+<mat-dialog-content>
+  <div class="shortcut-name">{{ data.shortcut.name }}</div>
+  <div class="current-binding">
+    Attuale: <span class="binding-badge">{{ formatBinding(data.shortcut.currentBinding) }}</span>
+  </div>
+
+  <div class="record-area">
+    @if (waiting()) {
+      <div class="waiting-message">
+        <mat-icon>keyboard</mat-icon>
+        <span>Premi una combinazione di tasti...</span>
+      </div>
+    } @else {
+      <div class="recorded-binding">
+        <span class="binding-display">{{ formatBinding(recording()!) }}</span>
+      </div>
+    }
+  </div>
+
+  @if (conflict()) {
+    <div class="conflict-warning">
+      <mat-icon>warning</mat-icon>
+      <span>Conflitto con "{{ conflict()!.name }}"</span>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button [mat-dialog-close]="null">Annulla</button>
+  <button mat-raised-button color="primary" [disabled]="waiting()" (click)="confirm()">Conferma</button>
+</mat-dialog-actions>

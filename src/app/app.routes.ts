@@ -24,6 +24,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
   },
   {
+    path: 'shortcuts',
+    loadComponent: () => import('./pages/shortcut-management/shortcut-management').then(m => m.ShortcutManagement)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }
