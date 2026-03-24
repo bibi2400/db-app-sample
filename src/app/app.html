@@ -1,102 +1,11 @@
 <div class="row">
   <mat-sidenav-container class="sidenav">
     <mat-sidenav #sidenav mode="over" [(opened)]="opened">
-      <div class="sidebar-header">
-        <img src="assets/menu-logo.png" alt="Quality Manager" class="sidebar-logo">
-        <button mat-icon-button (click)="opened = false"><mat-icon>close</mat-icon></button>
-      </div>
-      <mat-nav-list class="sidebar-menu">
-        @for (menuItem of menu; track menuItem.title; let i = $index) {
-          @if (menuItem.children) {
-            <a mat-list-item (click)="toggleSubmenu(menuItem)" [attr.data-menu]="i">
-              <mat-icon matListItemIcon>{{ menuItem.icon }}</mat-icon>
-              <span matListItemTitle>{{ menuItem.title }}</span>
-            </a>
-            @if (isExpanded(menuItem)) {
-              @for (child of menuItem.children; track child.title) {
-                <a mat-list-item 
-                   class="submenu-item"
-                   [attr.data-menu]="i"
-                   [activated]="activeLink().route === child.route" 
-                   (click)="clickMenuItem($event, child)">
-                  <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
-                  <span matListItemTitle>{{ child.title }}</span>
-                  @if (child.route === '/updates' && navigationService.updateAvailable()) {
-                    <span class="update-badge" aria-label="Aggiornamento disponibile"></span>
-                  }
-                </a>
-              }
-            }
-          } @else {
-            <a mat-list-item 
-               [attr.data-menu]="i"
-               [activated]="activeLink().route === menuItem.route" 
-               (click)="clickMenuItem($event, menuItem)">
-              <mat-icon matListItemIcon>{{ menuItem.icon }}</mat-icon>
-              <span matListItemTitle>{{ menuItem.title }}</span>
-            </a>
-          }
-        }
-      </mat-nav-list>
-      <div class="sidebar-footer">
-        <div class="powered-by">Powered by {{ author }}</div>
-        <span class="version-text">v{{ version }}</span>
-      </div>
+      <app-sidebar [version]="version" [author]="author" (closed)="opened = false" />
     </mat-sidenav>
 
     <mat-sidenav-content>
-      <mat-toolbar>
-        <button mat-icon-button (click)="opened = true">
-          <mat-icon>menu</mat-icon>
-        </button>
-        <button mat-icon-button (click)="goBack()" aria-label="Indietro cronologia">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        <button mat-icon-button (click)="goForward()" aria-label="Avanti cronologia">
-          <mat-icon>arrow_forward</mat-icon>
-        </button>
-        <div class="page-title">
-          <mat-icon>{{ activeLink().icon }}</mat-icon>
-          <span>{{ activeLink().title }}</span>
-        </div>
-        <span class="toolbar-spacer"></span>
-        <button
-          mat-icon-button
-          aria-label="Notifiche"
-          matTooltip="Notifiche"
-          (click)="goToNotifications()"
-          [matBadge]="notificationService.unreadCount()"
-          [matBadgeHidden]="notificationService.unreadCount() === 0"
-          matBadgeColor="warn"
-          matBadgeSize="small"
-        >
-          <mat-icon>notifications</mat-icon>
-        </button>
-        @if (navigationService.showToolbarActions()) {
-          @for (action of navigationService.extraActions(); track action.label) {
-            <button mat-icon-button [attr.aria-label]="action.label" (click)="action.callback()">
-              <mat-icon>{{ action.icon }}</mat-icon>
-            </button>
-          }
-          <button mat-icon-button aria-label="Reset" (click)="navigationService.onResetAction()?.()">
-            <mat-icon>refresh</mat-icon>
-          </button>
-          <button mat-icon-button aria-label="Salva" (click)="navigationService.onSaveAction()?.()">
-            <mat-icon>save</mat-icon>
-          </button>
-        } @else if (navigationService.extraActions().length > 0) {
-          @for (action of navigationService.extraActions(); track action.label) {
-            <button
-              mat-icon-button
-              [attr.aria-label]="action.label"
-              (click)="action.callback()"
-              [matTooltip]="action.label"
-            >
-              <mat-icon>{{ action.icon }}</mat-icon>
-            </button>
-          }
-        }
-      </mat-toolbar>
+      <app-toolbar (menuToggled)="opened = true" />
       <div class="main-container">
         <router-outlet />
       </div>

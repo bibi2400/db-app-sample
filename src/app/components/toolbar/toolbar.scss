@@ -1,0 +1,119 @@
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+  font-size: 18px;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.toolbar-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-left: 16px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 32px;
+  background-color: rgba(0, 0, 0, 0.12);
+  margin: 0 8px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  overflow-x: auto;
+  padding: 0 8px;
+
+  .breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+
+    &:not(.active) {
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+    }
+
+    &.active {
+      font-weight: 600;
+      color: #1976d2;
+    }
+
+    .breadcrumb-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .breadcrumb-separator {
+    font-size: 18px;
+    color: rgba(0, 0, 0, 0.38);
+  }
+}
+
+button[mat-icon-button]:disabled {
+  opacity: 0.3;
+}
+
+// Stili per i bottoni filtro semaforo nella toolbar
+mat-toolbar {
+  button[mat-icon-button] {
+    mat-icon {
+      transition: color 0.2s ease;
+    }
+
+    // Filtro errore (rosso)
+    &[aria-label*="Scaduti"] mat-icon,
+    &[aria-label*="Scaduti"]:hover mat-icon {
+      color: #f44336;
+    }
+
+    // Filtro warning (giallo)
+    &[aria-label*="Scadenza"] mat-icon,
+    &[aria-label*="Scadenza"]:hover mat-icon {
+      color: #ff9800;
+    }
+
+    // Filtro success (verde)
+    &[aria-label*="OK"] mat-icon,
+    &[aria-label="OK"]:hover mat-icon {
+      color: #4caf50;
+    }
+
+    // Filtro info (blu)
+    &[aria-label*="Mancanti"] mat-icon,
+    &[aria-label*="Mancanti"]:hover mat-icon {
+      color: #2196f3;
+    }
+
+    // Filtro schedule (grigio)
+    &[aria-label*="Programmare"] mat-icon,
+    &[aria-label*="Programmare"]:hover mat-icon {
+      color: #9e9e9e;
+    }
+  }
+}

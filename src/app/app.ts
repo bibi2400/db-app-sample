@@ -1,20 +1,13 @@
-import { TitleCasePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatBadgeModule } from '@angular/material/badge';
-import { RouterLink, RouterOutlet, Router } from '@angular/router';
-import { Location } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { MenuItem, NavigationService } from './services/navigation.service';
+import { NavigationService } from './services/navigation.service';
 import { ElectronUpdateService } from './services/electron-api/electron-update.service';
 import { UpdateStatusType } from './types/update';
 import { NotificationPanel } from './components/notification-panel/notification-panel';
-import { NotificationService } from './services/notification.service';
+import { Sidebar } from './components/sidebar/sidebar';
+import { Toolbar } from './components/toolbar/toolbar';
 import "./types/global";
 
 const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
@@ -24,13 +17,9 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
   imports: [
     RouterOutlet,
     MatSidenavModule,
-    MatButtonModule,
-    MatIcon,
-    MatListModule,
-    MatToolbar,
-    MatTooltipModule,
-    MatBadgeModule,
     NotificationPanel,
+    Sidebar,
+    Toolbar,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -42,14 +31,8 @@ export class App implements OnInit, OnDestroy {
   author = 'bibi';
 
   private updateService = inject(ElectronUpdateService);
-  readonly notificationService = inject(NotificationService);
+  private navigationService = inject(NavigationService);
   private statusSub?: Subscription;
-
-  constructor(
-    public navigationService: NavigationService,
-    private location: Location,
-    private router: Router
-  ) { }
 
   ngOnInit(): void {
     this.statusSub = this.updateService.statusChanged$.subscribe(status => {
@@ -67,41 +50,5 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
-  }
-
-  goBack() {
-    this.location.back();
-  }
-
-  goForward() {
-    this.location.forward();
-  }
-
-  clickMenuItem($event: Event, menuItem: MenuItem) {
-    $event.preventDefault();
-    if (menuItem.route) {
-      this.opened = false;
-      this.router.navigate([menuItem.route]);
-    }
-  }
-
-  goToNotifications(): void {
-    this.router.navigate(['/notifications']);
-  }
-
-  get menu() {
-    return this.navigationService.menu;
-  }
-
-  toggleSubmenu(item: MenuItem) {
-    this.navigationService.toggleSubmenu(item);
-  }
-
-  isExpanded(item: MenuItem): boolean {
-    return this.navigationService.isExpanded(item);
-  }
-
-  get activeLink() {
-    return this.navigationService.activeLink;
   }
 }

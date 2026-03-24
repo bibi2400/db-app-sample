@@ -48,11 +48,11 @@
 - [x] [ELECTRON] gestione errori
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
-  - componentizzare sidebar, sidenav
-  - rivedere push event lato frontend
-  - rivedere service api e wrapper risposte
-  - standardizzare stili box, possibilmente a tutta pagina
-  - aggiungere gestione errori
+  - [ ] componentizzare sidebar, sidenav
+  - [ ] rivedere push event lato frontend
+  - [ ] rivedere service api e wrapper risposte
+  - [ ] standardizzare stili box, possibilmente a tutta pagina
+  - [ ] aggiungere gestione errori
 
 - [x] [ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
@@ -64,7 +64,8 @@
 
 ## Bonus Tracks:
 
-- [ ] implementare gestione notifiche di sistema
+- [x] implementare gestione notifiche di sistema
+  implementate notifiche interne all'app. va ben istes 
 
 - [x] implementare gestione multifinestra
   implementato parzialmente, è possibile aprire più istanze della stessa finestra che inizia con la dashboard, con navigazioni separate, ma non è possibile aprire finestre su pagine precise. richiede modifiche più strutturali che vediamo di fare dopo
