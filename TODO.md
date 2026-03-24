@@ -48,6 +48,10 @@
 - [ ] [ELECTRON] gestione errori
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
+  - componentizzare sidebar, sidenav
+  - rivedere push event lato frontend
+  - rivedere service api e wrapper risposte
+  - aggiungere gestione errori
 
 - [x] [ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 

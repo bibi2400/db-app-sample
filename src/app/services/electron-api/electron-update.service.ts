@@ -18,7 +18,7 @@ export class ElectronUpdateService {
   /** Trigger a check for updates */
   async checkForUpdates(): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await window.electronAPI.invoke<IpcResponse<null>>('update:check');
+      const response = await window.electronAPI.invoke<IpcResponse<void>>('update:check');
       return { success: response.success, error: response.error };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
