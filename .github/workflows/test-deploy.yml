@@ -76,12 +76,6 @@ jobs:
       - name: Installazione dipendenze
         run: npm ci
 
-      - name: Rebuild native modules for Electron
-        shell: bash
-        run: npx @electron/rebuild --module-dir . --electron-version $(node -p "require('electron/package.json').version")
-        env:
-          GYP_MSVS_VERSION: '2022'
-
       - name: Genera changelog
         shell: bash
         run: |

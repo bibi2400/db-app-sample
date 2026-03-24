@@ -24,7 +24,7 @@
     "artifactName": "Db-App-Sample-Setup-${version}.${ext}",
     "asar": true,
     "asarUnpack": [
-      "node_modules/better-sqlite3/**"
+      "node_modules/sqlite3/**"
     ],
     "directories": {
       "output": "release"
@@ -38,8 +38,8 @@
       "!**/node_modules/*.d.ts",
       "!**/node_modules/.bin",
       "!**/*.{iml,o,hmap,jsbundle,jsdt,sber,nycrc,nyc_output,mk,bcmap,tsbuildinfo,map}",
-      "!**/node_modules/better-sqlite3/deps/**",
-      "!**/node_modules/better-sqlite3/build-tmp-napi-v6/**",
+      "!**/node_modules/sqlite3/deps/**",
+      "!**/node_modules/sqlite3/build-tmp-napi-v6/**",
       "!**/node_modules/typeorm/browser/**",
       "!**/node_modules/typeorm/{docs,sample,test}/**"
     ],
@@ -66,9 +66,6 @@
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.png"
-    },
-    "releaseInfo": {
-      "releaseNotesFile": "changelog.txt"
     }
   },
   "publish": {
@@ -80,10 +77,10 @@
   "private": true,
   "packageManager": "npm@10.9.0",
   "dependencies": {
-    "better-sqlite3": "^11.10.0",
     "electron-log": "^5.4.3",
     "electron-updater": "^6.8.3",
     "reflect-metadata": "^0.2.2",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.28"
   },
   "devDependencies": {
@@ -98,7 +95,6 @@
     "@angular/material": "^21.0.2",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
-    "@types/better-sqlite3": "^7.6.13",
     "ag-grid-angular": "^35.0.0",
     "ag-grid-community": "^35.0.0",
     "concurrently": "^9.2.1",

@@ -6,7 +6,7 @@ import { Injector } from "../helpers/mini-pie/injector";
 const dbConfigService = Injector.inject(DbConfigService);
 
 export const AppDataSource = new DataSource({
-	type: "better-sqlite3",
+	type: "sqlite",
 	database: dbConfigService.dbPath,
 	synchronize: true, // Sincronizza lo schema del database con le entità
 	logging: true, // Abilita temporaneamente i log SQL per debug
