@@ -16,6 +16,7 @@ import { ElectronMainWindowService } from "./electron-main-window.service";
 import { AppBootstrapService } from "./app-bootstrap.service";
 import { AppConfigService } from "./app-config.service";
 import { NotificationService } from "./notification.service";
+import { ErrorNotificationService } from "./error-notification.service";
 
 export const SERVICES = [
   DevModeService,
@@ -28,6 +29,7 @@ export const SERVICES = [
   // Core services
   PushService,
   NotificationService,
+  ErrorNotificationService,
   BackupService,
   TestService,
   UpdaterService,

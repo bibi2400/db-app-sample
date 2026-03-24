@@ -22,14 +22,29 @@ export class NotificationService {
   readonly show = new PushEmitter<AppNotification>();
 
   private counter = 0;
+  private enabled = false;
+  private queue: AppNotification[] = [];
 
   constructor(private pushService: PushService) {
     this.pushService.initializeChannel(this);
   }
 
   /**
+   * Enable the notification channel and flush any queued notifications.
+   * Called when the frontend signals it is ready to receive.
+   */
+  enable(): void {
+    this.enabled = true;
+    Logger.info(`[Notification] Channel enabled, flushing ${this.queue.length} queued notification(s)`);
+    for (const notification of this.queue) {
+      this.show.emit(notification);
+    }
+    this.queue = [];
+  }
+
+  /**
    * Send a notification to the renderer process.
-   * Can be called from any backend service or controller.
+   * If the channel is not yet enabled, notifications are queued.
    */
   notify(level: NotificationLevel, title: string, message: string, icon?: string): void {
     const notification: AppNotification = {
@@ -40,7 +55,13 @@ export class NotificationService {
       icon,
       timestamp: Date.now(),
     };
-    this.show.emit(notification);
+
+    if (this.enabled) {
+      this.show.emit(notification);
+    } else {
+      this.queue.push(notification);
+      Logger.debug(`[Notification] Queued (channel not ready): ${level}: ${title}`);
+    }
     Logger.info(`[Notification] ${level}: ${title}`);
   }
 

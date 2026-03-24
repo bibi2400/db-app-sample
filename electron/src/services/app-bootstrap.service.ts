@@ -13,6 +13,7 @@ import { ControllerService } from './controller.service';
 import { BackupService } from './backup.service';
 import { UpdaterService } from './updater.service';
 import { DevModeService } from './dev-mode.service';
+import { ErrorNotificationService } from './error-notification.service';
 import { initChronomancerForElectron, Chronomancer } from '../helpers/chronomancer.adapter';
 
 /**
@@ -34,6 +35,7 @@ export class AppBootstrapService {
     private readonly backupService: BackupService,
     private readonly updaterService: UpdaterService,
     private readonly devModeService: DevModeService,
+    private readonly errorNotificationService: ErrorNotificationService,
   ) {}
 
   /**
@@ -115,6 +117,7 @@ export class AppBootstrapService {
       if (error instanceof Error) {
         Logger.error('[Bootstrap] Error stack:', error.stack);
       }
+      this.errorNotificationService.reportBootstrapError('Inizializzazione core', error);
       throw error;
     }
   }
@@ -186,12 +189,14 @@ export class AppBootstrapService {
     } catch (error) {
       Chronomancer.stop('auto-backup', 'bootstrap');
       Logger.error('[Bootstrap] Startup backup failed:', error);
+      this.errorNotificationService.reportBootstrapError('Backup automatico', error);
     }
 
     // Check for updates (non-blocking)
     Chronomancer.start('update-check', 'bootstrap');
     this.updaterService.checkForUpdates().catch((err: unknown) => {
       Logger.error('[Bootstrap] Startup update check failed:', err);
+      this.errorNotificationService.reportBootstrapError('Controllo aggiornamenti', err);
     });
     Chronomancer.stop('update-check', 'bootstrap');
     Logger.info('[Bootstrap] ✓ Startup update check initiated');

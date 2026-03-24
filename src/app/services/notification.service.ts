@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { ElectronPushService } from './electron-api/electron-push.service';
 import { AppNotification, NotificationLevel } from '../types/notification';
+import { IpcResponse } from '../types/global';
 
 @Injectable({
   providedIn: 'root'
@@ -19,6 +20,14 @@ export class NotificationService {
   readonly unreadCount = computed(() => this.notifications().filter(n => !n.read).length);
 
   private listeners: Array<(notification: AppNotification) => void> = [];
+
+  /**
+   * Tell the backend the notification channel is ready.
+   * Queued backend notifications will be flushed.
+   */
+  async enableBackendChannel(): Promise<void> {
+    await window.electronAPI.invoke<IpcResponse<null>>('notification:enable');
+  }
 
   /** Register a listener for new notifications (used by the toast panel) */
   onNotification(callback: (notification: AppNotification) => void): () => void {

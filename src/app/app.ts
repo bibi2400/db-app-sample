@@ -38,7 +38,7 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
 })
 export class App implements OnInit, OnDestroy {
   opened = false;
-  version = '1.0.0';
+  version = '';
   author = 'bibi';
 
   private updateService = inject(ElectronUpdateService);
@@ -56,6 +56,12 @@ export class App implements OnInit, OnDestroy {
       this.navigationService.updateAvailable.set(
         UPDATE_BADGE_STATUSES.includes(status.status)
       );
+    });
+
+    window.electronAPI.invoke<{ success: boolean; data?: { name: string; version: string } }>('app:info').then(response => {
+      if (response.success && response.data) {
+        this.version = response.data.version;
+      }
     });
   }
 

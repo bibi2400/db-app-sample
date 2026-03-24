@@ -3,6 +3,7 @@ import { BaseController } from './base.controller';
 import { IpcHandler } from '../decorators/ipc-handler.decorator';
 import { Controller } from '../decorators/controller.decorator';
 import { Logger } from '../helpers/logger';
+import { AppConfigService } from '../services/app-config.service';
 
 @Controller({ prefix: 'app' })
 export class AppController extends BaseController {
@@ -11,8 +12,17 @@ export class AppController extends BaseController {
   private indexFilePath: string | null = null;
   private serve = false;
 
-  constructor() {
+  constructor(private readonly appConfigService: AppConfigService) {
     super();
+  }
+
+  @IpcHandler('info')
+  async getAppInfo() {
+    const info = this.appConfigService.getInfo();
+    return this.success({
+      name: info.name,
+      version: info.version,
+    });
   }
 
   /**

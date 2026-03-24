@@ -92,6 +92,6 @@ export class TestController extends BaseController {
     await this.simulateWork(1500);
     this.notificationService.debug('Test Debug', 'Messaggio di debug dal backend con dettagli tecnici sulla richiesta.');
 
-    return this.success({ message: '4 test notifications sent' });
+    throw new Error("Test error")
   }
 }

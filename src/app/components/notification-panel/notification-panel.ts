@@ -55,6 +55,9 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
     // Frontend notifications via service callback (already added to history by the service)
     this.unsubFrontend = this.notificationService.onNotification(n => this.addNotification(n));
+
+    // Signal backend that the notification channel is ready, flush queued notifications
+    this.notificationService.enableBackendChannel();
   }
 
   ngOnDestroy(): void {

@@ -20,7 +20,7 @@
     - [x] db config service (gestione db-config.json tramite config service)
     - [x] app config service (info app da package.json + configurazioni inter-sessione tramite config service)
   - [x] lifecycle service (gestione graceful shutdown, vedi sotto)
-  - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
+  - [x] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
 - strutturazione altre classi
   - [x] Logger
@@ -45,12 +45,13 @@
 
 - [x] [ELECTRON] gestione chiusura gentile dell'app
 
-- [ ] [ELECTRON] gestione errori
+- [x] [ELECTRON] gestione errori
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
   - componentizzare sidebar, sidenav
   - rivedere push event lato frontend
   - rivedere service api e wrapper risposte
+  - standardizzare stili box, possibilmente a tutta pagina
   - aggiungere gestione errori
 
 - [x] [ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
@@ -58,6 +59,8 @@
 - [x] [ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
 
 - [ ] rivedere sistema di backup
+
+- [ ] [ANGULAR] - sistema di shortcut standardizzato
 
 ## Bonus Tracks:
 

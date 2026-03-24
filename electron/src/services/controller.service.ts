@@ -5,6 +5,7 @@ import { Constructor } from '../helpers/mini-pie/types';
 import { Logger } from '../helpers/logger';
 import { getControllerMetadata, getRegisteredControllers, isController } from '../decorators/controller.decorator';
 import { getIpcHandlerMetadata } from '../decorators/ipc-handler.decorator';
+import { ErrorNotificationService } from './error-notification.service';
 
 export interface IpcResponse<T = unknown> {
   success: boolean;
@@ -26,6 +27,8 @@ interface RegisteredChannel {
 export class ControllerService {
   private controllerInstances: Map<string, object> = new Map();
   private registeredChannels: RegisteredChannel[] = [];
+
+  constructor(private readonly errorNotificationService: ErrorNotificationService) {}
 
   /**
    * Registers all controllers that have been decorated with @Controller.
@@ -79,8 +82,13 @@ export class ControllerService {
 
       const handler = (instance as Record<string, Handler>)[methodName].bind(instance);
 
-      ipcMain.handle(fullChannel, (_event, ...args) => {
-        return handler(...args);
+      ipcMain.handle(fullChannel, async (_event, ...args) => {
+        try {
+          return await handler(...args);
+        } catch (error) {
+          this.errorNotificationService.reportControllerError(fullChannel, error);
+          return ControllerService.error(error);
+        }
       });
 
       this.registeredChannels.push({
