@@ -20,6 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/update-management/update-management').then(m => m.UpdateManagement)
   },
   {
+    path: 'notifications',
+    loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }

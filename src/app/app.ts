@@ -6,12 +6,15 @@ import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbar } from '@angular/material/toolbar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { RouterLink, RouterOutlet, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MenuItem, NavigationService } from './services/navigation.service';
 import { ElectronUpdateService } from './services/electron-api/electron-update.service';
 import { UpdateStatusType } from './types/update';
+import { NotificationPanel } from './components/notification-panel/notification-panel';
+import { NotificationService } from './services/notification.service';
 import "./types/global";
 
 const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
@@ -26,6 +29,8 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
     MatListModule,
     MatToolbar,
     MatTooltipModule,
+    MatBadgeModule,
+    NotificationPanel,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -37,6 +42,7 @@ export class App implements OnInit, OnDestroy {
   author = 'bibi';
 
   private updateService = inject(ElectronUpdateService);
+  readonly notificationService = inject(NotificationService);
   private statusSub?: Subscription;
 
   constructor(
@@ -71,6 +77,10 @@ export class App implements OnInit, OnDestroy {
       this.opened = false;
       this.router.navigate([menuItem.route]);
     }
+  }
+
+  goToNotifications(): void {
+    this.router.navigate(['/notifications']);
   }
 
   get menu() {

@@ -1,0 +1,68 @@
+<div class="notifications-page">
+  <div class="notifications-header">
+    <h2>Notifiche</h2>
+    @if (unreadCount() > 0) {
+      <button mat-stroked-button (click)="markAllAsRead()" class="mark-all-btn">
+        <mat-icon>done_all</mat-icon>
+        Segna tutte come lette
+      </button>
+    }
+  </div>
+
+  @if (hasNotifications()) {
+    <mat-nav-list class="notification-list">
+      @for (n of notifications(); track n.id) {
+        <mat-list-item
+          class="notification-item"
+          [class.unread]="!n.read"
+          [class.expanded]="isExpanded(n.id)"
+          [class.level-debug]="n.level === 'debug'"
+          [class.level-info]="n.level === 'info'"
+          [class.level-warn]="n.level === 'warn'"
+          [class.level-error]="n.level === 'error'"
+          (click)="toggleExpand(n)"
+        >
+          <mat-icon matListItemIcon class="level-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
+          <div matListItemTitle class="notification-title-row">
+            <span class="notification-title">{{ n.title }}</span>
+            <span class="notification-meta">
+              <span class="notification-level">{{ levelLabel(n.level) }}</span>
+              <span class="notification-time">{{ formatTimestamp(n.timestamp) | date:'dd/MM/yyyy HH:mm' }}</span>
+            </span>
+          </div>
+          <div matListItemLine class="notification-preview">
+            {{ n.message }}
+          </div>
+          @if (!n.read) {
+            <div matListItemMeta class="unread-dot-container">
+              <span class="unread-dot" aria-label="Non letta"></span>
+            </div>
+          }
+        </mat-list-item>
+        @if (isExpanded(n.id)) {
+          <div class="notification-expanded"
+               [class.level-debug]="n.level === 'debug'"
+               [class.level-info]="n.level === 'info'"
+               [class.level-warn]="n.level === 'warn'"
+               [class.level-error]="n.level === 'error'">
+            <div class="expanded-header">
+              <mat-icon class="expanded-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
+              <div>
+                <strong>{{ n.title }}</strong>
+                <span class="expanded-level">{{ levelLabel(n.level) }}</span>
+              </div>
+              <span class="expanded-time">{{ formatTimestamp(n.timestamp) | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+            </div>
+            <p class="expanded-message">{{ n.message }}</p>
+          </div>
+        }
+        <mat-divider />
+      }
+    </mat-nav-list>
+  } @else {
+    <div class="empty-state">
+      <mat-icon class="empty-icon">notifications_none</mat-icon>
+      <p>Nessuna notifica</p>
+    </div>
+  }
+</div>

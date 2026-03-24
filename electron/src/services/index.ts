@@ -15,6 +15,7 @@ import { ElectronSplashWindowService } from "./electron-splash-window.service";
 import { ElectronMainWindowService } from "./electron-main-window.service";
 import { AppBootstrapService } from "./app-bootstrap.service";
 import { AppConfigService } from "./app-config.service";
+import { NotificationService } from "./notification.service";
 
 export const SERVICES = [
   DevModeService,
@@ -26,6 +27,7 @@ export const SERVICES = [
 
   // Core services
   PushService,
+  NotificationService,
   BackupService,
   TestService,
   UpdaterService,

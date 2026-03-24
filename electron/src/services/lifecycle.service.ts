@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from "electron";
+import { execSync } from "child_process";
 import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from "../helpers/logger";
 import { AppDataSource } from "../db/data-source";
@@ -188,9 +189,15 @@ export class LifecycleService {
             process.kill(ppid, 'SIGTERM');
           }
         } else {
-          // On Windows, just kill the parent process
-          // concurrently will handle stopping other processes
-          process.kill(ppid, 'SIGTERM');
+          // On Windows, kill the entire process tree using taskkill
+          // SIGTERM/process.kill only terminates a single process on Windows,
+          // leaving child processes (tsc, ng serve, etc.) orphaned
+          try {
+            execSync(`taskkill /F /T /PID ${ppid}`, { stdio: 'ignore' });
+          } catch {
+            // Fallback: try killing the single process
+            process.kill(ppid, 'SIGTERM');
+          }
         }
         Logger.info(`[Lifecycle] Sent SIGTERM to parent process ${ppid}`);
       }

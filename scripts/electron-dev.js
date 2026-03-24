@@ -5,12 +5,31 @@
  * - Terminates all processes when Electron is closed by the user
  */
 
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 
+const isWindows = process.platform === 'win32';
 let electronProcess = null;
 let isShuttingDown = false;
 let outputBuffer = '';
+
+/**
+ * Kill a process and its entire tree.
+ * On Windows, uses taskkill /T to kill the tree since SIGTERM only kills the direct process.
+ */
+function killProcessTree(childProcess) {
+  if (!childProcess || !childProcess.pid) return;
+  const pid = childProcess.pid;
+  try {
+    if (isWindows) {
+      execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' });
+    } else {
+      childProcess.kill('SIGTERM');
+    }
+  } catch {
+    // Process may have already exited
+  }
+}
 
 // Start tsc in watch mode
 const tscProcess = spawn('npx', ['tsc', '-p', 'electron/tsconfig.json', '--watch', '--preserveWatchOutput'], {
@@ -48,12 +67,12 @@ function restartElectron() {
     console.log('[dev] Stopping Electron for restart...');
     const oldProcess = electronProcess;
     electronProcess = null; // Clear reference first to prevent shutdown trigger
-    oldProcess.kill('SIGTERM');
+    killProcessTree(oldProcess);
     
-    // Wait a bit for the process to fully terminate
+    // Wait a bit for the process to fully terminate (longer on Windows)
     setTimeout(() => {
       startElectron();
-    }, 300);
+    }, isWindows ? 1000 : 300);
   } else {
     startElectron();
   }
@@ -64,9 +83,9 @@ function startElectron() {
   
   console.log('[dev] Starting Electron...');
 
-  electronProcess = spawn('electron', ['.', '--serve'], {
+  const electronPath = require('electron');
+  electronProcess = spawn(electronPath, ['.', '--serve'], {
     stdio: 'inherit',
-    shell: true
   });
 
   electronProcess.on('close', (code) => {
@@ -95,18 +114,13 @@ function shutdown() {
 
   console.log('[dev] Shutting down...');
 
-  if (electronProcess) {
-    electronProcess.kill('SIGTERM');
-  }
-
-  if (tscProcess) {
-    tscProcess.kill('SIGTERM');
-  }
+  killProcessTree(electronProcess);
+  killProcessTree(tscProcess);
 
   // Force exit after a short delay
   setTimeout(() => {
     process.exit(0);
-  }, 500);
+  }, isWindows ? 1000 : 500);
 }
 
 // Handle process signals

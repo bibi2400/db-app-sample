@@ -1,4 +1,5 @@
 import { TestService } from "../services/test.service";
+import { NotificationService } from "../services/notification.service";
 import { BaseController } from "./base.controller";
 import { IpcHandler } from "../decorators/ipc-handler.decorator";
 import { Controller } from "../decorators/controller.decorator";
@@ -6,7 +7,10 @@ import { Chronomancer } from "../helpers/chronomancer.adapter";
 
 @Controller({ prefix: "test" })
 export class TestController extends BaseController {
-  constructor(private readonly testService: TestService) {
+  constructor(
+    private readonly testService: TestService,
+    private readonly notificationService: NotificationService,
+  ) {
     super();
   }
 
@@ -69,5 +73,25 @@ export class TestController extends BaseController {
 
   private simulateWork(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  @IpcHandler("test-notifications")
+  async testNotifications() {
+    this.notificationService.info('Test Info', 'Questa è una notifica informativa di test dal backend.');
+
+    await this.simulateWork(1500);
+    this.notificationService.warn('Test Warning', 'Attenzione: questa è una notifica di avviso dal backend.');
+
+    await this.simulateWork(1500);
+    try {
+      throw new Error
+    } catch(e) {
+      this.notificationService.error('Test Error', 'Errore simulato dal backend per verificare il sistema di notifiche.\n'+(<Error>e).stack);
+    }
+
+    await this.simulateWork(1500);
+    this.notificationService.debug('Test Debug', 'Messaggio di debug dal backend con dettagli tecnici sulla richiesta.');
+
+    return this.success({ message: '4 test notifications sent' });
   }
 }

@@ -18,6 +18,11 @@ export class NavigationService {
       route: '/dashboard'
     },
     {
+      title: 'Notifiche',
+      icon: 'notifications',
+      route: '/notifications'
+    },
+    {
       title: 'Impostazioni',
       icon: 'settings',
       children: [
