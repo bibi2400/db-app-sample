@@ -96,6 +96,15 @@ export class ElectronMainWindowService {
   }
 
   /**
+   * Updates the window title.
+   */
+  setTitle(title: string): void {
+    if (this.windowService.isWindowValid(this.win)) {
+      this.win.setTitle(title);
+    }
+  }
+
+  /**
    * Gets information needed for reload functionality.
    */
   getReloadInfo(): { serve: boolean; loadedUrl?: string; indexFilePath?: string } {

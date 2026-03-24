@@ -118,6 +118,12 @@ export class UpdaterService {
     return notes.map(n => n.note).filter(Boolean).join('\n\n') || undefined;
   }
 
+  private statusListeners: ((status: UpdateStatus) => void)[] = [];
+
+  onStatusChange(listener: (status: UpdateStatus) => void): void {
+    this.statusListeners.push(listener);
+  }
+
   private async updateStatus(partial: Partial<UpdateStatus>): Promise<void> {
     this.currentStatus = { ...this.currentStatus, ...partial };
 
@@ -132,6 +138,7 @@ export class UpdaterService {
     }
 
     this.statusChanged.emit(status);
+    this.statusListeners.forEach(fn => fn(status));
     Logger.info('[Updater] Status:', this.currentStatus.status);
   }
 

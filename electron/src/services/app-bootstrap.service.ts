@@ -73,6 +73,9 @@ export class AppBootstrapService {
     // Initialize window-dependent services
     this.initializeWindowServices(this.win);
 
+    // Set version in window title and listen for updates
+    this.initializeTitleUpdater();
+
     // Run startup tasks (backup, updates)
     await this.runStartupTasks();
 
@@ -174,6 +177,23 @@ export class AppBootstrapService {
     }
 
     Chronomancer.stop('window-services', 'bootstrap');
+  }
+
+  /**
+   * Sets the window title with version and listens for update availability.
+   */
+  private initializeTitleUpdater(): void {
+    const config = this.appConfigService.getInfo();
+    const baseTitle = `${config.name} v${config.version}`;
+    this.mainWindowService.setTitle(baseTitle);
+
+    this.updaterService.onStatusChange((status) => {
+      if (status.status === 'available' || status.status === 'downloading' || status.status === 'downloaded') {
+        this.mainWindowService.setTitle(`${baseTitle} — Aggiornamento Disponibile!`);
+      } else {
+        this.mainWindowService.setTitle(baseTitle);
+      }
+    });
   }
 
   /**
