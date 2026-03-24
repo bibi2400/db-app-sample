@@ -71,7 +71,11 @@ export class UpdaterService {
 
   private registerEvents(): void {
     autoUpdater.on('update-available', (info: UpdateInfo) => {
+      Logger.info('[Updater] update-available info:', JSON.stringify(info, null, 2));
+      Logger.info('[Updater] releaseNotes type:', typeof info.releaseNotes);
+      Logger.info('[Updater] releaseNotes raw value:', JSON.stringify(info.releaseNotes));
       const releaseNotes = this.extractReleaseNotes(info.releaseNotes);
+      Logger.info('[Updater] releaseNotes extracted:', releaseNotes);
       this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate, releaseNotes });
     });
 
@@ -99,9 +103,24 @@ export class UpdaterService {
   }
 
   private extractReleaseNotes(notes: UpdateInfo['releaseNotes']): string | undefined {
-    if (!notes) return undefined;
-    if (typeof notes === 'string') return notes;
-    return notes.map(n => n.note).filter(Boolean).join('\n\n');
+    Logger.info('[Updater] extractReleaseNotes input:', notes);
+    if (!notes) {
+      Logger.info('[Updater] extractReleaseNotes: notes is falsy, returning undefined');
+      return undefined;
+    }
+    if (typeof notes === 'string') {
+      Logger.info('[Updater] extractReleaseNotes: notes is string, returning as-is');
+      return notes;
+    }
+    Logger.info('[Updater] extractReleaseNotes: notes is array with', notes.length, 'items');
+    if (Array.isArray(notes)) {
+      notes.forEach((item, index) => {
+        Logger.info(`[Updater] extractReleaseNotes: item[${index}]:`, JSON.stringify(item));
+      });
+    }
+    const result = notes.map(n => n.note).filter(Boolean).join('\n\n');
+    Logger.info('[Updater] extractReleaseNotes result:', result);
+    return result;
   }
 
   private updateStatus(partial: Partial<UpdateStatus>): void {
