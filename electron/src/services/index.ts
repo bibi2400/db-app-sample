@@ -1,3 +1,4 @@
+import { DevModeService } from "./dev-mode.service";
 import { PushService } from "./push.service";
 import { BackupService } from "./backup.service";
 import { AppDataService } from "./app-data.service";
@@ -16,6 +17,7 @@ import { AppBootstrapService } from "./app-bootstrap.service";
 import { AppConfigService } from "./app-config.service";
 
 export const SERVICES = [
+  DevModeService,
   AppDataService,
   ConfigService,
   CacheService,

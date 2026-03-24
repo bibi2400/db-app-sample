@@ -5,6 +5,7 @@ import { Injectable } from '../helpers/mini-pie/decorators';
 import { Logger } from '../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
+import { DevModeService } from './dev-mode.service';
 
 export interface MainWindowConfig {
   width?: number;
@@ -40,21 +41,20 @@ const MAIN_WINDOW_ID = 'main';
 @Injectable()
 export class ElectronMainWindowService {
   private win: BrowserWindow | null = null;
-  private isDevMode = false;
   private loadedUrl: string | null = null;
   private indexFilePath: string | null = null;
 
   constructor(
     private readonly windowService: ElectronWindowService,
     private readonly splashService: ElectronSplashWindowService,
+    private readonly devModeService: DevModeService,
   ) {}
 
   /**
    * Creates and initializes the main application window.
    * Coordinates with splash screen for smooth transition.
    */
-  async create(config: MainWindowConfig = {}, options: { isDevMode: boolean }): Promise<BrowserWindow> {
-    this.isDevMode = options.isDevMode;
+  async create(config: MainWindowConfig = {}): Promise<BrowserWindow> {
     const mergedConfig = { ...DEFAULT_MAIN_WINDOW_CONFIG, ...config };
 
     this.win = this.windowService.createWindow({
@@ -100,7 +100,7 @@ export class ElectronMainWindowService {
    */
   getReloadInfo(): { serve: boolean; loadedUrl?: string; indexFilePath?: string } {
     return {
-      serve: this.isDevMode,
+      serve: this.devModeService.isDev,
       loadedUrl: this.loadedUrl ?? undefined,
       indexFilePath: this.indexFilePath ?? undefined,
     };
@@ -115,7 +115,7 @@ export class ElectronMainWindowService {
       return;
     }
 
-    if (this.isDevMode && this.loadedUrl) {
+    if (this.devModeService.isDev && this.loadedUrl) {
       await this.win.loadURL(this.loadedUrl);
     } else if (this.indexFilePath) {
       await this.win.loadURL(this.indexFilePath);
@@ -190,7 +190,7 @@ export class ElectronMainWindowService {
   private async loadContent(config: Required<MainWindowConfig>): Promise<void> {
     if (!this.win) return;
 
-    if (this.isDevMode) {
+    if (this.devModeService.isDev) {
       await this.waitForDevServer(config.devServerUrl, config.devServerMaxAttempts);
       this.loadedUrl = config.devServerUrl;
       await this.win.loadURL(this.loadedUrl);

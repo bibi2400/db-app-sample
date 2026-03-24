@@ -3,6 +3,7 @@ import * as path from 'path';
 import { Injectable } from '../helpers/mini-pie/decorators';
 import { Logger } from '../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
+import { DevModeService } from './dev-mode.service';
 
 export interface SplashConfig {
   width?: number;
@@ -30,17 +31,17 @@ const SPLASH_WINDOW_ID = 'splash';
 @Injectable()
 export class ElectronSplashWindowService {
   private splash: BrowserWindow | null = null;
-  private isDevMode = false;
 
-  constructor(private readonly windowService: ElectronWindowService) {}
+  constructor(
+    private readonly windowService: ElectronWindowService,
+    private readonly devModeService: DevModeService,
+  ) {}
 
   /**
    * Creates and displays the splash screen.
    * @param config Splash screen configuration
-   * @param options Additional options
    */
-  async create(config: SplashConfig = {}, options: { isDevMode: boolean }): Promise<BrowserWindow> {
-    this.isDevMode = options.isDevMode;
+  async create(config: SplashConfig = {}): Promise<BrowserWindow> {
     const mergedConfig = { ...DEFAULT_SPLASH_CONFIG, ...config };
 
     this.splash = this.windowService.createWindow({
@@ -58,7 +59,7 @@ export class ElectronSplashWindowService {
       },
     });
 
-    const splashPath = this.isDevMode
+    const splashPath = this.devModeService.isDev
       ? path.join(__dirname, mergedConfig.devPath)
       : path.join(this.windowService.getResourcesPath(), mergedConfig.prodPath);
 

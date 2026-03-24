@@ -5,10 +5,7 @@ import { Injector } from "./src/helpers/mini-pie/injector";
 import { SERVICES } from "./src/services";
 import { AppBootstrapService } from "./src/services/app-bootstrap.service";
 import { ElectronProtocolService } from "./src/services/electron-protocol.service";
-
-// Determine if running in dev mode
-const args = process.argv.slice(1);
-const isDevMode = args.some(val => val === '--serve');
+import { DevModeService } from "./src/services/dev-mode.service";
 
 // Register protocol schemes as privileged BEFORE app.ready()
 // This enables History API support (pushState, replaceState) for Angular routing
@@ -20,15 +17,16 @@ app.whenReady().then(async () => {
     // Load all injectable services
     await Injector.load(SERVICES);
 
-    if (isDevMode) {
+    const devMode = Injector.inject(DevModeService);
+    if (devMode.isDev) {
       Logger.info("App is in dev mode")
     } else {
-      Logger.info("App is in prod mode", args)
+      Logger.info("App is in prod mode", process.argv.slice(1))
     }
 
     // Run bootstrap sequence
     const bootstrapService = Injector.inject(AppBootstrapService);
-    await bootstrapService.bootstrap({ isDevMode });
+    await bootstrapService.bootstrap();
 
     Logger.info('✓ Application started successfully');
   } catch (error) {

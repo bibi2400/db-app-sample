@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from '../helpers/logger';
 import { ConfigService } from "./config.service";
+import { DevModeService } from "./dev-mode.service";
 
 export interface AppWindowConfig {
   width: number;
@@ -46,16 +47,17 @@ const DEFAULT_APP_INFO: Omit<AppInfo, 'name' | 'slug' | 'version'> = {
 export class AppConfigService {
 
   private appInfo: AppInfo | null = null;
-  private isDevMode = false;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly devModeService: DevModeService,
+  ) {
     this.configService.register<AppSettings>(APP_CONFIG_FILE, APP_SETTINGS_DEFAULTS);
   }
 
   // ── App Info (da package.json) ──────────────────────────────
 
-  init(options: { isDevMode: boolean }): void {
-    this.isDevMode = options.isDevMode;
+  init(): void {
     this.loadAppInfo();
   }
 
@@ -87,7 +89,7 @@ export class AppConfigService {
   }
 
   get isDev(): boolean {
-    return this.isDevMode;
+    return this.devModeService.isDev;
   }
 
   getAppPath(): string {

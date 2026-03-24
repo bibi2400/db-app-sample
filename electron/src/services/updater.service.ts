@@ -6,10 +6,9 @@ import { Injectable } from '../helpers/mini-pie/decorators';
 import { PushChannel, PushEvent } from '../decorators/push-channel.decorator';
 import { PushEmitter } from '../helpers/push/push-emitter';
 import { PushService } from './push.service';
+import { DevModeService } from './dev-mode.service';
 import { Logger } from '../helpers/logger';
 import { RUNTIME_CONFIG } from '../config/runtime-config';
-
-const isDev = !app.isPackaged;
 
 export type UpdateStatusType = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
 
@@ -42,6 +41,7 @@ export class UpdaterService {
 
   constructor(
     private pushService: PushService,
+    private devModeService: DevModeService,
   ) {
     this.currentStatus = {
       status: 'idle',
@@ -132,7 +132,7 @@ export class UpdaterService {
   async checkForUpdates(): Promise<void> {
     this.updateStatus({ status: 'checking', error: undefined, availableVersion: undefined, releaseNotes: undefined, releaseDate: undefined });
 
-    if (isDev) {
+    if (this.devModeService.isDev) {
       await this.mockCheckForUpdates();
       return;
     }
@@ -149,7 +149,7 @@ export class UpdaterService {
       throw new Error('No update available to download');
     }
 
-    if (isDev) {
+    if (this.devModeService.isDev) {
       await this.mockDownload();
       return;
     }
@@ -162,7 +162,7 @@ export class UpdaterService {
       throw new Error('No update downloaded to install');
     }
 
-    if (isDev) {
+    if (this.devModeService.isDev) {
       Logger.info('[Updater] Mock install - would restart app in production');
       this.updateStatus({ status: 'idle' });
       return;

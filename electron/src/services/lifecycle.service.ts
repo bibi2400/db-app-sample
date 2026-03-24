@@ -2,6 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from "../helpers/logger";
 import { AppDataSource } from "../db/data-source";
+import { DevModeService } from "./dev-mode.service";
 
 type CleanupCallback = () => void | Promise<void>;
 
@@ -15,20 +16,20 @@ export class LifecycleService {
   private win: BrowserWindow | null = null;
   private isQuitting = false;
   private cleanupCallbacks: CleanupCallback[] = [];
-  private isDevMode = false;
+
+  constructor(private readonly devModeService: DevModeService) {}
 
   /**
    * Initialize the lifecycle service with the main window.
    * Sets up all necessary event listeners for graceful shutdown.
    */
-  init(win: BrowserWindow, options: { isDevMode: boolean }): void {
+  init(win: BrowserWindow): void {
     this.win = win;
-    this.isDevMode = options.isDevMode;
 
     this.setupWindowEvents();
     this.setupAppEvents();
 
-    Logger.info(`✓ LifecycleService initialized (mode: ${this.isDevMode ? 'dev' : 'prod'})`);
+    Logger.info(`✓ LifecycleService initialized (mode: ${this.devModeService.isDev ? 'dev' : 'prod'})`);
   }
 
   /**
@@ -62,7 +63,7 @@ export class LifecycleService {
         // Prevent default close to handle cleanup first
         event.preventDefault();
         this.performCleanup().then(() => {
-          if (this.isDevMode) {
+          if (this.devModeService.isDev) {
             // In dev mode, force process exit to stop nodemon
             Logger.info('[Lifecycle] Dev mode: forcing process exit');
             process.exit(0);
@@ -96,7 +97,7 @@ export class LifecycleService {
         event.preventDefault();
         this.isQuitting = true;
         await this.performCleanup();
-        if (this.isDevMode) {
+        if (this.devModeService.isDev) {
           process.exit(0);
         } else {
           app.quit();
@@ -148,7 +149,7 @@ export class LifecycleService {
     await this.closeDatabase();
 
     // Close dev tools if open (dev mode)
-    if (this.isDevMode && this.win && !this.win.isDestroyed()) {
+    if (this.devModeService.isDev && this.win && !this.win.isDestroyed()) {
       try {
         this.win.webContents.closeDevTools();
       } catch {
@@ -157,7 +158,7 @@ export class LifecycleService {
     }
 
     // In dev mode, kill parent process (concurrently/nodemon) to stop all dev processes
-    if (this.isDevMode) {
+    if (this.devModeService.isDev) {
       this.killParentProcessGroup();
     }
 

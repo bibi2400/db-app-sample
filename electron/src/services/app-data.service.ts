@@ -3,16 +3,27 @@ import path from "path";
 import { app } from "electron";
 import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from "../helpers/logger";
+import { DevModeService } from "./dev-mode.service";
 
 /**
  * Servizio base per la gestione dei file dentro %appdata%/<app>.
- * Fornisce operazioni di lettura, scrittura e gestione di file e sottocartelle
- * nella userData directory di Electron.
+ * In dev mode i file vengono salvati in <progetto>/appdata/<appname>/
+ * per separare i dati di sviluppo da quelli di produzione.
  */
 @Injectable()
 export class AppDataService {
 
-  private readonly basePath = app.getPath('userData');
+  private readonly basePath: string;
+
+  constructor(private readonly devModeService: DevModeService) {
+    if (this.devModeService.isDev) {
+      this.basePath = path.join(app.getAppPath(), '.appdata');
+    } else {
+      this.basePath = app.getPath('userData');
+    }
+
+    Logger.debug(`[AppData] Base path: ${this.basePath}`);
+  }
 
   /**
    * Restituisce il percorso assoluto della userData directory.
@@ -66,7 +77,7 @@ export class AppDataService {
    */
   writeFile(content: string, ...segments: string[]): void {
     const filePath = this.resolve(...segments);
-    this.ensureDir(path.dirname(filePath));
+    this.ensureDirForPath(filePath);
     fs.writeFileSync(filePath, content);
   }
 
@@ -92,11 +103,22 @@ export class AppDataService {
 
   /**
    * Crea una directory (e tutte le intermedie) se non esiste.
+   * Accetta segmenti relativi al basePath.
    */
   ensureDir(...segments: string[]): void {
     const dirPath = this.resolve(...segments);
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath, { recursive: true });
+    }
+  }
+
+  /**
+   * Crea le directory intermedie per un path assoluto di file già risolto.
+   */
+  private ensureDirForPath(absoluteFilePath: string): void {
+    const dir = path.dirname(absoluteFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
   }
 

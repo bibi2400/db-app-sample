@@ -12,6 +12,7 @@ import { LifecycleService } from './lifecycle.service';
 import { ControllerService } from './controller.service';
 import { BackupService } from './backup.service';
 import { UpdaterService } from './updater.service';
+import { DevModeService } from './dev-mode.service';
 import { initChronomancerForElectron, Chronomancer } from '../helpers/chronomancer.adapter';
 
 /**
@@ -32,18 +33,18 @@ export class AppBootstrapService {
     private readonly controllerService: ControllerService,
     private readonly backupService: BackupService,
     private readonly updaterService: UpdaterService,
+    private readonly devModeService: DevModeService,
   ) {}
 
   /**
    * Runs the full application bootstrap sequence.
-   * @param options Bootstrap options
    * @returns The main window instance
    */
-  async bootstrap(options: { isDevMode: boolean }): Promise<BrowserWindow> {
+  async bootstrap(): Promise<BrowserWindow> {
     // Initialize Chronomancer first
     initChronomancerForElectron({
       enabled: true,
-      autoLog: options.isDevMode,
+      autoLog: this.devModeService.isDev,
       logThresholdMs: 50,
     });
 
@@ -53,7 +54,7 @@ export class AppBootstrapService {
     Logger.info('=== STARTING APPLICATION BOOTSTRAP ===');
 
     // Initialize config first
-    this.appConfigService.init(options);
+    this.appConfigService.init();
 
     // Register protocol handler
     this.protocolService.registerHandler();
@@ -64,11 +65,11 @@ export class AppBootstrapService {
     Chronomancer.checkpoint('app-bootstrap', 'after-core-init', 'bootstrap');
 
     // Create windows
-    this.win = await this.createWindows(options);
+    this.win = await this.createWindows();
     Chronomancer.checkpoint('app-bootstrap', 'after-windows-created', 'bootstrap');
 
     // Initialize window-dependent services
-    this.initializeWindowServices(this.win, options);
+    this.initializeWindowServices(this.win);
 
     // Run startup tasks (backup, updates)
     await this.runStartupTasks();
@@ -77,7 +78,7 @@ export class AppBootstrapService {
     const bootstrapDuration = Chronomancer.stop('app-bootstrap', 'bootstrap');
     Logger.info(`[Bootstrap] Total bootstrap time: ${bootstrapDuration.toFixed(2)}ms`);
 
-    if (options.isDevMode) {
+    if (this.devModeService.isDev) {
       Chronomancer.printReport();
     }
 
@@ -121,7 +122,7 @@ export class AppBootstrapService {
   /**
    * Creates splash and main windows with coordinated transition.
    */
-  private async createWindows(options: { isDevMode: boolean }): Promise<BrowserWindow> {
+  private async createWindows(): Promise<BrowserWindow> {
     const config = this.appConfigService.getInfo();
 
     // Create splash screen
@@ -129,7 +130,7 @@ export class AppBootstrapService {
     await this.splashService.create({
       width: config.splashScreen.width,
       height: config.splashScreen.height,
-    }, options);
+    });
     Chronomancer.stop('splash-window', 'bootstrap');
 
     // Small delay to ensure splash is visible
@@ -141,7 +142,7 @@ export class AppBootstrapService {
       width: config.mainWindow.width,
       height: config.mainWindow.height,
       title: config.name,
-    }, options);
+    });
     Chronomancer.stop('main-window', 'bootstrap');
 
     return win;
@@ -150,7 +151,7 @@ export class AppBootstrapService {
   /**
    * Initializes services that require a window reference.
    */
-  private initializeWindowServices(win: BrowserWindow, options: { isDevMode: boolean }): void {
+  private initializeWindowServices(win: BrowserWindow): void {
     Chronomancer.start('window-services', 'bootstrap');
 
     // PushService needs window for IPC
@@ -158,7 +159,7 @@ export class AppBootstrapService {
     Logger.info('[Bootstrap] ✓ PushService initialized');
 
     // LifecycleService handles graceful shutdown
-    this.lifecycleService.init(win, options);
+    this.lifecycleService.init(win);
     Logger.info('[Bootstrap] ✓ LifecycleService initialized');
 
     // AppController needs window for reload functionality
