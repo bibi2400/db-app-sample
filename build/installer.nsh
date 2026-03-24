@@ -9,9 +9,61 @@ Var DbPathDialog
 Var DbPathTextBox
 Var DbPathBrowseBtn
 Var DbPathValue
+Var DbConfigExists
+
+; ── Helper: read dbPath from existing db-config.json ────────────
+; Reads the file line by line looking for "dbPath" and extracts the value.
+; Result stored in $DbPathValue. If file doesn't exist, $DbPathValue stays empty.
+Function readExistingDbPath
+  StrCpy $DbConfigExists "0"
+  StrCpy $DbPathValue ""
+
+  ${IfNot} ${FileExists} "$APPDATA\${APP_PACKAGE_NAME}\db-config.json"
+    Return
+  ${EndIf}
+
+  StrCpy $DbConfigExists "1"
+
+  FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" r
+
+  readLoop:
+    FileRead $0 $1
+    ${If} $1 == ""
+      Goto readDone
+    ${EndIf}
+
+    ; Check if this line contains "dbPath"
+    ${WordFind} $1 '"dbPath"' "E+1{" $2
+    ${If} $2 != $1
+      ; Found dbPath line — extract value between quotes after the colon
+      ; Line format: "dbPath": "some/path/database.sqlite"
+      ; Extract everything after the first colon
+      ${WordFind} $1 ":" "+1}" $3
+      ; Trim spaces and quotes
+      ${WordReplace} $3 '"' "" "+" $3
+      ${WordReplace} $3 '$\r' "" "+" $3
+      ${WordReplace} $3 '$\n' "" "+" $3
+      ${WordReplace} $3 ' ' "" "+" $3
+      ; Remove the trailing "database.sqlite" to get just the folder path
+      ${WordReplace} $3 "/database.sqlite" "" "+" $3
+      ${WordReplace} $3 "\database.sqlite" "" "+" $3
+      ; Convert forward slashes back to backslashes for Windows display
+      ${WordReplace} $3 "/" "\" "+" $3
+      StrCpy $DbPathValue $3
+      Goto readDone
+    ${EndIf}
+
+    Goto readLoop
+
+  readDone:
+  FileClose $0
+FunctionEnd
 
 ; ── Page: create UI ─────────────────────────────────────────────
 Function dbPathPageCreate
+  ; Pre-fill from existing config if available
+  Call readExistingDbPath
+
   nsDialogs::Create 1018
   Pop $DbPathDialog
 
@@ -23,7 +75,7 @@ Function dbPathPageCreate
   ${NSD_CreateLabel} 0 0 100% 36u "Inserisci il percorso della cartella contenente il database (percorso locale o di rete).$\r$\nIl file database.sqlite deve essere già presente nel percorso selezionato."
   Pop $0
 
-  ; Path text input
+  ; Path text input (pre-filled if config exists)
   ${NSD_CreateText} 0 50u 77% 12u "$DbPathValue"
   Pop $DbPathTextBox
 
@@ -37,7 +89,7 @@ FunctionEnd
 
 ; ── Browse button callback ──────────────────────────────────────
 Function dbPathBrowse
-  nsDialogs::SelectFolderDialog "Seleziona la cartella del database" ""
+  nsDialogs::SelectFolderDialog "Seleziona la cartella del database" "$DbPathValue"
   Pop $0
   ${If} $0 != error
     ${NSD_SetText} $DbPathTextBox "$0"
@@ -66,19 +118,54 @@ FunctionEnd
   Page custom dbPathPageCreate dbPathPageLeave
 !macroend
 
-; ── After installation: write db-config.json ────────────────────
+; ── After installation: write/update db-config.json ─────────────
+; Se il file non esiste lo crea con il solo dbPath.
+; Se il file esiste già, sostituisce solo la riga di dbPath
+; preservando tutti gli altri campi gestiti da ConfigService.
 !macro customInstall
   ; In silent mode (auto-update) preserve the existing db-config.json
   ${IfNot} ${Silent}
-    ; Build full path and convert backslashes to forward slashes for JSON safety
+    ; Build full path and convert backslashes to forward slashes for JSON
     StrCpy $R0 "$DbPathValue\database.sqlite"
     ${WordReplace} $R0 "\" "/" "+" $R1
 
-    ; Write to %APPDATA%\<name>\db-config.json
     CreateDirectory "$APPDATA\${APP_PACKAGE_NAME}"
-    FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
-    FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
-    FileClose $0
+
+    ${If} $DbConfigExists == "1"
+      ; ── File exists: read, replace dbPath line, write back ──
+      ; Read entire file content
+      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" r
+      StrCpy $R5 ""
+
+      replaceLoop:
+        FileRead $0 $R2
+        ${If} $R2 == ""
+          Goto replaceDone
+        ${EndIf}
+
+        ; Check if line contains "dbPath"
+        ${WordFind} $R2 '"dbPath"' "E+1{" $R3
+        ${If} $R3 != $R2
+          ; Replace this line with new dbPath value
+          StrCpy $R2 '  "dbPath": "$R1"$\r$\n'
+        ${EndIf}
+
+        StrCpy $R5 "$R5$R2"
+        Goto replaceLoop
+
+      replaceDone:
+      FileClose $0
+
+      ; Write back modified content
+      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
+      FileWrite $0 $R5
+      FileClose $0
+    ${Else}
+      ; ── New install: create minimal file ──
+      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
+      FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
+      FileClose $0
+    ${EndIf}
   ${EndIf}
 !macroend
 
