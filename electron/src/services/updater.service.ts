@@ -236,12 +236,32 @@ export class UpdaterService {
         .map(r => ({
           version: r.tag_name.replace(/^v/, ''),
           date: r.published_at,
-          body: r.body ?? '',
+          body: this.normalizeChangelogBody(r.body ?? ''),
         }));
     } catch (error) {
       Logger.error('[Updater] Failed to fetch changelogs:', error);
       return [];
     }
+  }
+
+  private normalizeChangelogBody(body: string): string {
+    return body
+      .split('\n')
+      .map(line => {
+        if (/^(\s*-\s*)/.test(line)) {
+          const match = line.match(/^(\s*-\s*)/);
+          const prefix = match![1];
+          const content = line.slice(prefix.length);
+          return content
+            .split(/[;\n]/)
+            .map(s => s.trim())
+            .filter(Boolean)
+            .map(s => `${prefix}${s}`)
+            .join('\n');
+        }
+        return line;
+      })
+      .join('\n');
   }
 
   // ==================== DEV MOCK METHODS ====================
@@ -315,22 +335,22 @@ export class UpdaterService {
       {
         version: next2,
         date: now.toISOString(),
-        body: `## Novità in v${next2}\n\n### 🚀 Nuove funzionalità\n- Aggiunta funzione di esportazione dati in formato CSV\n- Nuovo tema scuro per l'interfaccia\n- Migliorata la ricerca con filtri avanzati\n\n### 🐛 Bug fix\n- Risolto problema di sincronizzazione database\n- Corretti errori di visualizzazione su schermi retina\n\n### ⚡ Miglioramenti\n- Performance di caricamento migliorate del 40%\n- Ridotto consumo di memoria`,
+        body: this.normalizeChangelogBody(`## Novità in v${next2}\n\n### 🚀 Nuove funzionalità\n- Aggiunta funzione di esportazione dati in formato CSV; Nuovo tema scuro per l'interfaccia\n- Migliorata la ricerca con filtri avanzati\n\n### 🐛 Bug fix\n- Risolto problema di sincronizzazione database; Corretti errori di visualizzazione su schermi retina\n\n### ⚡ Miglioramenti\n- Performance di caricamento migliorate del 40%\n- Ridotto consumo di memoria`),
       },
       {
         version: next,
         date: new Date(now.getTime() - 15 * 86400000).toISOString(),
-        body: `## Novità in v${next}\n\n### 🚀 Nuove funzionalità\n- Supporto notifiche push in tempo reale\n- Nuova pagina di gestione aggiornamenti\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete\n- Fix nella paginazione delle tabelle`,
+        body: this.normalizeChangelogBody(`## Novità in v${next}\n\n### 🚀 Nuove funzionalità\n- Supporto notifiche push in tempo reale\n- Nuova pagina di gestione aggiornamenti\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete; Fix nella paginazione delle tabelle`),
       },
       {
         version: current,
         date: new Date(now.getTime() - 30 * 86400000).toISOString(),
-        body: `## Novità in v${current}\n\n### 🚀 Nuove funzionalità\n- Aggiunta gestione backup automatici\n- Nuovo pannello notifiche\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete\n- Fix nella paginazione delle tabelle`,
+        body: this.normalizeChangelogBody(`## Novità in v${current}\n\n### 🚀 Nuove funzionalità\n- Aggiunta gestione backup automatici\n- Nuovo pannello notifiche\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete\n- Fix nella paginazione delle tabelle`),
       },
       {
         version: this.decrementVersion(current, 1),
         date: new Date(now.getTime() - 75 * 86400000).toISOString(),
-        body: `## Novità in v${this.decrementVersion(current, 1)}\n\n### 🚀 Nuove funzionalità\n- Prima release con supporto aggiornamenti automatici\n- Dashboard iniziale\n\n### 🐛 Bug fix\n- Varie correzioni di stabilità`,
+        body: this.normalizeChangelogBody(`## Novità in v${this.decrementVersion(current, 1)}\n\n### 🚀 Nuove funzionalità\n- Prima release con supporto aggiornamenti automatici\n- Dashboard iniziale\n\n### 🐛 Bug fix\n- Varie correzioni di stabilità`),
       },
     ];
   }
