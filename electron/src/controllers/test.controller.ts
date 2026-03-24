@@ -6,7 +6,7 @@ import { Chronomancer } from "../helpers/chronomancer.adapter";
 
 @Controller({ prefix: "test" })
 export class TestController extends BaseController {
-  constructor(private testService: TestService) {
+  constructor(private readonly testService: TestService) {
     super();
   }
 

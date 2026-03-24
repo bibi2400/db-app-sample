@@ -1,7 +1,6 @@
 import { BrowserWindow } from 'electron';
 import * as path from 'path';
 import { Injectable } from '../helpers/mini-pie/decorators';
-import { Injector } from '../helpers/mini-pie/injector';
 import { Logger } from '../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
 
@@ -33,9 +32,7 @@ export class ElectronSplashWindowService {
   private splash: BrowserWindow | null = null;
   private isDevMode = false;
 
-  private get windowService(): ElectronWindowService {
-    return Injector.inject(ElectronWindowService);
-  }
+  constructor(private readonly windowService: ElectronWindowService) {}
 
   /**
    * Creates and displays the splash screen.

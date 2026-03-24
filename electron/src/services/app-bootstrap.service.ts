@@ -1,6 +1,5 @@
 import { BrowserWindow } from 'electron';
 import { Injectable } from '../helpers/mini-pie/decorators';
-import { Injector } from '../helpers/mini-pie/injector';
 import { Logger } from '../helpers/logger';
 import { AppDataSource } from '../db/data-source';
 import { AppController, registerAllControllers } from '../controllers';
@@ -23,21 +22,17 @@ import { initChronomancerForElectron, Chronomancer } from '../helpers/chronomanc
 export class AppBootstrapService {
   private win: BrowserWindow | null = null;
 
-  private get configService(): AppConfigService {
-    return Injector.inject(AppConfigService);
-  }
-
-  private get protocolService(): ElectronProtocolService {
-    return Injector.inject(ElectronProtocolService);
-  }
-
-  private get splashService(): ElectronSplashWindowService {
-    return Injector.inject(ElectronSplashWindowService);
-  }
-
-  private get mainWindowService(): ElectronMainWindowService {
-    return Injector.inject(ElectronMainWindowService);
-  }
+  constructor(
+    private readonly appConfigService: AppConfigService,
+    private readonly protocolService: ElectronProtocolService,
+    private readonly splashService: ElectronSplashWindowService,
+    private readonly mainWindowService: ElectronMainWindowService,
+    private readonly pushService: PushService,
+    private readonly lifecycleService: LifecycleService,
+    private readonly controllerService: ControllerService,
+    private readonly backupService: BackupService,
+    private readonly updaterService: UpdaterService,
+  ) {}
 
   /**
    * Runs the full application bootstrap sequence.
@@ -58,7 +53,7 @@ export class AppBootstrapService {
     Logger.info('=== STARTING APPLICATION BOOTSTRAP ===');
 
     // Initialize config first
-    this.configService.init(options);
+    this.appConfigService.init(options);
 
     // Register protocol handler
     this.protocolService.registerHandler();
@@ -127,7 +122,7 @@ export class AppBootstrapService {
    * Creates splash and main windows with coordinated transition.
    */
   private async createWindows(options: { isDevMode: boolean }): Promise<BrowserWindow> {
-    const config = this.configService.getConfig();
+    const config = this.appConfigService.getInfo();
 
     // Create splash screen
     Chronomancer.start('splash-window', 'bootstrap');
@@ -159,17 +154,15 @@ export class AppBootstrapService {
     Chronomancer.start('window-services', 'bootstrap');
 
     // PushService needs window for IPC
-    Injector.inject(PushService).setWindow(win);
+    this.pushService.setWindow(win);
     Logger.info('[Bootstrap] ✓ PushService initialized');
 
     // LifecycleService handles graceful shutdown
-    const lifecycleService = Injector.inject(LifecycleService);
-    lifecycleService.init(win, options);
+    this.lifecycleService.init(win, options);
     Logger.info('[Bootstrap] ✓ LifecycleService initialized');
 
     // AppController needs window for reload functionality
-    const controllerService = Injector.inject(ControllerService);
-    const appController = controllerService.getController<AppController>('AppController');
+    const appController = this.controllerService.getController<AppController>('AppController');
     if (appController) {
       const reloadInfo = this.mainWindowService.getReloadInfo();
       appController.setWindow(win, reloadInfo);
@@ -186,8 +179,7 @@ export class AppBootstrapService {
     // Auto backup
     try {
       Chronomancer.start('auto-backup', 'bootstrap');
-      const backupService = Injector.inject(BackupService);
-      await backupService.autoBackup();
+      await this.backupService.autoBackup();
       Chronomancer.stop('auto-backup', 'bootstrap');
       Logger.info('[Bootstrap] ✓ Startup backup completed');
     } catch (error) {
@@ -197,8 +189,7 @@ export class AppBootstrapService {
 
     // Check for updates (non-blocking)
     Chronomancer.start('update-check', 'bootstrap');
-    const updaterService = Injector.inject(UpdaterService);
-    updaterService.checkForUpdates().catch((err: unknown) => {
+    this.updaterService.checkForUpdates().catch((err: unknown) => {
       Logger.error('[Bootstrap] Startup update check failed:', err);
     });
     Chronomancer.stop('update-check', 'bootstrap');

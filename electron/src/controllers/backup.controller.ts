@@ -5,7 +5,7 @@ import { Controller } from "../decorators/controller.decorator";
 
 @Controller({ prefix: "backup" })
 export class BackupController extends BaseController {
-  constructor(private backupService: BackupService) {
+  constructor(private readonly backupService: BackupService) {
     super();
   }
 

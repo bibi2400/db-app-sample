@@ -5,7 +5,7 @@ import { Controller } from '../decorators/controller.decorator';
 
 @Controller({ prefix: 'update' })
 export class UpdateController extends BaseController {
-  constructor(private updaterService: UpdaterService) {
+  constructor(private readonly updaterService: UpdaterService) {
     super();
   }
 

@@ -15,7 +15,9 @@
   - [x] splash service (gestione splash screen)
   - [x] controller service (registrazione controller, accesso a API sistema operativo)
   - [ ] App file service (gestione file dentro %appdata%)
-    - [ ] config service (gestione configurazione, prevedere file di configurazione?)
+    - [x] config service (gestione generica file di configurazione JSON in %appdata%)
+    - [x] db config service (gestione db-config.json tramite config service)
+    - [x] app config service (info app da package.json + configurazioni inter-sessione tramite config service)
   - [x] lifecycle service (gestione graceful shutdown, vedi sotto)
   - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
@@ -42,7 +44,7 @@
 
 - [x] [ELECTRON] gestione chiusura gentile dell'app
 
-- [x] [ELECTRON] gestione errori
+- [ ] [ELECTRON] gestione errori
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
 
@@ -56,7 +58,8 @@
 
 - [ ] implementare gestione notifiche di sistema
 
-- [ ] implementare gestione multifinestra
+- [x] implementare gestione multifinestra
+  implementato parzialmente, è possibile aprire più istanze della stessa finestra che inizia con la dashboard, con navigazioni separate, ma non è possibile aprire finestre su pagine precise
 
 - [ ] gestire DB path a interfaccia
   - vedi todo su config service
@@ -67,6 +70,8 @@
 
 - [ ] indagare su quali altre chicche riservano electron & le sue librerie satellite
 
-- [ ] strutturare sistema di schedulazione task automatici
+- [ ] strutturare sistema di schedulazione task automatici quando programma è aperto
 
 - [x] strutturare sistema di rilevazione tempi
+
+- [ ] indagare su installazione come servizio... è possibile farlo in typescript?

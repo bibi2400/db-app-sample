@@ -131,10 +131,19 @@ export class Injector {
 
         Logger.debug('Follow dependecy for', name);
 
-        const dependecy = Injector.getLoadedInjectable(name) as (typeof args)[number];
+        let dependecy = Injector.getLoadedInjectable(name) as (typeof args)[number];
 
         if (!dependecy) {
-          throw new Error(`Cant find dependency ${name} for ${constructor.name}, ` + 'Did you load it?');
+          Logger.debug('Dependency', name, 'not loaded, resolving recursively');
+
+          if (!Injector.isInjectableConstructor(injector.class)) {
+            throw new Error(
+              `Cant find dependency ${name} for ${constructor.name}, ` +
+              'and it is not an Injectable class'
+            );
+          }
+
+          dependecy = Injector.inject(injector.class as InjectableConstructor);
         }
 
         args.push(dependecy);

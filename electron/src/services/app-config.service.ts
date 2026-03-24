@@ -1,15 +1,16 @@
 import { app } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Injectable } from '../helpers/mini-pie/decorators';
+import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from '../helpers/logger';
+import { ConfigService } from "./config.service";
 
 export interface AppWindowConfig {
   width: number;
   height: number;
 }
 
-export interface AppConfiguration {
+export interface AppInfo {
   name: string;
   slug: string;
   version: string;
@@ -17,7 +18,16 @@ export interface AppConfiguration {
   splashScreen: AppWindowConfig;
 }
 
-const DEFAULT_CONFIG: Omit<AppConfiguration, 'name' | 'slug' | 'version'> = {
+export interface AppSettings {
+  // Configurazioni inter-sessione dell'applicazione
+}
+
+const APP_CONFIG_FILE = 'app-config.json';
+
+const APP_SETTINGS_DEFAULTS: AppSettings = {
+};
+
+const DEFAULT_APP_INFO: Omit<AppInfo, 'name' | 'slug' | 'version'> = {
   mainWindow: {
     width: 1200,
     height: 800,
@@ -29,102 +39,98 @@ const DEFAULT_CONFIG: Omit<AppConfiguration, 'name' | 'slug' | 'version'> = {
 };
 
 /**
- * Service that provides application configuration.
- * Reads from package.json and provides typed access to app settings.
+ * Gestisce le informazioni dell'applicazione (da package.json)
+ * e le configurazioni inter-sessione persistenti (app-config.json).
  */
 @Injectable()
 export class AppConfigService {
-  private config: AppConfiguration | null = null;
+
+  private appInfo: AppInfo | null = null;
   private isDevMode = false;
 
-  /**
-   * Initializes the config service by reading package.json.
-   * Must be called early in the app lifecycle.
-   */
+  constructor(private readonly configService: ConfigService) {
+    this.configService.register<AppSettings>(APP_CONFIG_FILE, APP_SETTINGS_DEFAULTS);
+  }
+
+  // ── App Info (da package.json) ──────────────────────────────
+
   init(options: { isDevMode: boolean }): void {
     this.isDevMode = options.isDevMode;
-    this.loadConfig();
+    this.loadAppInfo();
   }
 
-  /**
-   * Gets the full application configuration.
-   */
-  getConfig(): AppConfiguration {
-    if (!this.config) {
-      this.loadConfig();
+  getInfo(): AppInfo {
+    if (!this.appInfo) {
+      this.loadAppInfo();
     }
-    return this.config!;
+    return this.appInfo!;
   }
 
-  /**
-   * Gets the application name (display name).
-   */
   get name(): string {
-    return this.getConfig().name;
+    return this.getInfo().name;
   }
 
-  /**
-   * Gets the application slug (package name).
-   */
   get slug(): string {
-    return this.getConfig().slug;
+    return this.getInfo().slug;
   }
 
-  /**
-   * Gets the application version.
-   */
   get version(): string {
-    return this.getConfig().version;
+    return this.getInfo().version;
   }
 
-  /**
-   * Gets the main window configuration.
-   */
   get mainWindow(): AppWindowConfig {
-    return this.getConfig().mainWindow;
+    return this.getInfo().mainWindow;
   }
 
-  /**
-   * Gets the splash screen configuration.
-   */
   get splashScreen(): AppWindowConfig {
-    return this.getConfig().splashScreen;
+    return this.getInfo().splashScreen;
   }
 
-  /**
-   * Checks if the app is running in dev mode.
-   */
   get isDev(): boolean {
     return this.isDevMode;
   }
 
-  /**
-   * Gets the app's base path.
-   */
   getAppPath(): string {
     return app.getAppPath();
   }
 
-  /**
-   * Gets the path to the built Angular app.
-   */
   getDistPath(): string {
     return path.join(this.getAppPath(), 'dist', this.slug, 'browser');
   }
 
-  private loadConfig(): void {
+  // ── Settings persistenti (app-config.json) ─────────────────
+
+  get settings(): AppSettings {
+    return this.configService.read<AppSettings>(APP_CONFIG_FILE);
+  }
+
+  set settings(value: AppSettings) {
+    this.configService.write<AppSettings>(APP_CONFIG_FILE, value);
+  }
+
+  updateSettings(partial: Partial<AppSettings>): void {
+    this.configService.update<AppSettings>(APP_CONFIG_FILE, partial);
+  }
+
+  get settingsPath(): string {
+    return this.configService.getFilePath(APP_CONFIG_FILE);
+  }
+
+  // ── Private ─────────────────────────────────────────────────
+
+  private loadAppInfo(): void {
     try {
       const packageJsonPath = path.join(app.getAppPath(), 'package.json');
       const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
-      this.config = {
+      this.appInfo = {
         name: pkg.build?.productName || pkg.name,
         slug: pkg.name,
         version: pkg.version || '0.0.0',
-        ...DEFAULT_CONFIG,
+        ...DEFAULT_APP_INFO,
       };
 
-      Logger.debug('[AppConfig] Configuration loaded:', this.config.name, 'v' + this.config.version);
+      Logger.debug('[AppConfig] Configuration loaded:', this.appInfo.name, 'v' + this.appInfo.version);
     } catch (error) {
       Logger.error('[AppConfig] Failed to load configuration:', error);
       throw error;

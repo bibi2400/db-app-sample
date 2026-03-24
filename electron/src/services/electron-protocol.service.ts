@@ -2,7 +2,6 @@ import { net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable } from '../helpers/mini-pie/decorators';
-import { Injector } from '../helpers/mini-pie/injector';
 import { Logger } from '../helpers/logger';
 import { AppConfigService } from './app-config.service';
 
@@ -17,9 +16,7 @@ import { AppConfigService } from './app-config.service';
  */
 @Injectable()
 export class ElectronProtocolService {
-  private get configService(): AppConfigService {
-    return Injector.inject(AppConfigService);
-  }
+  constructor(private readonly appConfigService: AppConfigService) {}
 
   /**
    * Returns the scheme configuration that must be registered
@@ -67,7 +64,7 @@ export class ElectronProtocolService {
       pathname = 'index.html';
     }
 
-    const distPath = this.configService.getDistPath();
+    const distPath = this.appConfigService.getDistPath();
     let filePath = path.join(distPath, pathname);
 
     // If it's an Angular route (not a physical file), serve index.html

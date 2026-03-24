@@ -2,7 +2,6 @@ import { BrowserWindow, app } from 'electron';
 import * as path from 'path';
 import * as http from 'http';
 import { Injectable } from '../helpers/mini-pie/decorators';
-import { Injector } from '../helpers/mini-pie/injector';
 import { Logger } from '../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
@@ -45,13 +44,10 @@ export class ElectronMainWindowService {
   private loadedUrl: string | null = null;
   private indexFilePath: string | null = null;
 
-  private get windowService(): ElectronWindowService {
-    return Injector.inject(ElectronWindowService);
-  }
-
-  private get splashService(): ElectronSplashWindowService {
-    return Injector.inject(ElectronSplashWindowService);
-  }
+  constructor(
+    private readonly windowService: ElectronWindowService,
+    private readonly splashService: ElectronSplashWindowService,
+  ) {}
 
   /**
    * Creates and initializes the main application window.
