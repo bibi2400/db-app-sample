@@ -4,7 +4,7 @@ import { Injector } from '../helpers/mini-pie/injector';
 import { Constructor } from '../helpers/mini-pie/types';
 import { Logger } from '../helpers/logger';
 import { getControllerMetadata, getRegisteredControllers, isController } from '../decorators/controller.decorator';
-import { getIpcHandlerMetadata, IpcHandlerMetadata } from '../decorators/ipc-handler.decorator';
+import { getIpcHandlerMetadata } from '../decorators/ipc-handler.decorator';
 
 export interface IpcResponse<T = unknown> {
   success: boolean;
@@ -74,11 +74,11 @@ export class ControllerService {
 
     for (const { channel, methodName } of handlerMetadata) {
       const fullChannel = channelPrefix ? `${channelPrefix}:${channel}` : channel;
-      
+
       Logger.debug(`[ControllerService] Registering IPC handler: ${fullChannel} -> ${methodName}`);
 
       const handler = (instance as Record<string, Handler>)[methodName].bind(instance);
-      
+
       ipcMain.handle(fullChannel, (_event, ...args) => {
         return handler(...args);
       });

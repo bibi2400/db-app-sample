@@ -19,11 +19,11 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
 @Component({
   selector: 'app-root',
   imports: [
-    RouterOutlet, 
-    MatSidenavModule, 
-    MatButtonModule, 
-    MatIcon, 
-    MatListModule, 
+    RouterOutlet,
+    MatSidenavModule,
+    MatButtonModule,
+    MatIcon,
+    MatListModule,
     MatToolbar,
     MatTooltipModule,
   ],

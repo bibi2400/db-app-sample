@@ -7,16 +7,16 @@
   - [SETUP] tramite script NSIS richiedere alla prima installazione il path del database in modo da averlo pronto al primo avvio
 
 - [x] migliorare servizi con dependency injection
-  - [ ] mettere la dependency injection automatica sui controller
+  - [x] mettere la dependency injection automatica sui controller
 
 - strutturazione servizi main Electron
   - [x] updater service (gestione updates)
-  - [ ] main render service (gestione main renderer, angular serving)
-  - [ ] splash service (gestione splash screen)
-  - [ ] electron service (?) (registrazione controller, accesso a API sistema operativo)
+  - [x] main render service (gestione main renderer, angular serving)
+  - [x] splash service (gestione splash screen)
+  - [x] controller service (registrazione controller, accesso a API sistema operativo)
   - [ ] App file service (gestione file dentro %appdata%)
     - [ ] config service (gestione configurazione, prevedere file di configurazione?)
-  - [ ] shutdown service (gestione graceful shutdown, vedi sotto)
+  - [x] lifecycle service (gestione graceful shutdown, vedi sotto)
   - [ ] error notifier service (gestione errori nei log, notifiche e quant'altro, vedi sotto)
 
 - strutturazione altre classi
@@ -40,15 +40,15 @@
     - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
     - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
 
-- [ ][ELECTRON] gestione chiusura gentile dell'app
+- [x][ELECTRON] gestione chiusura gentile dell'app
 
-- [ ][ELECTRON] gestione errori
+- [x][ELECTRON] gestione errori
 
 - [ ][ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
 
-- [ ][ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
+- [x][ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
-- [ ][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
+- [x][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
 
 - [ ] rivedere sistema di backup
 

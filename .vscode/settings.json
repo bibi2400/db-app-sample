@@ -1,3 +1,4 @@
 {
-  "chat.disableAIFeatures": false
+  "chat.disableAIFeatures": false,
+  "github.copilot.nextEditSuggestions.extendedRange": true
 }

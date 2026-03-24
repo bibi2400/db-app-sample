@@ -1,255 +1,34 @@
 import "reflect-metadata";
-import { app, BrowserWindow, net, protocol } from 'electron';
-import * as fs from 'fs';
-import * as path from 'path';
-import { AppController, registerAllControllers } from './src/controllers';
-import { AppDataSource } from './src/db/data-source';
+import { app, protocol } from 'electron';
 import { Logger } from "./src/helpers/logger";
 import { Injector } from "./src/helpers/mini-pie/injector";
-import { PushService } from "./src/services/push.service";
 import { SERVICES } from "./src/services";
-import { BackupService } from "./src/services/backup.service";
-import { UpdaterService } from "./src/services/updater.service";
-import { ControllerService } from "./src/services/controller.service";
-import { LifecycleService } from "./src/services/lifecycle.service";
+import { ElectronProtocolService } from "./src/services/electron-protocol.service";
+import { AppBootstrapService } from "./src/services/app-bootstrap.service";
 
-let win: BrowserWindow | null;
-let splash: BrowserWindow | null;
-let loadedUrl: string | null = null; // URL per dev mode
-let indexFilePath: string | null = null; // Path del file index.html per reload in prod
-
+// Determine if running in dev mode
 const args = process.argv.slice(1);
-const serve = args.some(val => val === '--serve');
+const isDevMode = args.some(val => val === '--serve');
 
-const pkg = JSON.parse(fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf-8'));
+// Register protocol schemes as privileged BEFORE app.ready()
+// This enables History API support (pushState, replaceState) for Angular routing
+protocol.registerSchemesAsPrivileged(ElectronProtocolService.getPrivilegedSchemes());
 
-const appConfig = {
-  name: pkg.build?.productName || pkg.name,
-  slug: pkg.name,
-  mainWindow: {
-    width: 1200,
-    height: 800,
-  },
-  splashScreen: {
-    width: 600,
-    height: 400,
-  }
-}
-
-// Registra il protocollo come privilegiato PRIMA di app.ready()
-// Questo permette l'uso della History API (pushState, replaceState)
-protocol.registerSchemesAsPrivileged([
-  {
-    scheme: 'app',
-    privileges: {
-      standard: true,
-      secure: true,
-      supportFetchAPI: true,
-      corsEnabled: true
-    }
-  }
-]);
-
+// Main application entry point
 app.whenReady().then(async () => {
-  // Registra protocollo custom per servire file locali senza hash routing
-  protocol.handle('app', (request) => {
-    // Parse URL correttamente per gestire pathnames
-    const url = new URL(request.url);
-    let pathname = url.pathname;
+  try {
+    // Load all injectable services
+    await Injector.load(SERVICES);
 
-    // Rimuovi lo slash iniziale
-    if (pathname.startsWith('/')) {
-      pathname = pathname.substring(1);
-    }
+    // Run bootstrap sequence
+    const bootstrapService = Injector.inject(AppBootstrapService);
+    await bootstrapService.bootstrap({ isDevMode });
 
-    // Se pathname è vuoto o è solo './', servi index.html
-    if (!pathname || pathname === './' || pathname === '.') {
-      pathname = 'index.html';
-    }
-
-    const basePath = app.getAppPath();
-    const distPath = path.join(basePath, 'dist', appConfig.slug, 'browser');
-    let filePath = path.join(distPath, pathname);
-
-    // Se è una route Angular (non un file fisico), serve index.html
-    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      filePath = path.join(distPath, 'index.html');
-    }
-
-    return net.fetch(filePath);
-  });
-
-  await Injector.load(SERVICES);
-
-  // Inizializza il database DOPO che l'app è pronta
-  await initializeApp();
-
-  createSplashScreen();
-  // Aspetta un attimo per mostrare la splash prima di caricare tutto
-  setTimeout(() => {
-    createWindow();
-  }, 100);
+    Logger.info('✓ Application started successfully');
+  } catch (error) {
+    Logger.error('✗ Application failed to start:', error);
+    app.quit();
+  }
 });
 
 // Window close and app quit events are handled by LifecycleService
-
-//// Functions
-
-async function waitForDevServer(url: string, maxAttempts = 30): Promise<void> {
-  const http = await import('http');
-
-  for (let i = 0; i < maxAttempts; i++) {
-    try {
-      await new Promise<void>((resolve, reject) => {
-        http.get(url, (res) => {
-          if (res.statusCode === 200) {
-            resolve();
-          } else {
-            reject(new Error(`Status: ${res.statusCode}`));
-          }
-        }).on('error', reject);
-      });
-      Logger.info('Dev server is ready!');
-      return;
-    } catch (error) {
-      Logger.info(`Waiting for dev server... (attempt ${i + 1}/${maxAttempts})`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-  }
-  throw new Error('Dev server did not start in time');
-}
-
-function createSplashScreen() {
-  splash = new BrowserWindow({
-    width: appConfig.splashScreen.width,
-    height: appConfig.splashScreen.height,
-    transparent: true,
-    frame: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
-    resizable: false,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true
-    }
-  });
-
-  const splashPath = serve
-    ? path.join(__dirname, '../../src/assets/splash.html')
-    : path.join(process.resourcesPath, 'splash.html');
-
-  splash.loadFile(splashPath).catch((err) => {
-    Logger.error('Failed to load splash:', err);
-  });
-}
-
-async function createWindow() {
-  win = new BrowserWindow({
-    width: appConfig.mainWindow.width,
-    height: appConfig.mainWindow.height,
-    title: appConfig.name,
-    icon: path.join(__dirname, '../../src/assets/icon.png'),
-    show: false, // Non mostrare subito, mostra dopo splash screen
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
-
-  // Registra l'evento PRIMA di caricare la pagina
-  win.once('ready-to-show', () => {
-    Logger.info('✓ Window ready to show');
-    setTimeout(() => {
-      if (splash && !splash.isDestroyed()) {
-        splash.close();
-        splash = null;
-        Logger.info('✓ Splash closed');
-      }
-      if (win && !win.isDestroyed()) {
-        win.show();
-        win.focus();
-        Logger.info('✓ Main window shown');
-      }
-    }, 300);
-  });
-
-  // Blocca completamente TUTTE le navigazioni dopo il caricamento iniziale
-  // Angular gestisce il routing internamente, Electron non deve seguire i cambi di URL
-  let initialLoadComplete = false;
-
-  win.webContents.on('did-finish-load', () => {
-    initialLoadComplete = true;
-  });
-
-  win.webContents.on('will-navigate', (event, url) => {
-    // Dopo il caricamento iniziale, blocca tutte le navigazioni
-    // Angular cambia l'URL ma non deve triggerare una nuova navigazione di Electron
-    if (initialLoadComplete) {
-      event.preventDefault();
-    }
-  });
-
-  if (serve) {
-    await waitForDevServer('http://localhost:4202');
-    loadedUrl = 'http://localhost:4202';
-    win.loadURL(loadedUrl);
-    win.webContents.openDevTools();
-  } else {
-    // In produzione, usa il protocollo custom 'app://' per routing senza hash
-    const appUrl = 'app://./';
-    indexFilePath = appUrl; // Salva per i reload
-    Logger.info('=== LOADING APP ===');
-    Logger.info('Loading URL:', appUrl);
-    await win.loadURL(appUrl);
-    Logger.info('✓ App loaded successfully');
-  }
-
-  Injector.inject(PushService).setWindow(win);
-  Logger.info("✓ PushService window set");
-
-  // Initialize lifecycle service for graceful shutdown
-  const lifecycleService = Injector.inject(LifecycleService);
-  lifecycleService.init(win, { isDevMode: serve });
-  Logger.info("✓ LifecycleService initialized");
-
-  // Set up AppController with window reference for reload functionality
-  const controllerService = Injector.inject(ControllerService);
-  const appController = controllerService.getController<AppController>('AppController');
-  if (appController) {
-    appController.setWindow(win, { serve, loadedUrl: loadedUrl ?? undefined, indexFilePath: indexFilePath ?? undefined });
-    Logger.info("✓ AppController window set");
-  }
-}
-
-async function initializeApp() {
-  try {
-    Logger.info('=== STARTING DATABASE INITIALIZATION ===');
-    Logger.info('Process resource path:', process.resourcesPath);
-    Logger.info('__dirname:', __dirname);
-
-    await AppDataSource.initialize();
-    Logger.info("✓ Connessione a SQLite stabilita.");
-
-    registerAllControllers();
-    Logger.info("✓ Controllers registered");
-
-    const backupService = Injector.inject(BackupService);
-    await backupService.autoBackup();
-    Logger.info("✓ Startup backup completed");
-
-    // Check for updates in background (non-blocking)
-    const updaterService = Injector.inject(UpdaterService);
-    updaterService.checkForUpdates().catch((err: unknown) => {
-      Logger.error('Startup update check failed:', err);
-    });
-    Logger.info("✓ Startup update check initiated");
-
-    Logger.info('=== DATABASE INITIALIZATION COMPLETED ===');
-  } catch (error) {
-    Logger.error("✗ ERRORE inizializzazione database:", error);
-    if (error instanceof Error) {
-      Logger.error("Error stack:", error.stack);
-    }
-  }
-}
