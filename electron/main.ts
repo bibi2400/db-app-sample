@@ -11,6 +11,7 @@ import { SERVICES } from "./src/services";
 import { BackupService } from "./src/services/backup.service";
 import { UpdaterService } from "./src/services/updater.service";
 import { ControllerService } from "./src/services/controller.service";
+import { LifecycleService } from "./src/services/lifecycle.service";
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -90,15 +91,7 @@ app.whenReady().then(async () => {
   }, 100);
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('before-quit', async () => {
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy();
-  }
-});
+// Window close and app quit events are handled by LifecycleService
 
 //// Functions
 
@@ -215,6 +208,11 @@ async function createWindow() {
   Injector.inject(PushService).setWindow(win);
   Logger.info("✓ PushService window set");
 
+  // Initialize lifecycle service for graceful shutdown
+  const lifecycleService = Injector.inject(LifecycleService);
+  lifecycleService.init(win, { isDevMode: serve });
+  Logger.info("✓ LifecycleService initialized");
+
   // Set up AppController with window reference for reload functionality
   const controllerService = Injector.inject(ControllerService);
   const appController = controllerService.getController<AppController>('AppController');
@@ -222,8 +220,6 @@ async function createWindow() {
     appController.setWindow(win, { serve, loadedUrl: loadedUrl ?? undefined, indexFilePath: indexFilePath ?? undefined });
     Logger.info("✓ AppController window set");
   }
-
-  win.on('closed', () => { win = null; });
 }
 
 async function initializeApp() {

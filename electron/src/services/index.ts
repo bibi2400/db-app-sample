@@ -4,6 +4,7 @@ import { DbConfigService } from "./db-config.service";
 import { TestService } from "./test.service";
 import { UpdaterService } from "./updater.service";
 import { ControllerService } from "./controller.service";
+import { LifecycleService } from "./lifecycle.service";
 
 export const SERVICES = [
   DbConfigService,
@@ -12,4 +13,5 @@ export const SERVICES = [
   TestService,
   UpdaterService,
   ControllerService,
+  LifecycleService,
 ]
