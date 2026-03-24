@@ -96,13 +96,21 @@ export class ElectronMainWindowService {
   }
 
   /**
-   * Updates the window title.
+   * Updates the window title and prevents HTML from overriding it.
    */
   setTitle(title: string): void {
     if (this.windowService.isWindowValid(this.win)) {
       this.win.setTitle(title);
+      if (!this.titleLocked) {
+        this.titleLocked = true;
+        this.win.on('page-title-updated', (event) => {
+          event.preventDefault();
+        });
+      }
     }
   }
+
+  private titleLocked = false;
 
   /**
    * Gets information needed for reload functionality.

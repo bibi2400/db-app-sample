@@ -126,7 +126,7 @@ export class AppConfigService {
       const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
 
       this.appInfo = {
-        name: pkg.build?.productName || pkg.name,
+        name: pkg.productName || pkg.build?.productName || pkg.name,
         slug: pkg.name,
         version: pkg.version || '0.0.0',
         ...DEFAULT_APP_INFO,
