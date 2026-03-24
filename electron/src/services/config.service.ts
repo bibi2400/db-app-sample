@@ -1,11 +1,9 @@
-import fs from "fs";
-import path from "path";
-import { app } from "electron";
 import { Injectable } from "../helpers/mini-pie/decorators";
 import { Logger } from "../helpers/logger";
+import { AppDataService } from "./app-data.service";
 
 interface ConfigEntry<T> {
-  filePath: string;
+  fileName: string;
   defaults: T;
   cache: T | null;
 }
@@ -22,6 +20,8 @@ export class ConfigService {
 
   private readonly entries = new Map<string, ConfigEntry<unknown>>();
 
+  constructor(private readonly appData: AppDataService) {}
+
   /**
    * Registra un file di configurazione con i suoi defaults.
    * Da chiamare una sola volta per file, tipicamente nel costruttore del service consumer.
@@ -31,7 +31,7 @@ export class ConfigService {
       return;
     }
     this.entries.set(fileName, {
-      filePath: path.join(app.getPath('userData'), fileName),
+      fileName,
       defaults,
       cache: null,
     });
@@ -48,22 +48,20 @@ export class ConfigService {
       return entry.cache as T;
     }
 
-    if (!fs.existsSync(entry.filePath)) {
+    if (!this.appData.exists(fileName)) {
       this.write(fileName, entry.defaults as T);
       entry.cache = { ...entry.defaults };
       return entry.cache as T;
     }
 
-    try {
-      const content = fs.readFileSync(entry.filePath, 'utf-8');
-      const fileConfig = JSON.parse(content) as Partial<T>;
+    const fileConfig = this.appData.readJson<Partial<T>>(fileName);
+    if (fileConfig) {
       entry.cache = { ...(entry.defaults as object), ...fileConfig } as T;
-      return entry.cache as T;
-    } catch (error) {
-      Logger.error(`[ConfigService] Errore nella lettura di ${entry.filePath}:`, error);
+    } else {
+      Logger.error(`[ConfigService] Errore nella lettura di ${fileName}, uso defaults`);
       entry.cache = { ...entry.defaults };
-      return entry.cache as T;
     }
+    return entry.cache as T;
   }
 
   /**
@@ -71,11 +69,7 @@ export class ConfigService {
    */
   write<T extends object>(fileName: string, config: T): void {
     const entry = this.getEntry<T>(fileName);
-    const dir = path.dirname(entry.filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(entry.filePath, JSON.stringify(config, null, 2));
+    this.appData.writeJson(config, fileName);
     entry.cache = { ...config };
   }
 
@@ -101,7 +95,7 @@ export class ConfigService {
    * Restituisce il percorso assoluto del file di configurazione.
    */
   getFilePath(fileName: string): string {
-    return this.getEntry(fileName).filePath;
+    return this.appData.resolve(fileName);
   }
 
   private getEntry<T>(fileName: string): ConfigEntry<T> {

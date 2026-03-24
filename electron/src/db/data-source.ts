@@ -2,7 +2,6 @@ import { DataSource } from "typeorm";
 import { DbConfigService } from "../services/db-config.service";
 import { Test } from "./entities/test";
 import { Injector } from "../helpers/mini-pie/injector";
-import { ConfigService } from "../services/config.service";
 
 const dbConfigService = Injector.inject(DbConfigService);
 

@@ -1,6 +1,8 @@
 import { PushService } from "./push.service";
 import { BackupService } from "./backup.service";
+import { AppDataService } from "./app-data.service";
 import { ConfigService } from "./config.service";
+import { CacheService } from "./cache.service";
 import { DbConfigService } from "./db-config.service";
 import { TestService } from "./test.service";
 import { UpdaterService } from "./updater.service";
@@ -14,8 +16,9 @@ import { AppBootstrapService } from "./app-bootstrap.service";
 import { AppConfigService } from "./app-config.service";
 
 export const SERVICES = [
-  // Config services (must be first, order matters: ConfigService → consumers)
+  AppDataService,
   ConfigService,
+  CacheService,
   DbConfigService,
   AppConfigService,
 
