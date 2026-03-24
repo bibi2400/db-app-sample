@@ -71,13 +71,16 @@ jobs:
       - name: Setup Python (for node-gyp)
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-
-      - name: Setup MSVC (for native module compilation)
-        uses: ilammy/msvc-dev-cmd@v1
+          python-version: '3.12'
 
       - name: Installazione dipendenze
         run: npm ci
+
+      - name: Rebuild native modules for Electron
+        shell: bash
+        run: npx @electron/rebuild --module-dir . --electron-version $(node -p "require('electron/package.json').version")
+        env:
+          GYP_MSVS_VERSION: '2022'
 
       - name: Genera changelog
         shell: bash
@@ -105,6 +108,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ELECTRON_UPDATE_TOKEN: ${{ secrets.ELECTRON_UPDATE_TOKEN }}
+          ELECTRON_BUILDER_SKIP_NATIVE_REBUILD: 'true'
 
       - name: Creazione GitHub Release e upload asset
         uses: softprops/action-gh-release@v2
