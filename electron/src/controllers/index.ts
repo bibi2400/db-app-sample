@@ -1,17 +1,15 @@
-import { BackupController } from './backup.controller';
-import { TestController } from './test.controller';
-import { UpdateController } from './update.controller';
+// Import controllers to trigger @Controller decorator registration
+import './app.controller';
+import './backup.controller';
+import './test.controller';
+import './update.controller';
+
+import { Injector } from '../helpers/mini-pie/injector';
+import { ControllerService } from '../services/controller.service';
+
+export { AppController } from './app.controller';
 
 export function registerAllControllers(): void {
-  const controllers = [
-    new TestController(),
-    new BackupController(),
-    new UpdateController(),
-  ];
-
-  controllers.forEach(controller => {
-    controller.registerHandlers();
-  });
-
-  console.log(`[IPC] ${controllers.length} controller(s) registered`);
+  const controllerService = Injector.inject(ControllerService);
+  controllerService.registerAllControllers();
 }

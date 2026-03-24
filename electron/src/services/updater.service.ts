@@ -9,6 +9,8 @@ import { PushService } from './push.service';
 import { Logger } from '../helpers/logger';
 import { RUNTIME_CONFIG } from '../config/runtime-config';
 
+const isDev = !app.isPackaged;
+
 export type UpdateStatusType = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
 
 export interface UpdateStatus {
@@ -109,7 +111,13 @@ export class UpdaterService {
   }
 
   async checkForUpdates(): Promise<void> {
-    this.updateStatus({ status: 'checking', error: undefined, availableVersion: undefined });
+    this.updateStatus({ status: 'checking', error: undefined, availableVersion: undefined, releaseNotes: undefined, releaseDate: undefined });
+
+    if (isDev) {
+      await this.mockCheckForUpdates();
+      return;
+    }
+
     await autoUpdater.checkForUpdates();
   }
 
@@ -121,6 +129,12 @@ export class UpdaterService {
     if (this.currentStatus.status !== 'available') {
       throw new Error('No update available to download');
     }
+
+    if (isDev) {
+      await this.mockDownload();
+      return;
+    }
+
     await autoUpdater.downloadUpdate();
   }
 
@@ -128,6 +142,85 @@ export class UpdaterService {
     if (this.currentStatus.status !== 'downloaded') {
       throw new Error('No update downloaded to install');
     }
+
+    if (isDev) {
+      Logger.info('[Updater] Mock install - would restart app in production');
+      this.updateStatus({ status: 'idle' });
+      return;
+    }
+
     autoUpdater.quitAndInstall(true, true);
+  }
+
+  // ==================== DEV MOCK METHODS ====================
+
+  private async mockCheckForUpdates(): Promise<void> {
+    Logger.info('[Updater] Using mock update check (dev mode)');
+
+    // Simula delay di rete
+    await this.delay(1500);
+
+    // Simula un aggiornamento disponibile
+    const mockVersion = this.incrementVersion(this.currentStatus.currentVersion);
+    const mockReleaseNotes = `## Novità in v${mockVersion}
+
+### 🚀 Nuove funzionalità
+- Aggiunta funzione di esportazione dati in formato CSV
+- Nuovo tema scuro per l'interfaccia
+- Migliorata la ricerca con filtri avanzati
+
+### 🐛 Bug fix
+- Risolto problema di sincronizzazione database
+- Corretti errori di visualizzazione su schermi retina
+- Fix crash durante l'importazione di file grandi
+
+### ⚡ Miglioramenti
+- Performance di caricamento migliorate del 40%
+- Ridotto consumo di memoria
+- Ottimizzata gestione connessioni`;
+
+    this.updateStatus({
+      status: 'available',
+      availableVersion: mockVersion,
+      releaseDate: new Date().toISOString(),
+      releaseNotes: mockReleaseNotes,
+    });
+  }
+
+  private async mockDownload(): Promise<void> {
+    Logger.info('[Updater] Using mock download (dev mode)');
+
+    const totalSize = 85 * 1024 * 1024; // 85MB simulati
+    const steps = 20;
+    const stepSize = totalSize / steps;
+
+    for (let i = 1; i <= steps; i++) {
+      await this.delay(300 + Math.random() * 200); // 300-500ms per step
+
+      const transferred = stepSize * i;
+      const percent = (i / steps) * 100;
+      const bytesPerSecond = 2 * 1024 * 1024 + Math.random() * 1024 * 1024; // 2-3 MB/s
+
+      this.updateStatus({ status: 'downloading' });
+      this.downloadProgress.emit({
+        percent,
+        bytesPerSecond,
+        transferred,
+        total: totalSize,
+      });
+    }
+
+    await this.delay(500);
+    this.updateStatus({ status: 'downloaded' });
+  }
+
+  private incrementVersion(version: string): string {
+    const parts = version.split('.').map(Number);
+    parts[2] = (parts[2] || 0) + 1; // Incrementa patch
+    return parts.join('.');
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

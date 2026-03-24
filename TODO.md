@@ -28,10 +28,9 @@
   l'utente deve essere notificato con la presenza di aggiornameti
   l'utente deve essere in grado di decidere quando effettuare gli aggiornamenti
 
-  - [ ] l'utente deve vedere il changelog della nuova versione prima di installarla
+  - [x] l'utente deve vedere il changelog della nuova versione prima di installarla
 
   Dettagli implentativi:
-    - creare diagramma di flusso del processo di aggiornamento
     - [ELECTRON] relegare autoUpdater in un service
     - [ELECTRON] creare dei controller per comunicare gli aggiornamenti col frontend dietro richiesta
     - [ELECTRON] creare sistema per notificare a frontend lo stato del download degli aggiornamenti
@@ -60,6 +59,7 @@
 - [ ] implementare gestione multifinestra
 
 - [ ] gestire DB path a interfaccia
+  - vedi todo su config service
 
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file uploads (tipo file excel e altro)
 

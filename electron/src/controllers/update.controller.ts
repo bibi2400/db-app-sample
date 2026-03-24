@@ -1,14 +1,12 @@
 import { UpdaterService } from '../services/updater.service';
 import { BaseController } from './base.controller';
 import { IpcHandler } from '../decorators/ipc-handler.decorator';
-import { Injector } from '../helpers/mini-pie/injector';
+import { Controller } from '../decorators/controller.decorator';
 
+@Controller({ prefix: 'update' })
 export class UpdateController extends BaseController {
-  private updaterService: UpdaterService;
-
-  constructor() {
-    super('update');
-    this.updaterService = Injector.inject(UpdaterService);
+  constructor(private updaterService: UpdaterService) {
+    super();
   }
 
   @IpcHandler('check')

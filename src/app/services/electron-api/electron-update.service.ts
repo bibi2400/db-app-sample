@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronPushService } from './electron-push.service';
 import { DownloadProgress, UpdateStatus } from '../../types/update';
+import { IpcResponse } from '../../types/global';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ export class ElectronUpdateService {
   /** Trigger a check for updates */
   async checkForUpdates(): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await window.electronAPI.update.check();
+      const response = await window.electronAPI.invoke<IpcResponse<null>>('update:check');
       return { success: response.success, error: response.error };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
@@ -27,7 +28,7 @@ export class ElectronUpdateService {
   /** Get current update status */
   async getStatus(): Promise<{ success: boolean; data?: UpdateStatus; error?: string }> {
     try {
-      const response = await window.electronAPI.update.status();
+      const response = await window.electronAPI.invoke<IpcResponse<UpdateStatus>>('update:status');
       if (response.success && response.data) {
         return { success: true, data: response.data };
       }
@@ -40,7 +41,7 @@ export class ElectronUpdateService {
   /** Start downloading the available update */
   async downloadUpdate(): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await window.electronAPI.update.download();
+      const response = await window.electronAPI.invoke<IpcResponse<null>>('update:download');
       return { success: response.success, error: response.error };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
@@ -50,7 +51,7 @@ export class ElectronUpdateService {
   /** Quit the app and install the downloaded update */
   async installUpdate(): Promise<{ success: boolean; error?: string }> {
     try {
-      const response = await window.electronAPI.update.install();
+      const response = await window.electronAPI.invoke<IpcResponse<null>>('update:install');
       return { success: response.success, error: response.error };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };

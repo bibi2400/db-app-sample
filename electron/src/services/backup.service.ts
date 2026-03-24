@@ -33,8 +33,7 @@ export class BackupService {
 
   private dbPath: string;
 
-  constructor() {
-    const dbConfigService = new DbConfigService();
+  constructor(dbConfigService: DbConfigService) {
     this.dbPath = dbConfigService.readDbConfigFile();
 
     // Determina la cartella backups in base all'ambiente

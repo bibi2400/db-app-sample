@@ -120,7 +120,7 @@ export class BackupManagement {
           );
           // Ricarica l'applicazione per applicare i cambiamenti
           setTimeout(() => {
-            window.electronAPI.app.reload();
+            window.electronAPI.invoke('app:reload');
           }, 2000);
         } else {
           this.snackBar.open(`Errore: ${result.message}`, 'Chiudi', { duration: 5000 });

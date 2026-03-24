@@ -48,6 +48,13 @@ export class UpdateManagement implements OnInit, OnDestroy {
   isDownloaded = computed(() => this.status() === 'downloaded');
   isError = computed(() => this.status() === 'error');
 
+  /** Show changelog when notes exist and update is available/downloading/downloaded */
+  showChangelog = computed(() => {
+    const notes = this.releaseNotes();
+    const status = this.status();
+    return !!notes && (status === 'available' || status === 'downloading' || status === 'downloaded');
+  });
+
   statusLabel = computed(() => {
     switch (this.status()) {
       case 'idle': return 'Nessun controllo effettuato';

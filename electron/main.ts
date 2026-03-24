@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import { app, BrowserWindow, ipcMain, net, protocol } from 'electron';
+import { app, BrowserWindow, net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { registerAllControllers } from './src/controllers';
+import { AppController, registerAllControllers } from './src/controllers';
 import { AppDataSource } from './src/db/data-source';
 import { Logger } from "./src/helpers/logger";
 import { Injector } from "./src/helpers/mini-pie/injector";
@@ -10,6 +10,7 @@ import { PushService } from "./src/services/push.service";
 import { SERVICES } from "./src/services";
 import { BackupService } from "./src/services/backup.service";
 import { UpdaterService } from "./src/services/updater.service";
+import { ControllerService } from "./src/services/controller.service";
 
 let win: BrowserWindow | null;
 let splash: BrowserWindow | null;
@@ -214,6 +215,14 @@ async function createWindow() {
   Injector.inject(PushService).setWindow(win);
   Logger.info("✓ PushService window set");
 
+  // Set up AppController with window reference for reload functionality
+  const controllerService = Injector.inject(ControllerService);
+  const appController = controllerService.getController<AppController>('AppController');
+  if (appController) {
+    appController.setWindow(win, { serve, loadedUrl: loadedUrl ?? undefined, indexFilePath: indexFilePath ?? undefined });
+    Logger.info("✓ AppController window set");
+  }
+
   win.on('closed', () => { win = null; });
 }
 
@@ -228,21 +237,6 @@ async function initializeApp() {
 
     registerAllControllers();
     Logger.info("✓ Controllers registered");
-
-    // TODO: make this a controller
-    // Registra l'handler per il reload dell'app
-    ipcMain.handle('app:reload', async () => {
-      if (win && !win.isDestroyed()) {
-        Logger.info('Reloading app...');
-        if (serve && loadedUrl) {
-          win.reload();
-        } else if (indexFilePath) {
-          Logger.info('Reloading from:', indexFilePath);
-          await win.loadURL(indexFilePath);
-        }
-      }
-    });
-    Logger.info("✓ App handlers registered");
 
     const backupService = Injector.inject(BackupService);
     await backupService.autoBackup();

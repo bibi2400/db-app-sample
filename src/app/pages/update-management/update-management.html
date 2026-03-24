@@ -36,12 +36,12 @@
     </mat-card-content>
   </mat-card>
 
-  @if (releaseNotes()) {
+  @if (showChangelog()) {
     <mat-card class="changelog-card">
       <mat-card-content>
         <div class="changelog-header">
           <mat-icon>description</mat-icon>
-          <span>Changelog</span>
+          <span>Changelog v{{ availableVersion() }}</span>
         </div>
         <div class="changelog-content">{{ releaseNotes() }}</div>
       </mat-card-content>
