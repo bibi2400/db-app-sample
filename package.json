@@ -45,16 +45,16 @@
     ],
     "extraResources": [
       {
-        "from": "database.sqlite",
-        "to": "database.sqlite"
-      },
-      {
         "from": "src/assets/splash.html",
         "to": "splash.html"
       },
       {
         "from": "src/assets/splash.png",
         "to": "splash.png"
+      },
+      {
+        "from": "changelog.txt",
+        "to": "changelog.txt"
       }
     ],
     "extraFiles": [],
@@ -66,6 +66,9 @@
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.png"
+    },
+    "releaseInfo": {
+      "releaseNotesFile": "changelog.txt"
     }
   },
   "publish": {

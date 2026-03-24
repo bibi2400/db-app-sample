@@ -102,7 +102,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ELECTRON_UPDATE_TOKEN: ${{ secrets.ELECTRON_UPDATE_TOKEN }}
-          ELECTRON_BUILDER_SKIP_NATIVE_REBUILD: 'true'
 
       - name: Creazione GitHub Release e upload asset
         uses: softprops/action-gh-release@v2
