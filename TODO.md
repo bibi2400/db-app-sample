@@ -40,15 +40,15 @@
     - [ANGULAR] implementare bottone scarica ora quando un aggiornamento è rilevato
     - [ANGULAR] implementare bottone aggiorna ora quando un aggiornamento è scaricato
 
-- [x][ELECTRON] gestione chiusura gentile dell'app
+- [x] [ELECTRON] gestione chiusura gentile dell'app
 
-- [x][ELECTRON] gestione errori
+- [x] [ELECTRON] gestione errori
 
-- [ ][ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
+- [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
 
-- [x][ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
+- [x] [ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
-- [x][ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
+- [x] [ELECTRON] rifare preload in modo che sia più generico e non ci sia da modificarlo per ogni contoller
 
 - [ ] rivedere sistema di backup
 
@@ -69,4 +69,4 @@
 
 - [ ] strutturare sistema di schedulazione task automatici
 
-- [ ] strutturare sistema di rilevazione tempi
+- [x] strutturare sistema di rilevazione tempi

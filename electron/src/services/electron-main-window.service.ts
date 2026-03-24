@@ -71,7 +71,7 @@ export class ElectronMainWindowService {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        // preload.js is at dist-electron/preload.js, service is at dist-electron/src/services/
+        // preload.js is at dist-electron/electron/preload.js, service is at dist-electron/electron/src/services/
         preload: path.join(__dirname, '../../preload.js'),
       },
     });

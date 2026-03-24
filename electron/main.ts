@@ -1,10 +1,10 @@
-import "reflect-metadata";
 import { app, protocol } from 'electron';
+import "reflect-metadata";
 import { Logger } from "./src/helpers/logger";
 import { Injector } from "./src/helpers/mini-pie/injector";
 import { SERVICES } from "./src/services";
-import { ElectronProtocolService } from "./src/services/electron-protocol.service";
 import { AppBootstrapService } from "./src/services/app-bootstrap.service";
+import { ElectronProtocolService } from "./src/services/electron-protocol.service";
 
 // Determine if running in dev mode
 const args = process.argv.slice(1);
@@ -19,6 +19,12 @@ app.whenReady().then(async () => {
   try {
     // Load all injectable services
     await Injector.load(SERVICES);
+
+    if (isDevMode) {
+      Logger.info("App is in dev mode")
+    } else {
+      Logger.info("App is in prod mode", args)
+    }
 
     // Run bootstrap sequence
     const bootstrapService = Injector.inject(AppBootstrapService);

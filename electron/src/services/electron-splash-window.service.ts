@@ -17,8 +17,8 @@ export interface SplashConfig {
 const DEFAULT_SPLASH_CONFIG: Required<SplashConfig> = {
   width: 600,
   height: 400,
-  // Path relative to dist-electron/src/services/ -> goes to src/assets/
-  devPath: '../../../../src/assets/splash.html',
+  // Path relative to dist-electron/electron/src/services/ -> goes to src/assets/
+  devPath: '../../../../../src/assets/splash.html',
   prodPath: 'splash.html',
 };
 

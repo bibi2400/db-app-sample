@@ -1,7 +1,7 @@
 {
   "name": "db-app-sample",
   "version": "1.2.0",
-  "main": "electron/dist-electron/main.js",
+  "main": "electron/dist-electron/electron/main.js",
   "author": "bibi",
   "scripts": {
     "ng": "ng",

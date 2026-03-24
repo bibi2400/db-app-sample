@@ -2,7 +2,11 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist-electron",
-    "rootDir": "./",
+    "rootDir": "..",
+    "baseUrl": "..",
+    "paths": {
+      "@shared/*": ["shared/*"]
+    },
     "module": "commonjs",
     "target": "es2020",
     "types": [
@@ -13,6 +17,7 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "./**/*.ts"
-, "src/services/cal-journal.servicets"  ]
+    "./**/*.ts",
+    "../shared/**/*.ts"
+  ]
 }
