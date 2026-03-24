@@ -22,7 +22,7 @@ export class UpdateController extends BaseController {
   @IpcHandler('status')
   async getStatus() {
     try {
-      const status = this.updaterService.getStatus();
+      const status = await this.updaterService.getStatus();
       return this.success(status);
     } catch (error) {
       return this.error(error);
@@ -48,4 +48,5 @@ export class UpdateController extends BaseController {
       return this.error(error);
     }
   }
+
 }

@@ -9,7 +9,7 @@ import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ElectronUpdateService } from '../../services/electron-api/electron-update.service';
 import { NavigationService } from '../../services/navigation.service';
-import { DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
+import { ChangelogEntry, DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
 import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 
 @Component({
@@ -41,6 +41,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
   errorMessage = signal<string | undefined>(undefined);
   downloadPercent = signal(0);
   isPreparingDownload = signal(false);
+  changelogs = signal<ChangelogEntry[]>([]);
 
   hasUpdate = computed(() => this.status() === 'available');
   isChecking = computed(() => this.status() === 'checking');
@@ -48,12 +49,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
   isDownloaded = computed(() => this.status() === 'downloaded');
   isError = computed(() => this.status() === 'error');
 
-  /** Show changelog when notes exist and update is available/downloading/downloaded */
-  showChangelog = computed(() => {
-    const notes = this.releaseNotes();
-    const status = this.status();
-    return !!notes && (status === 'available' || status === 'downloading' || status === 'downloaded');
-  });
+  showChangelog = computed(() => this.changelogs().length > 0);
 
   statusLabel = computed(() => {
     switch (this.status()) {
@@ -113,6 +109,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
     if (status.status === 'downloading' || status.status === 'error') {
       this.isPreparingDownload.set(false);
     }
+    this.changelogs.set(status.changelogs ?? []);
   }
 
   private applyProgress(progress: DownloadProgress): void {

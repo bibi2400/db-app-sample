@@ -55,19 +55,37 @@
     }
   }
 
+  .changelog-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 500;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+
   .changelog-card {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 
-    .changelog-header {
+    .changelog-entry-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: 16px;
-      font-weight: 500;
+      margin-bottom: 8px;
 
-      mat-icon {
-        color: #1976d2;
+      .changelog-version {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1565c0;
+      }
+
+      .changelog-date {
+        font-size: 12px;
+        color: #666;
       }
     }
 
@@ -76,11 +94,6 @@
       font-size: 14px;
       line-height: 1.6;
       color: #444;
-      padding: 12px 16px;
-      background: #f5f5f5;
-      border-radius: 4px;
-      max-height: 300px;
-      overflow-y: auto;
     }
   }
 

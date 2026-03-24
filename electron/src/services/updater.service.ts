@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { app } from 'electron';
+import { app, net } from 'electron';
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import { Injectable } from '../helpers/mini-pie/decorators';
 import { PushChannel, PushEvent } from '../decorators/push-channel.decorator';
@@ -18,14 +18,22 @@ export interface UpdateStatus {
   availableVersion?: string;
   releaseDate?: string;
   releaseNotes?: string;
+  changelogs?: ChangelogEntry[];
   error?: string;
 }
+
 
 export interface DownloadProgress {
   percent: number;
   bytesPerSecond: number;
   transferred: number;
   total: number;
+}
+
+export interface ChangelogEntry {
+  version: string;
+  date: string;
+  body: string;
 }
 
 @PushChannel('update')
@@ -110,9 +118,20 @@ export class UpdaterService {
     return notes.map(n => n.note).filter(Boolean).join('\n\n') || undefined;
   }
 
-  private updateStatus(partial: Partial<UpdateStatus>): void {
+  private async updateStatus(partial: Partial<UpdateStatus>): Promise<void> {
     this.currentStatus = { ...this.currentStatus, ...partial };
-    this.statusChanged.emit(this.currentStatus);
+
+    const status = { ...this.currentStatus };
+    if (status.status === 'available' || status.status === 'downloading' || status.status === 'downloaded') {
+      try {
+        const all = await this.getChangelogs();
+        status.changelogs = all.filter(e => this.isNewerVersion(e.version, status.currentVersion));
+      } catch {
+        status.changelogs = [];
+      }
+    }
+
+    this.statusChanged.emit(status);
     Logger.info('[Updater] Status:', this.currentStatus.status);
   }
 
@@ -127,8 +146,29 @@ export class UpdaterService {
     await autoUpdater.checkForUpdates();
   }
 
-  getStatus(): UpdateStatus {
-    return { ...this.currentStatus };
+  async getStatus(): Promise<UpdateStatus> {
+    const status = { ...this.currentStatus };
+    if (status.status === 'available' || status.status === 'downloading' || status.status === 'downloaded') {
+      try {
+        const all = await this.getChangelogs();
+        status.changelogs = all.filter(e => this.isNewerVersion(e.version, status.currentVersion));
+      } catch {
+        status.changelogs = [];
+      }
+    }
+    return status;
+  }
+
+  private isNewerVersion(a: string, b: string): boolean {
+    const pa = a.split('.').map(Number);
+    const pb = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const na = pa[i] ?? 0;
+      const nb = pb[i] ?? 0;
+      if (na > nb) return true;
+      if (na < nb) return false;
+    }
+    return false;
   }
 
   async download(): Promise<void> {
@@ -158,6 +198,52 @@ export class UpdaterService {
     autoUpdater.quitAndInstall(true, true);
   }
 
+  async getChangelogs(): Promise<ChangelogEntry[]> {
+    if (this.devModeService.isDev) {
+      return this.mockGetChangelogs();
+    }
+
+    try {
+      const { owner, repo } = this.feedConfig;
+      const url = `https://api.github.com/repos/${owner}/${repo}/releases`;
+      const headers: Record<string, string> = {
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'electron-updater',
+      };
+      if (RUNTIME_CONFIG.GH_TOKEN) {
+        headers['Authorization'] = `token ${RUNTIME_CONFIG.GH_TOKEN}`;
+      }
+
+      const body = await new Promise<string>((resolve, reject) => {
+        const request = net.request({ url, method: 'GET' });
+        for (const [key, value] of Object.entries(headers)) {
+          request.setHeader(key, value);
+        }
+        let data = '';
+        request.on('response', (response) => {
+          response.on('data', (chunk) => { data += chunk.toString(); });
+          response.on('end', () => resolve(data));
+          response.on('error', reject);
+        });
+        request.on('error', reject);
+        request.end();
+      });
+
+      const releases = JSON.parse(body) as Array<{ tag_name: string; published_at: string; body: string; draft: boolean; prerelease: boolean }>;
+
+      return releases
+        .filter(r => !r.draft)
+        .map(r => ({
+          version: r.tag_name.replace(/^v/, ''),
+          date: r.published_at,
+          body: r.body ?? '',
+        }));
+    } catch (error) {
+      Logger.error('[Updater] Failed to fetch changelogs:', error);
+      return [];
+    }
+  }
+
   // ==================== DEV MOCK METHODS ====================
 
   private async mockCheckForUpdates(): Promise<void> {
@@ -167,7 +253,7 @@ export class UpdaterService {
     await this.delay(1500);
 
     // Simula un aggiornamento disponibile
-    const mockVersion = this.incrementVersion(this.currentStatus.currentVersion);
+    const mockVersion = this.incrementVersion(this.incrementVersion(this.currentStatus.currentVersion));
     const mockReleaseNotes = `## Novità in v${mockVersion}
 
 ### 🚀 Nuove funzionalità
@@ -220,9 +306,44 @@ export class UpdaterService {
     this.updateStatus({ status: 'downloaded' });
   }
 
+  private mockGetChangelogs(): ChangelogEntry[] {
+    const current = this.currentStatus.currentVersion;
+    const next = this.incrementVersion(current);
+    const next2 = this.incrementVersion(next);
+    const now = new Date();
+    return [
+      {
+        version: next2,
+        date: now.toISOString(),
+        body: `## Novità in v${next2}\n\n### 🚀 Nuove funzionalità\n- Aggiunta funzione di esportazione dati in formato CSV\n- Nuovo tema scuro per l'interfaccia\n- Migliorata la ricerca con filtri avanzati\n\n### 🐛 Bug fix\n- Risolto problema di sincronizzazione database\n- Corretti errori di visualizzazione su schermi retina\n\n### ⚡ Miglioramenti\n- Performance di caricamento migliorate del 40%\n- Ridotto consumo di memoria`,
+      },
+      {
+        version: next,
+        date: new Date(now.getTime() - 15 * 86400000).toISOString(),
+        body: `## Novità in v${next}\n\n### 🚀 Nuove funzionalità\n- Supporto notifiche push in tempo reale\n- Nuova pagina di gestione aggiornamenti\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete\n- Fix nella paginazione delle tabelle`,
+      },
+      {
+        version: current,
+        date: new Date(now.getTime() - 30 * 86400000).toISOString(),
+        body: `## Novità in v${current}\n\n### 🚀 Nuove funzionalità\n- Aggiunta gestione backup automatici\n- Nuovo pannello notifiche\n\n### 🐛 Bug fix\n- Corretta gestione errori di rete\n- Fix nella paginazione delle tabelle`,
+      },
+      {
+        version: this.decrementVersion(current, 1),
+        date: new Date(now.getTime() - 75 * 86400000).toISOString(),
+        body: `## Novità in v${this.decrementVersion(current, 1)}\n\n### 🚀 Nuove funzionalità\n- Prima release con supporto aggiornamenti automatici\n- Dashboard iniziale\n\n### 🐛 Bug fix\n- Varie correzioni di stabilità`,
+      },
+    ];
+  }
+
   private incrementVersion(version: string): string {
     const parts = version.split('.').map(Number);
     parts[2] = (parts[2] || 0) + 1; // Incrementa patch
+    return parts.join('.');
+  }
+
+  private decrementVersion(version: string, step: number): string {
+    const parts = version.split('.').map(Number);
+    parts[2] = Math.max(0, (parts[2] || 0) - step);
     return parts.join('.');
   }
 

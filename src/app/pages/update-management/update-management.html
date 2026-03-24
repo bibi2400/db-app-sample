@@ -37,15 +37,21 @@
   </mat-card>
 
   @if (showChangelog()) {
-    <mat-card class="changelog-card">
-      <mat-card-content>
-        <div class="changelog-header">
-          <mat-icon>description</mat-icon>
-          <span>Changelog v{{ availableVersion() }}</span>
-        </div>
-        <div class="changelog-content">{{ releaseNotes() }}</div>
-      </mat-card-content>
-    </mat-card>
+    <div class="changelog-header">
+      <mat-icon>description</mat-icon>
+      <span>Changelog</span>
+    </div>
+    @for (entry of changelogs(); track entry.version) {
+      <mat-card class="changelog-card">
+        <mat-card-content>
+          <div class="changelog-entry-header">
+            <span class="changelog-version">v{{ entry.version }}</span>
+            <span class="changelog-date">{{ entry.date | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="changelog-content">{{ entry.body }}</div>
+        </mat-card-content>
+      </mat-card>
+    }
   }
 
   <mat-card class="status-card">

@@ -57,4 +57,5 @@ export class ElectronUpdateService {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
     }
   }
+
 }

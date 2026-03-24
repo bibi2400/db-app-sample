@@ -6,6 +6,7 @@ export interface UpdateStatus {
   availableVersion?: string;
   releaseDate?: string;
   releaseNotes?: string;
+  changelogs?: ChangelogEntry[];
   error?: string;
 }
 
@@ -14,4 +15,10 @@ export interface DownloadProgress {
   bytesPerSecond: number;
   transferred: number;
   total: number;
+}
+
+export interface ChangelogEntry {
+  version: string;
+  date: string;
+  body: string;
 }
