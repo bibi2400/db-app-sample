@@ -1,6 +1,6 @@
 {
   "name": "db-app-sample",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "main": "electron/dist-electron/electron/main.js",
   "author": "bibi",
   "scripts": {
@@ -22,14 +22,26 @@
     "appId": "com.db-app-sample.app",
     "productName": "Db App Sample",
     "artifactName": "Db-App-Sample-Setup-${version}.${ext}",
-    "asar": false,
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
     "directories": {
       "output": "release"
     },
     "files": [
       "dist/**/*",
       "electron/dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hmap,jsbundle,jsdt,sber,nycrc,nyc_output,mk,bcmap,tsbuildinfo,map}",
+      "!**/node_modules/better-sqlite3/deps/**",
+      "!**/node_modules/better-sqlite3/build-tmp-napi-v6/**",
+      "!**/node_modules/typeorm/browser/**",
+      "!**/node_modules/typeorm/{docs,sample,test}/**"
     ],
     "extraResources": [
       {
@@ -65,34 +77,34 @@
   "private": true,
   "packageManager": "npm@10.9.0",
   "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.8.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.0.2",
     "@angular/cdk": "^21.0.2",
+    "@angular/cli": "^21.0.2",
     "@angular/common": "^21.0.0",
     "@angular/compiler": "^21.0.0",
+    "@angular/compiler-cli": "^21.0.0",
     "@angular/core": "^21.0.0",
     "@angular/forms": "^21.0.0",
     "@angular/material": "^21.0.2",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
+    "@types/better-sqlite3": "^7.6.13",
     "ag-grid-angular": "^35.0.0",
     "ag-grid-community": "^35.0.0",
-    "electron-log": "^5.4.3",
-    "electron-store": "^11.0.2",
-    "electron-updater": "^6.8.3",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "~7.8.0",
-    "sqlite3": "^5.1.7",
-    "tslib": "^2.3.0",
-    "typeorm": "^0.3.28"
-  },
-  "devDependencies": {
-    "@angular/build": "^21.0.2",
-    "@angular/cli": "^21.0.2",
-    "@angular/compiler-cli": "^21.0.0",
     "concurrently": "^9.2.1",
     "electron": "^39.2.6",
     "electron-builder": "^26.0.12",
     "jsdom": "^27.1.0",
+    "rxjs": "~7.8.0",
     "tsc-watch": "^7.2.0",
+    "tslib": "^2.3.0",
     "tsx": "^4.21.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8",
