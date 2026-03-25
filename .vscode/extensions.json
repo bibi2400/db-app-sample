@@ -2,6 +2,8 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=827846
   "recommendations": [
     "angular.ng-template",
-    "github.vscode-github-actions"
+    "github.vscode-github-actions",
+    "github.copilot-chat",
+    "esbenp.prettier-vscode"
   ]
 }
