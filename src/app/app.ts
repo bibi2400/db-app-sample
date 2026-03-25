@@ -5,8 +5,10 @@ import { Subscription } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 import { ElectronUpdateService } from './services/electron-api/electron-update.service';
 import { ShortcutService } from './services/shortcut.service';
+import { CommandPaletteService } from './services/command-palette.service';
 import { UpdateStatusType } from './types/update';
 import { NotificationPanel } from './components/notification-panel/notification-panel';
+import { CommandPalette } from './components/command-palette/command-palette';
 import { Sidebar } from './components/sidebar/sidebar';
 import { Toolbar } from './components/toolbar/toolbar';
 import "./types/global";
@@ -19,6 +21,7 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
     RouterOutlet,
     MatSidenavModule,
     NotificationPanel,
+    CommandPalette,
     Sidebar,
     Toolbar,
   ],
@@ -34,6 +37,7 @@ export class App implements OnInit, OnDestroy {
   private updateService = inject(ElectronUpdateService);
   private navigationService = inject(NavigationService);
   private shortcutService = inject(ShortcutService);
+  private commandPaletteService = inject(CommandPaletteService);
   private router = inject(Router);
   private statusSub?: Subscription;
   private shortcutSubs: Subscription[] = [];
@@ -59,7 +63,12 @@ export class App implements OnInit, OnDestroy {
       this.shortcutService.on('nav.menu').subscribe(() => {
         this.opened.update(v => !v);
       }),
+      this.shortcutService.on('app.commandPalette').subscribe(() => {
+        this.commandPaletteService.toggle();
+      }),
     );
+
+    this.registerCommands();
 
     window.electronAPI.invoke<{ success: boolean; data?: { name: string; version: string } }>('app:info').then(response => {
       if (response.success && response.data) {
@@ -71,5 +80,75 @@ export class App implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
     this.shortcutSubs.forEach(s => s.unsubscribe());
+  }
+
+  private registerCommands(): void {
+    const fmt = (id: string) => {
+      const b = this.shortcutService.getBinding(id);
+      return b ? this.shortcutService.formatBinding(b) : undefined;
+    };
+
+    this.commandPaletteService.registerMany([
+      {
+        id: 'nav.dashboard',
+        label: 'Vai alla Dashboard',
+        category: 'Navigazione',
+        icon: 'dashboard',
+        shortcut: fmt('nav.dashboard'),
+        action: () => this.router.navigate(['/dashboard']),
+      },
+      {
+        id: 'nav.notifications',
+        label: 'Vai alle Notifiche',
+        category: 'Navigazione',
+        icon: 'notifications',
+        shortcut: fmt('nav.notifications'),
+        action: () => this.router.navigate(['/notifications']),
+      },
+      {
+        id: 'nav.backup',
+        label: 'Vai alla gestione Backup',
+        category: 'Navigazione',
+        icon: 'backup',
+        shortcut: fmt('nav.backup'),
+        action: () => this.router.navigate(['/backup']),
+      },
+      {
+        id: 'nav.updates',
+        label: 'Vai agli Aggiornamenti',
+        category: 'Navigazione',
+        icon: 'system_update',
+        shortcut: fmt('nav.updates'),
+        action: () => this.router.navigate(['/updates']),
+      },
+      {
+        id: 'nav.shortcuts',
+        label: 'Vai alle Scorciatoie',
+        category: 'Navigazione',
+        icon: 'keyboard',
+        shortcut: fmt('nav.shortcuts'),
+        action: () => this.router.navigate(['/shortcuts']),
+      },
+      {
+        id: 'nav.menu',
+        label: 'Apri/Chiudi Menu laterale',
+        category: 'Navigazione',
+        icon: 'menu',
+        shortcut: fmt('nav.menu'),
+        action: () => this.opened.update(v => !v),
+      },
+      {
+        id: 'app.save',
+        label: 'Salva',
+        description: 'Esegui l\'azione di salvataggio corrente',
+        category: 'Azioni',
+        icon: 'save',
+        shortcut: fmt('app.save'),
+        action: () => {
+          const saveFn = this.navigationService.onSaveAction();
+          if (saveFn) saveFn();
+        },
+      },
+    ]);
   }
 }

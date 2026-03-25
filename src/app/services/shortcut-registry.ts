@@ -50,4 +50,10 @@ export const SHORTCUT_REGISTRY: Record<string, ShortcutEntry> = {
     category: 'Azioni',
     defaultBinding: { key: 's', ctrl: true },
   },
+  'app.commandPalette': {
+    name: 'Palette comandi',
+    description: 'Apri la palette comandi',
+    category: 'Azioni',
+    defaultBinding: { key: 'p', ctrl: true },
+  },
 };

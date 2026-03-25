@@ -1,0 +1,50 @@
+@if (isOpen()) {
+  <div class="command-palette-backdrop" (click)="onBackdropClick($event)">
+    <div class="command-palette">
+      <div class="command-palette-header">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input
+          #searchInput
+          type="text"
+          class="command-palette-input"
+          placeholder="Cerca un comando..."
+          [ngModel]="query()"
+          (ngModelChange)="onQueryChange($event)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="command-palette-list">
+        @for (group of groupedItems(); track group.category) {
+          <div class="command-palette-group">
+            <div class="command-palette-group-label">{{ group.category }}</div>
+            @for (item of group.items; track item.id) {
+              <div
+                class="command-palette-item"
+                [class.selected]="getFlatIndex(item) === selectedIndex()"
+                (click)="executeItem(item)"
+                (mouseenter)="selectedIndex.set(getFlatIndex(item))"
+              >
+                @if (item.icon) {
+                  <mat-icon class="item-icon">{{ item.icon }}</mat-icon>
+                }
+                <div class="item-content">
+                  <span class="item-label">{{ item.label }}</span>
+                  @if (item.description) {
+                    <span class="item-description">{{ item.description }}</span>
+                  }
+                </div>
+                @if (item.shortcut) {
+                  <kbd class="item-shortcut">{{ item.shortcut }}</kbd>
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="command-palette-empty">Nessun comando trovato</div>
+        }
+      </div>
+    </div>
+  </div>
+}
