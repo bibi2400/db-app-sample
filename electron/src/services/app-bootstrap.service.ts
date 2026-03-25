@@ -138,6 +138,7 @@ export class AppBootstrapService {
       height: config.splashScreen.height,
     });
     Chronomancer.stop('splash-window', 'bootstrap');
+    this.splashService.setVersion(config.version);
 
     // Small delay to ensure splash is visible
     await new Promise(resolve => setTimeout(resolve, 100));

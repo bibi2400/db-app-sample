@@ -121,4 +121,15 @@ export class ElectronSplashWindowService {
       this.splash.show();
     }
   }
+
+  /**
+   * Sets the version text displayed on the splash screen.
+   */
+  setVersion(version: string): void {
+    if (this.windowService.isWindowValid(this.splash)) {
+      this.splash.webContents.executeJavaScript(
+        `document.querySelector('.version').textContent = 'v${version.replace(/'/g, "\\'")}'`
+      ).catch(() => {});
+    }
+  }
 }

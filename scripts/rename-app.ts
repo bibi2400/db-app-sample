@@ -21,7 +21,11 @@ function toArtifactName(displayName: string): string {
 function replaceInFile(relativePath: string, replacements: [string | RegExp, string][]): void {
   let content = readFile(relativePath);
   for (const [search, replace] of replacements) {
-    content = content.replace(search, replace);
+    if (typeof search === 'string') {
+      content = content.replaceAll(search, replace);
+    } else {
+      content = content.replace(search, replace);
+    }
   }
   writeFile(relativePath, content);
 }
@@ -46,7 +50,7 @@ function main() {
   // Read current values from package.json to use as search targets
   const pkg = JSON.parse(readFile('package.json'));
   const oldSlug = pkg.name as string;
-  const oldProductName = pkg.build?.productName as string;
+  const oldProductName = (pkg.productName || pkg.build?.productName) as string;
   const oldArtifactName = pkg.build?.artifactName as string;
   const oldAppId = pkg.build?.appId as string;
   const oldRepo = pkg.publish?.repo as string;
