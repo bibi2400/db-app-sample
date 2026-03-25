@@ -4,6 +4,7 @@
     "angular.ng-template",
     "github.vscode-github-actions",
     "github.copilot-chat",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "igtl314.workflow-heartbeat"
   ]
 }
