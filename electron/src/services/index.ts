@@ -8,8 +8,8 @@ import { DbConfigService } from "./db-config.service";
 import { TestService } from "./test.service";
 import { UpdaterService } from "./updater.service";
 import { ControllerService } from "./controller.service";
+import { ContextMenuService } from "./context-menu.service";
 import { LifecycleService } from "./lifecycle.service";
-import { ElectronProtocolService } from "./electron-protocol.service";
 import { ElectronWindowService } from "./electron-window.service";
 import { ElectronSplashWindowService } from "./electron-splash-window.service";
 import { ElectronMainWindowService } from "./electron-main-window.service";
@@ -34,10 +34,8 @@ export const SERVICES = [
   TestService,
   UpdaterService,
   ControllerService,
+  ContextMenuService,
   LifecycleService,
-
-  // Protocol service
-  ElectronProtocolService,
 
   // Window services (order matters: base service first)
   ElectronWindowService,

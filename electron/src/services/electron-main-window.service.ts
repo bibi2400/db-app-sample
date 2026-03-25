@@ -1,6 +1,7 @@
 import { BrowserWindow, app } from 'electron';
 import * as path from 'path';
 import * as http from 'http';
+import windowStateKeeper from 'electron-window-state';
 import { Injectable } from '../helpers/mini-pie/decorators';
 import { Logger } from '../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
@@ -27,7 +28,7 @@ const DEFAULT_MAIN_WINDOW_CONFIG: Required<MainWindowConfig> = {
   // Path relative to dist-electron/src/services/ -> goes to src/assets/
   icon: '../../../../src/assets/icon.png',
   devServerUrl: 'http://localhost:4202',
-  prodAppUrl: 'app://./',
+  prodAppUrl: 'app://-',
   devServerMaxAttempts: 30,
 };
 
@@ -57,10 +58,18 @@ export class ElectronMainWindowService {
   async create(config: MainWindowConfig = {}): Promise<BrowserWindow> {
     const mergedConfig = { ...DEFAULT_MAIN_WINDOW_CONFIG, ...config };
 
+    // Restore window position and size from previous session
+    const windowState = windowStateKeeper({
+      defaultWidth: mergedConfig.width,
+      defaultHeight: mergedConfig.height,
+    });
+
     this.win = this.windowService.createWindow({
       id: MAIN_WINDOW_ID,
-      width: mergedConfig.width,
-      height: mergedConfig.height,
+      x: windowState.x,
+      y: windowState.y,
+      width: windowState.width,
+      height: windowState.height,
       title: mergedConfig.title,
       icon: path.join(__dirname, mergedConfig.icon),
       show: false, // Don't show immediately, wait for splash transition
@@ -71,6 +80,9 @@ export class ElectronMainWindowService {
         preload: path.join(__dirname, '../../preload.js'),
       },
     });
+
+    // Track window position, size, and maximize/fullscreen state
+    windowState.manage(this.win);
 
     this.setupNavigationBlocking();
     this.setupReadyToShowHandler();

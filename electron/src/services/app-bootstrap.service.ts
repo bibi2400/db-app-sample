@@ -4,7 +4,6 @@ import { Logger } from '../helpers/logger';
 import { AppDataSource } from '../db/data-source';
 import { AppController, registerAllControllers } from '../controllers';
 import { AppConfigService } from './app-config.service';
-import { ElectronProtocolService } from './electron-protocol.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
 import { ElectronMainWindowService } from './electron-main-window.service';
 import { PushService } from './push.service';
@@ -14,6 +13,7 @@ import { BackupService } from './backup.service';
 import { UpdaterService } from './updater.service';
 import { DevModeService } from './dev-mode.service';
 import { ErrorNotificationService } from './error-notification.service';
+import { ContextMenuService } from './context-menu.service';
 import { initChronomancerForElectron, Chronomancer } from '../helpers/chronomancer.adapter';
 
 /**
@@ -26,7 +26,6 @@ export class AppBootstrapService {
 
   constructor(
     private readonly appConfigService: AppConfigService,
-    private readonly protocolService: ElectronProtocolService,
     private readonly splashService: ElectronSplashWindowService,
     private readonly mainWindowService: ElectronMainWindowService,
     private readonly pushService: PushService,
@@ -36,6 +35,7 @@ export class AppBootstrapService {
     private readonly updaterService: UpdaterService,
     private readonly devModeService: DevModeService,
     private readonly errorNotificationService: ErrorNotificationService,
+    private readonly contextMenuService: ContextMenuService,
   ) {}
 
   /**
@@ -58,9 +58,6 @@ export class AppBootstrapService {
     // Initialize config first
     this.appConfigService.init();
 
-    // Register protocol handler
-    this.protocolService.registerHandler();
-
     // Initialize core services (database, controllers)
     Chronomancer.checkpoint('app-bootstrap', 'before-core-init', 'bootstrap');
     await this.initializeCore();
@@ -69,6 +66,9 @@ export class AppBootstrapService {
     // Create windows
     this.win = await this.createWindows();
     Chronomancer.checkpoint('app-bootstrap', 'after-windows-created', 'bootstrap');
+
+    // Initialize context menu (after controllers, so it can reference them)
+    await this.contextMenuService.init();
 
     // Initialize window-dependent services
     this.initializeWindowServices(this.win);
