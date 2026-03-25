@@ -84,7 +84,8 @@ function startElectron() {
   console.log('[dev] Starting Electron...');
 
   const electronPath = require('electron');
-  electronProcess = spawn(electronPath, ['--inspect=9229', '.', '--serve'], {
+  const extraArgs = process.argv.slice(2);
+  electronProcess = spawn(electronPath, ['--inspect=9229', '.', '--serve', ...extraArgs], {
     stdio: 'inherit',
   });
 

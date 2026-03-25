@@ -22,9 +22,34 @@
       }
     },
     {
-      "label": "📦 Bump Version",
+      "label": "🥷🏼 DEV (No Splash)",
+      "type": "npm",
+      "script": "dev:no-splash",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "label": "⭐ Bump Version",
       "type": "shell",
       "command": "npm version ${input:versionType} --no-git-tag-version",
+      "problemMatcher": [],
+    },
+    {
+      "label": "📦 Package Win (No Update Token)",
+      "type": "npm",
+      "script": "package:win:noUpdateToken",
       "problemMatcher": []
     }
   ],

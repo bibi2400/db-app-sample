@@ -131,17 +131,19 @@ export class AppBootstrapService {
   private async createWindows(): Promise<BrowserWindow> {
     const config = this.appConfigService.getInfo();
 
-    // Create splash screen
-    Chronomancer.start('splash-window', 'bootstrap');
-    await this.splashService.create({
-      width: config.splashScreen.width,
-      height: config.splashScreen.height,
-    });
-    Chronomancer.stop('splash-window', 'bootstrap');
-    this.splashService.setVersion(config.version);
+    if (!this.devModeService.noSplash) {
+      // Create splash screen
+      Chronomancer.start('splash-window', 'bootstrap');
+      await this.splashService.create({
+        width: config.splashScreen.width,
+        height: config.splashScreen.height,
+      });
+      Chronomancer.stop('splash-window', 'bootstrap');
+      this.splashService.setVersion(config.version);
 
-    // Small delay to ensure splash is visible
-    await new Promise(resolve => setTimeout(resolve, 100));
+      // Small delay to ensure splash is visible
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     // Create main window (splash will close automatically on ready-to-show)
     Chronomancer.start('main-window', 'bootstrap');

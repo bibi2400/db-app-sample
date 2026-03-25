@@ -8,9 +8,11 @@ import { Injectable } from "../helpers/mini-pie/decorators";
 @Injectable()
 export class DevModeService {
   readonly isDev: boolean;
+  readonly noSplash: boolean;
 
   constructor() {
     const args = process.argv.slice(1);
     this.isDev = args.some(val => val === '--serve');
+    this.noSplash = args.some(val => val === '--no-splash');
   }
 }

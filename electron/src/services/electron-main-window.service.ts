@@ -206,7 +206,9 @@ export class ElectronMainWindowService {
       Logger.info('[MainWindow] Window ready to show');
 
       // Close splash and show main window with a small delay for smooth transition
-      await this.splashService.close(300);
+      if (this.splashService.isVisible()) {
+        await this.splashService.close(300);
+      }
 
       this.show();
       Logger.info('[MainWindow] Main window shown');
