@@ -1,14 +1,12 @@
-import { ipcMain } from "electron";
 import { BackupOptions, BackupService } from "../services/backup.service";
 import { BaseController } from "./base.controller";
 import { IpcHandler } from "../decorators/ipc-handler.decorator";
+import { Controller } from "../decorators/controller.decorator";
 
+@Controller({ prefix: "backup" })
 export class BackupController extends BaseController {
-  private backupService: BackupService;
-
-  constructor() {
-    super("backup");
-    this.backupService = new BackupService();
+  constructor(private readonly backupService: BackupService) {
+    super();
   }
 
   @IpcHandler("create")
@@ -27,7 +25,7 @@ export class BackupController extends BaseController {
       const backup = await this.backupService.autoBackup();
       return this.success(backup);
     } catch (error) {
-      return this.error(error);   
+      return this.error(error);
     }
   }
 

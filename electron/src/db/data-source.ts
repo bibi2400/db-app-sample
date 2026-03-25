@@ -1,13 +1,13 @@
 import { DataSource } from "typeorm";
 import { DbConfigService } from "../services/db-config.service";
 import { Test } from "./entities/test";
+import { Injector } from "../helpers/mini-pie/injector";
 
-const dbConfigService = new DbConfigService();
-const dbPath = dbConfigService.readDbConfigFile();
+const dbConfigService = Injector.inject(DbConfigService);
 
 export const AppDataSource = new DataSource({
 	type: "sqlite",
-	database: dbPath,
+	database: dbConfigService.dbPath,
 	synchronize: true, // Sincronizza lo schema del database con le entità
 	logging: true, // Abilita temporaneamente i log SQL per debug
 	entities: [
@@ -16,7 +16,3 @@ export const AppDataSource = new DataSource({
 	migrations: [],
 	subscribers: [],
 });
-
-export function getDbPath() {
-	return dbPath;
-}

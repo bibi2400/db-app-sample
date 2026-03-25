@@ -1,32 +1,20 @@
-import { ipcMain, IpcMainInvokeEvent } from 'electron';
-import { getIpcHandlerMetadata } from '../decorators/ipc-handler.decorator';
-
 export interface IpcResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export type Handler = (...args: unknown[]) => Promise<IpcResponse>;
-
+/**
+ * Base class for all controllers.
+ * Provides helper methods for creating standardized IPC responses.
+ *
+ * Controllers should:
+ * 1. Extend this class
+ * 2. Be decorated with @Controller({ prefix: 'your-prefix' })
+ * 3. Declare dependencies in the constructor (they will be auto-injected)
+ * 4. Use @IpcHandler('channel') on methods to register IPC handlers
+ */
 export abstract class BaseController {
-  protected channelPrefix: string;
-
-  constructor(channelPrefix: string) {
-    this.channelPrefix = channelPrefix;
-  }
-
-  public registerHandlers(): void {
-    const metadata = getIpcHandlerMetadata(Object.getPrototypeOf(this));
-    metadata.forEach(({ channel, methodName }) => {
-      console.log(`Registering IPC handler: ${this.channelPrefix}:${channel} -> ${methodName}`);
-      const handler = (this as unknown as Record<string, Handler>)[methodName].bind(this);
-      ipcMain.handle(`${this.channelPrefix}:${channel}`, (_event, ...args) => {
-        return handler(...args);
-      });
-    });
-  }
-
   protected success<T>(data: T): IpcResponse<T> {
     return { success: true, data };
   }

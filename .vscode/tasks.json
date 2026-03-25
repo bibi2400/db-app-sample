@@ -3,8 +3,9 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "🚀 DEV",
       "type": "npm",
-      "script": "start",
+      "script": "dev",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -21,8 +22,9 @@
       }
     },
     {
+      "label": "🥷🏼 DEV (No Splash)",
       "type": "npm",
-      "script": "test",
+      "script": "dev:no-splash",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -37,6 +39,93 @@
           }
         }
       }
+    },
+    {
+      "label": "⭐ Bump Version",
+      "type": "shell",
+      "command": "npm version ${input:versionType} --no-git-tag-version",
+      "problemMatcher": [],
+    },
+    {
+      "label": "📦 Package Win (No Update Token)",
+      "type": "npm",
+      "script": "package:win:noUpdateToken",
+      "problemMatcher": []
+    },
+    {
+      "label": "🅰️ Angular: Nuova Pagina",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts angular-page ${input:angularPageName}",
+      "problemMatcher": []
+    },
+    {
+      "label": "🅰️ Angular: Nuovo Componente",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts angular-component ${input:angularComponentName}",
+      "problemMatcher": []
+    },
+    {
+      "label": "🅰️ Angular: Nuovo Service",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts angular-service ${input:angularServiceName}",
+      "problemMatcher": []
+    },
+    {
+      "label": "🅰️ Angular: Nuova Pipe",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts angular-pipe ${input:angularPipeName}",
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡️ Electron: Nuovo Service",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts electron-service ${input:electronServiceName}",
+      "problemMatcher": []
+    },
+    {
+      "label": "⚡️ Electron: Nuovo Controller",
+      "type": "shell",
+      "command": "npx tsx scripts/generate.ts electron-controller ${input:electronControllerName}",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "versionType",
+      "type": "pickString",
+      "description": "Quale versione incrementare?",
+      "options": ["patch", "minor", "major"],
+      "default": "patch"
+    },
+    {
+      "id": "angularPageName",
+      "type": "promptString",
+      "description": "Nome della pagina (es. user-profile)"
+    },
+    {
+      "id": "angularComponentName",
+      "type": "promptString",
+      "description": "Nome del componente (es. data-table)"
+    },
+    {
+      "id": "angularServiceName",
+      "type": "promptString",
+      "description": "Nome del service (es. auth)"
+    },
+    {
+      "id": "angularPipeName",
+      "type": "promptString",
+      "description": "Nome della pipe (es. format-date)"
+    },
+    {
+      "id": "electronServiceName",
+      "type": "promptString",
+      "description": "Nome del service Electron (es. auth)"
+    },
+    {
+      "id": "electronControllerName",
+      "type": "promptString",
+      "description": "Nome del controller Electron (es. user)"
     }
   ]
 }

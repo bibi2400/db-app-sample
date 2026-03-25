@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
 import { DbConfigService } from "./db-config.service";
+import { Injectable } from "../helpers/mini-pie/decorators";
 
 export interface BackupInfo {
   filename: string;
@@ -23,6 +24,7 @@ export interface RestoreResult {
   backupCreated?: string;
 }
 
+@Injectable()
 export class BackupService {
   private backupDir: string;
   private autoBackupDir: string;
@@ -31,18 +33,17 @@ export class BackupService {
 
   private dbPath: string;
 
-  constructor() {
-    const dbConfigService = new DbConfigService();
-    this.dbPath = dbConfigService.readDbConfigFile();
+  constructor(dbConfigService: DbConfigService) {
+    this.dbPath = dbConfigService.dbPath;
 
     // Determina la cartella backups in base all'ambiente
     let baseDir: string;
-    
+
     if (app.isPackaged) {
       // Controlla se esiste un file 'portable' nella cartella dell'eseguibile
       const exeDir = path.dirname(app.getPath("exe"));
       const portableMarkerPath = path.join(exeDir, "portable");
-      
+
       if (fs.existsSync(portableMarkerPath)) {
         // Modalità portable: usa la cartella dell'eseguibile
         baseDir = exeDir;

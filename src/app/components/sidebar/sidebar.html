@@ -1,0 +1,41 @@
+<div class="sidebar-header">
+  <img src="assets/menu-logo.png" alt="Quality Manager" class="sidebar-logo">
+  <button mat-icon-button (click)="closed.emit()"><mat-icon>close</mat-icon></button>
+</div>
+<mat-nav-list class="sidebar-menu">
+  @for (menuItem of menu; track menuItem.title; let i = $index) {
+    @if (menuItem.children) {
+      <a mat-list-item (click)="toggleSubmenu(menuItem)" [attr.data-menu]="i">
+        <mat-icon matListItemIcon>{{ menuItem.icon }}</mat-icon>
+        <span matListItemTitle>{{ menuItem.title }}</span>
+      </a>
+      @if (isExpanded(menuItem)) {
+        @for (child of menuItem.children; track child.title) {
+          <a mat-list-item 
+             class="submenu-item"
+             [attr.data-menu]="i"
+             [activated]="activeLink().route === child.route" 
+             (click)="clickMenuItem($event, child)">
+            <mat-icon matListItemIcon>{{ child.icon }}</mat-icon>
+            <span matListItemTitle>{{ child.title }}</span>
+            @if (child.route === '/updates' && navigationService.updateAvailable()) {
+              <span class="update-badge" aria-label="Aggiornamento disponibile"></span>
+            }
+          </a>
+        }
+      }
+    } @else {
+      <a mat-list-item 
+         [attr.data-menu]="i"
+         [activated]="activeLink().route === menuItem.route" 
+         (click)="clickMenuItem($event, menuItem)">
+        <mat-icon matListItemIcon>{{ menuItem.icon }}</mat-icon>
+        <span matListItemTitle>{{ menuItem.title }}</span>
+      </a>
+    }
+  }
+</mat-nav-list>
+<div class="sidebar-footer">
+  <div class="powered-by">Powered by {{ author() }}</div>
+  <span class="version-text">v{{ version() }}</span>
+</div>

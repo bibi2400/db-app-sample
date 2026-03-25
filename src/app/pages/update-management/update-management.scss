@@ -1,0 +1,185 @@
+.update-container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+    }
+  }
+
+  .version-card {
+    margin-bottom: 16px;
+
+    .version-info {
+      display: flex;
+      gap: 48px;
+    }
+
+    .version-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      mat-icon {
+        color: #666;
+      }
+
+      &.highlight mat-icon {
+        color: #ff9800;
+      }
+
+      .version-label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 2px;
+      }
+
+      .version-value {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .release-date {
+        font-size: 12px;
+        color: #888;
+        margin-top: 2px;
+      }
+    }
+  }
+
+  .changelog-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 500;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+
+  .changelog-card {
+    margin-bottom: 12px;
+
+    .changelog-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      .changelog-version {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1565c0;
+      }
+
+      .changelog-date {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+
+    .changelog-content {
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #444;
+    }
+  }
+
+  .status-card {
+    margin-bottom: 24px;
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .status-icon {
+        &.status-available,
+        &.status-downloaded {
+          color: #4caf50;
+        }
+
+        &.status-checking,
+        &.status-downloading {
+          color: #2196f3;
+        }
+
+        &.status-error {
+          color: #f44336;
+        }
+
+        &.status-not-available,
+        &.status-idle {
+          color: #9e9e9e;
+        }
+      }
+
+      .status-text {
+        font-size: 15px;
+      }
+    }
+
+    .error-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: #fbe9e7;
+      color: #c62828;
+      font-size: 13px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #c62828;
+      }
+    }
+
+    .progress-section {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      mat-progress-bar {
+        flex: 1;
+      }
+
+      .progress-text {
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 40px;
+        text-align: right;
+      }
+    }
+  }
+
+  .action-section {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    .preparing-download {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #666;
+      font-size: 14px;
+    }
+  }
+}

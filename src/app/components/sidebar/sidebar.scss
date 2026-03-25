@@ -1,0 +1,100 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
+
+  h3 {
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .sidebar-logo {
+    max-width: 180px;
+    max-height: 60px;
+    object-fit: contain;
+  }
+}
+
+.sidebar-menu {
+  width: 100% !important;
+  padding: 0 !important;
+  
+  .mat-mdc-list-item {
+    width: 100%;
+  }
+
+  // Dashboard - Blu
+  .mat-mdc-list-item[data-menu="0"] mat-icon[matListItemIcon] {
+    color: #2196f3;
+  }
+
+  // Strumenti - Arancione
+  .mat-mdc-list-item[data-menu="1"] mat-icon[matListItemIcon] {
+    color: #ff9800;
+  }
+
+  // Taratura - Verde
+  .mat-mdc-list-item[data-menu="2"] mat-icon[matListItemIcon] {
+    color: #4caf50;
+  }
+
+  // Impostazioni - Viola
+  .mat-mdc-list-item[data-menu="3"] mat-icon[matListItemIcon] {
+    color: #9c27b0;
+  }
+
+  // Voce attiva - Rosso
+  .mat-mdc-list-item[activated] mat-icon[matListItemIcon] {
+    color: #f44336 !important;
+  }
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  text-align: center;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fafafa;
+
+  .powered-by {
+    font-size: 11px;
+    color: #aaa;
+    margin-bottom: 4px;
+  }
+
+  .version-text {
+    font-size: 12px;
+    color: #999;
+  }
+}
+
+.submenu-item {
+  padding-left: 32px !important;
+  
+  mat-icon[matListItemIcon] {
+    margin-left: 16px;
+  }
+}
+
+.update-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #f44336;
+  margin-left: 8px;
+  flex-shrink: 0;
+}

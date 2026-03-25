@@ -16,6 +16,18 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
   },
   {
+    path: 'updates',
+    loadComponent: () => import('./pages/update-management/update-management').then(m => m.UpdateManagement)
+  },
+  {
+    path: 'notifications',
+    loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
+  },
+  {
+    path: 'shortcuts',
+    loadComponent: () => import('./pages/shortcut-management/shortcut-management').then(m => m.ShortcutManagement)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }

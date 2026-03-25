@@ -18,6 +18,11 @@ export class NavigationService {
       route: '/dashboard'
     },
     {
+      title: 'Notifiche',
+      icon: 'notifications',
+      route: '/notifications'
+    },
+    {
       title: 'Impostazioni',
       icon: 'settings',
       children: [
@@ -25,6 +30,16 @@ export class NavigationService {
           title: 'Backup Database',
           icon: 'backup',
           route: '/backup'
+        },
+        {
+          title: 'Aggiornamenti',
+          icon: 'system_update',
+          route: '/updates'
+        },
+        {
+          title: 'Scorciatoie',
+          icon: 'keyboard',
+          route: '/shortcuts'
         }
       ]
     }
@@ -32,6 +47,7 @@ export class NavigationService {
 
   activeLink = signal<MenuItem>(this.menu[0]);
   expandedMenus = signal<Set<string>>(new Set());
+  updateAvailable = signal(false);
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);

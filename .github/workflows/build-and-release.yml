@@ -1,4 +1,4 @@
-name: Build and Release Windows App
+name: Build and Release
 
 on:
   # La pipeline parte ad ogni push o merge sui branch "main" e "staging"
@@ -13,7 +13,7 @@ jobs:
   build-and-release:
     # Usiamo windows-latest per la build di Electron
     runs-on: windows-latest
-    
+
     # Permessi necessari per creare il tag e la release su GitHub
     permissions:
       contents: write
@@ -23,9 +23,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           # fetch-depth: 0 è fondamentale per scaricare tutta la cronologia, inclusi i tag
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Calcola versione, aggiorna package.json e controlla tag
+        id: version
         shell: bash
         run: |
           # Estrae la versione base dal package.json (es. 1.1.0)
@@ -50,8 +51,8 @@ jobs:
           
           TAG_NAME="v$FULL_VERSION"
           
-          # Salviamo il nome del tag in una variabile globale per gli step successivi
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          # Salviamo il nome del tag in un output per gli step successivi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
           
           # Controlla se il tag esiste già nel repository remoto
           if git ls-remote --tags origin refs/tags/$TAG_NAME | grep -q $TAG_NAME; then
@@ -65,30 +66,61 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' 
+          node-version: '20'
           cache: 'npm'
+
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Installazione dipendenze
         run: npm ci
 
+      - name: Genera changelog
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.version.outputs.TAG_NAME }}
+        run: |
+          # Trova il tag precedente (il più recente prima di quello attuale)
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^$TAG_NAME$" | head -n 1)
+          
+          if [ -z "$PREV_TAG" ]; then
+            # Se non esiste un tag precedente, usa tutti i commit
+            echo "Nessun tag precedente trovato, includo tutti i commit"
+            CHANGELOG=$(git log --pretty=format:"- %s" --no-merges)
+          else
+            echo "Changelog da $PREV_TAG a HEAD"
+            CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s" --no-merges)
+          fi
+          
+          # Salva il changelog in un file usato sia da electron-builder (latest.yml)
+          # che dalla GitHub Release (body_path)
+          echo "$CHANGELOG" > changelog.txt
+          echo "📋 Changelog generato:"
+          cat changelog.txt
+
       - name: Build dell'app Electron
         run: npm run package:win
         env:
-          # Risolve l'errore "GitHub Personal Access Token is not set" di electron-builder
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ELECTRON_UPDATE_TOKEN: ${{ secrets.ELECTRON_UPDATE_TOKEN }}
 
       - name: Creazione GitHub Release e upload asset
         uses: softprops/action-gh-release@v2
         with:
-          # Se arriviamo a questo step, l'azione di GitHub crea in automatico il tag 
+          # Se arriviamo a questo step, l'azione di GitHub crea in automatico il tag
           # e lo associa alla release caricando i file.
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
-          
+          tag_name: ${{ steps.version.outputs.TAG_NAME }}
+          name: Release ${{ steps.version.outputs.TAG_NAME }}
+
           # Se il branch è 'staging', questa opzione spunta automaticamente la casella
           # "Set as a pre-release" sulla pagina di GitHub
           prerelease: ${{ github.ref_name == 'staging' }}
-          
+
+          # Changelog generato dai commit tra il tag precedente e HEAD
+          body_path: changelog.txt
+
           # Cerca i file generati da electron-builder (nella root per ignorare gli .exe inutili)
           # Nota: *.yml prende sia latest.yml (se main) che beta.yml (se staging)
           files: |
