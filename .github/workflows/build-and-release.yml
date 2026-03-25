@@ -81,9 +81,16 @@ jobs:
         shell: bash
         env:
           TAG_NAME: ${{ steps.version.outputs.TAG_NAME }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
-          # Trova il tag precedente (il più recente prima di quello attuale)
-          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^$TAG_NAME$" | head -n 1)
+          # Trova il tag precedente in base al branch:
+          # - staging: cerca solo tra i tag beta (es. v1.0.0-beta.41)
+          # - main: cerca solo tra i tag di produzione (es. v1.0.0)
+          if [ "$BRANCH_NAME" == "staging" ]; then
+            PREV_TAG=$(git tag --sort=-v:refname | grep -v "^$TAG_NAME$" | grep "beta" | head -n 1)
+          else
+            PREV_TAG=$(git tag --sort=-v:refname | grep -v "^$TAG_NAME$" | grep -v "beta" | head -n 1)
+          fi
           
           if [ -z "$PREV_TAG" ]; then
             # Se non esiste un tag precedente, usa tutti i commit
