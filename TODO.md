@@ -92,8 +92,9 @@
 - [x] strutturare sistema di rilevazione tempi
 
 - [ ] indagare su installazione come servizio... è possibile farlo in typescript?
-  - per ora non lo farei, non ci vedo troppe potenzialità
+  - per ora non lo farei, non ci vedo troppe potenzialità in relazione all'effort richiesto.
   - quando lo implementiamo:
     - vedere di implementare shortcut tramite electron per farli andare anche a finestra ridotta
-    - implementare notifiche tramite sistema operativo
-    - implementare sistema di schedulazione task automatici
+    - implementare notifiche tramite sistema operativo per vedere le norifiche anche a finestra ridotta
+    - implementare sistema di schedulazione task automatici anche con finestra ridotta
+    - implementare tray icon
