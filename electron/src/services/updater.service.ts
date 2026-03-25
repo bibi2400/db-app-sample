@@ -345,9 +345,11 @@ export class UpdaterService {
       });
 
       const releases = JSON.parse(body) as Array<{ tag_name: string; published_at: string; body: string; draft: boolean; prerelease: boolean }>;
+      const isBetaChannel = this.currentStatus.currentVersion.includes('-beta');
 
       return releases
         .filter(r => !r.draft)
+        .filter(r => isBetaChannel ? r.prerelease : !r.prerelease)
         .map(r => ({
           version: r.tag_name.replace(/^v/, ''),
           date: r.published_at,
