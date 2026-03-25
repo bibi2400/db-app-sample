@@ -213,13 +213,15 @@ export class AppBootstrapService {
       this.errorNotificationService.reportBootstrapError('Backup automatico', error);
     }
 
-    // Check for updates (non-blocking)
+    // Check for updates (non-blocking) and start periodic check every 30 min
     Chronomancer.start('update-check', 'bootstrap');
     this.updaterService.checkForUpdates().catch((err: unknown) => {
       Logger.error('[Bootstrap] Startup update check failed:', err);
       this.errorNotificationService.reportBootstrapError('Controllo aggiornamenti', err);
     });
+    this.updaterService.startPeriodicCheck();
+    this.lifecycleService.onCleanup(() => this.updaterService.stopPeriodicCheck());
     Chronomancer.stop('update-check', 'bootstrap');
-    Logger.info('[Bootstrap] ✓ Startup update check initiated');
+    Logger.info('[Bootstrap] ✓ Startup update check initiated (periodic every 30 min)');
   }
 }

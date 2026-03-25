@@ -45,6 +45,8 @@ export class UpdaterService {
   @PushEvent('download-progress')
   readonly downloadProgress = new PushEmitter<DownloadProgress>();
 
+  private static readonly CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+  private periodicCheckTimer: ReturnType<typeof setInterval> | null = null;
   private currentStatus: UpdateStatus;
 
   constructor(
@@ -140,6 +142,30 @@ export class UpdaterService {
     this.statusChanged.emit(status);
     this.statusListeners.forEach(fn => fn(status));
     Logger.info('[Updater] Status:', this.currentStatus.status);
+  }
+
+  startPeriodicCheck(): void {
+    if (this.periodicCheckTimer) return;
+
+    this.periodicCheckTimer = setInterval(() => {
+      const skip: UpdateStatusType[] = ['checking', 'downloading', 'downloaded'];
+      if (skip.includes(this.currentStatus.status)) {
+        Logger.info('[Updater] Skipping periodic check (current status:', this.currentStatus.status + ')');
+        return;
+      }
+      Logger.info('[Updater] Running periodic update check');
+      this.checkForUpdates().catch(err => Logger.error('[Updater] Periodic check failed:', err));
+    }, UpdaterService.CHECK_INTERVAL_MS);
+
+    Logger.info('[Updater] Periodic update check started (every 30 min)');
+  }
+
+  stopPeriodicCheck(): void {
+    if (this.periodicCheckTimer) {
+      clearInterval(this.periodicCheckTimer);
+      this.periodicCheckTimer = null;
+      Logger.info('[Updater] Periodic update check stopped');
+    }
   }
 
   async checkForUpdates(): Promise<void> {

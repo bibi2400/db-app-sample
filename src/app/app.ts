@@ -6,6 +6,7 @@ import { NavigationService } from './services/navigation.service';
 import { ElectronUpdateService } from './services/electron-api/electron-update.service';
 import { ShortcutService } from './services/shortcut.service';
 import { CommandPaletteService } from './services/command-palette.service';
+import { NotificationService } from './services/notification.service';
 import { UpdateStatusType } from './types/update';
 import { NotificationPanel } from './components/notification-panel/notification-panel';
 import { CommandPalette } from './components/command-palette/command-palette';
@@ -36,6 +37,7 @@ export class App implements OnInit, OnDestroy {
 
   private updateService = inject(ElectronUpdateService);
   private navigationService = inject(NavigationService);
+  private notificationService = inject(NotificationService);
   private shortcutService = inject(ShortcutService);
   private commandPaletteService = inject(CommandPaletteService);
   private router = inject(Router);
@@ -47,6 +49,13 @@ export class App implements OnInit, OnDestroy {
       this.navigationService.updateAvailable.set(
         UPDATE_BADGE_STATUSES.includes(status.status)
       );
+      if (status.status === 'available' && status.availableVersion) {
+        this.notificationService.info(
+          'Aggiornamento disponibile',
+          `È disponibile la versione ${status.availableVersion}. Vai alla sezione Aggiornamenti per scaricarla.`,
+          'system_update',
+        );
+      }
     });
 
     // Registra shortcut di navigazione

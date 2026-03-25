@@ -47,7 +47,7 @@
 
 - [x] [ELECTRON] gestione errori
 
-- [ ] check aggiornamenti automatico temporizzato
+- [x] check aggiornamenti automatico temporizzato
 
 - [ ] bottone reinstalla
 
@@ -64,12 +64,14 @@
 
 - [ ] rivedere sistema di backup
 
-- [ ] [ANGULAR] - sistema di shortcut standardizzato
+- [x] [ANGULAR] - sistema di shortcut standardizzato
+
+- [x] [ANGULAR] - command palette
 
 ## Bonus Tracks:
 
 - [x] implementare gestione notifiche di sistema
-  implementate notifiche interne all'app. va ben istes 
+  implementate notifiche interne all'app. va ben istes
 
 - [x] implementare gestione multifinestra
   implementato parzialmente, è possibile aprire più istanze della stessa finestra che inizia con la dashboard, con navigazioni separate, ma non è possibile aprire finestre su pagine precise. richiede modifiche più strutturali che vediamo di fare dopo
