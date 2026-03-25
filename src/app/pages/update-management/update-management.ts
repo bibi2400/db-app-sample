@@ -141,4 +141,19 @@ export class UpdateManagement implements OnInit, OnDestroy {
       }
     });
   }
+
+  repairInstallation(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Ripara installazione',
+        message: "Verrà scaricato e avviato l'installer della versione attuale in modalità interattiva.\nL'applicazione verrà chiusa durante la procedura.\nContinuare?",
+      },
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.updateService.repairInstallation();
+      }
+    });
+  }
 }

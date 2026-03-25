@@ -49,4 +49,14 @@ export class UpdateController extends BaseController {
     }
   }
 
+  @IpcHandler('repair')
+  async repairInstallation() {
+    try {
+      await this.updaterService.repairInstallation();
+      return this.success(null);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
 }

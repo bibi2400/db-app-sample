@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { spawn } from 'child_process';
 import { app, net } from 'electron';
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import { Injectable } from '../helpers/mini-pie/decorators';
@@ -229,6 +230,87 @@ export class UpdaterService {
     }
 
     autoUpdater.quitAndInstall(true, true);
+  }
+
+  async repairInstallation(): Promise<void> {
+    if (this.devModeService.isDev) {
+      Logger.info('[Updater] Mock repair - would re-run installer in production');
+      return;
+    }
+
+    const version = this.currentStatus.currentVersion;
+    const { owner, repo } = this.feedConfig;
+    const tag = `v${version}`;
+
+    Logger.info(`[Updater] Fetching installer for repair (${tag})...`);
+
+    const releaseUrl = `https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`;
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github+json',
+      'User-Agent': 'electron-updater',
+    };
+    if (RUNTIME_CONFIG.GH_TOKEN) {
+      headers['Authorization'] = `token ${RUNTIME_CONFIG.GH_TOKEN}`;
+    }
+
+    const releaseBody = await this.httpGet(releaseUrl, headers);
+    const release = JSON.parse(releaseBody) as {
+      assets: Array<{ name: string; url: string }>;
+    };
+
+    const installerAsset = release.assets.find(a => a.name.endsWith('.exe') && /setup/i.test(a.name));
+    if (!installerAsset) {
+      throw new Error(`Installer non trovato per la versione ${version}`);
+    }
+
+    const tmpDir = app.getPath('temp');
+    const installerPath = path.join(tmpDir, installerAsset.name);
+
+    Logger.info(`[Updater] Downloading installer to ${installerPath}...`);
+    await this.downloadFile(installerAsset.url, installerPath, headers);
+
+    Logger.info('[Updater] Launching installer in interactive mode...');
+    spawn(installerPath, [], { detached: true, stdio: 'ignore' }).unref();
+
+    setTimeout(() => app.quit(), 500);
+  }
+
+  private httpGet(url: string, headers: Record<string, string>): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const request = net.request({ url, method: 'GET' });
+      for (const [key, value] of Object.entries(headers)) {
+        request.setHeader(key, value);
+      }
+      let data = '';
+      request.on('response', (response) => {
+        response.on('data', (chunk) => { data += chunk.toString(); });
+        response.on('end', () => resolve(data));
+        response.on('error', reject);
+      });
+      request.on('error', reject);
+      request.end();
+    });
+  }
+
+  private downloadFile(assetUrl: string, dest: string, baseHeaders: Record<string, string>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const headers = {
+        ...baseHeaders,
+        'Accept': 'application/octet-stream',
+      };
+      const request = net.request({ url: assetUrl, method: 'GET' });
+      for (const [key, value] of Object.entries(headers)) {
+        request.setHeader(key, value);
+      }
+      const fileStream = fs.createWriteStream(dest);
+      request.on('response', (response) => {
+        response.on('data', (chunk) => fileStream.write(chunk));
+        response.on('end', () => { fileStream.end(); resolve(); });
+        response.on('error', (err) => { fileStream.destroy(); reject(err); });
+      });
+      request.on('error', (err) => { fileStream.destroy(); reject(err); });
+      request.end();
+    });
   }
 
   async getChangelogs(): Promise<ChangelogEntry[]> {

@@ -104,5 +104,13 @@
         Aggiorna Ora
       </button>
     }
+
+    <button
+      mat-stroked-button
+      (click)="repairInstallation()"
+      [disabled]="isChecking() || isDownloading() || isPreparingDownload()">
+      <mat-icon>build</mat-icon>
+      Ripara installazione
+    </button>
   </div>
 </div>

@@ -50,6 +50,7 @@
 - [x] check aggiornamenti automatico temporizzato
 
 - [ ] bottone reinstalla
+  - questo risolve la necessità di gestire a video il path del database
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
   - [x] componentizzare sidebar, sidenav

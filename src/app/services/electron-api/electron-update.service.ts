@@ -58,4 +58,14 @@ export class ElectronUpdateService {
     }
   }
 
+  /** Re-run the current version's installer in interactive mode */
+  async repairInstallation(): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await window.electronAPI.invoke<IpcResponse<null>>('update:repair');
+      return { success: response.success, error: response.error };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+  }
+
 }
