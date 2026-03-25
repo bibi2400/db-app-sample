@@ -49,7 +49,7 @@
 
 - [x] check aggiornamenti automatico temporizzato
 
-- [ ] bottone reinstalla
+- [x] bottone reinstalla
   - questo risolve la necessità di gestire a video il path del database
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
@@ -80,6 +80,7 @@
 - [ ] gestire DB path a interfaccia
   - vedi todo su config service
   - gestire caricamento "a caldo" del database
+    - per ora non lo farei. per cambiare db path si può usare il bottone reinstalla
 
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file uploads (tipo file excel e altro)
 
