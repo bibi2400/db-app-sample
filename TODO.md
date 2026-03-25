@@ -87,9 +87,13 @@
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file downloads (tipo file excel, pdf, altro)
 
 - [x] indagare su quali altre chicche riservano electron & le sue librerie satellite
-
-- [ ] strutturare sistema di schedulazione task automatici quando programma è aperto
+  - vedi file TODO electron.md
 
 - [x] strutturare sistema di rilevazione tempi
 
 - [ ] indagare su installazione come servizio... è possibile farlo in typescript?
+  - per ora non lo farei, non ci vedo troppe potenzialità
+  - quando lo implementiamo:
+    - vedere di implementare shortcut tramite electron per farli andare anche a finestra ridotta
+    - implementare notifiche tramite sistema operativo
+    - implementare sistema di schedulazione task automatici
