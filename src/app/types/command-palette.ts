@@ -4,6 +4,7 @@ export interface CommandPaletteItem {
   description?: string;
   category: string;
   icon?: string;
-  shortcut?: string;
+  /** ID dello shortcut registrato nel ShortcutService (es. 'nav.dashboard') */
+  shortcutId?: string;
   action: () => void;
 }

@@ -83,18 +83,13 @@ export class App implements OnInit, OnDestroy {
   }
 
   private registerCommands(): void {
-    const fmt = (id: string) => {
-      const b = this.shortcutService.getBinding(id);
-      return b ? this.shortcutService.formatBinding(b) : undefined;
-    };
-
     this.commandPaletteService.registerMany([
       {
         id: 'nav.dashboard',
         label: 'Vai alla Dashboard',
         category: 'Navigazione',
         icon: 'dashboard',
-        shortcut: fmt('nav.dashboard'),
+        shortcutId: 'nav.dashboard',
         action: () => this.router.navigate(['/dashboard']),
       },
       {
@@ -102,7 +97,7 @@ export class App implements OnInit, OnDestroy {
         label: 'Vai alle Notifiche',
         category: 'Navigazione',
         icon: 'notifications',
-        shortcut: fmt('nav.notifications'),
+        shortcutId: 'nav.notifications',
         action: () => this.router.navigate(['/notifications']),
       },
       {
@@ -110,7 +105,7 @@ export class App implements OnInit, OnDestroy {
         label: 'Vai alla gestione Backup',
         category: 'Navigazione',
         icon: 'backup',
-        shortcut: fmt('nav.backup'),
+        shortcutId: 'nav.backup',
         action: () => this.router.navigate(['/backup']),
       },
       {
@@ -118,7 +113,7 @@ export class App implements OnInit, OnDestroy {
         label: 'Vai agli Aggiornamenti',
         category: 'Navigazione',
         icon: 'system_update',
-        shortcut: fmt('nav.updates'),
+        shortcutId: 'nav.updates',
         action: () => this.router.navigate(['/updates']),
       },
       {
@@ -126,7 +121,7 @@ export class App implements OnInit, OnDestroy {
         label: 'Vai alle Scorciatoie',
         category: 'Navigazione',
         icon: 'keyboard',
-        shortcut: fmt('nav.shortcuts'),
+        shortcutId: 'nav.shortcuts',
         action: () => this.router.navigate(['/shortcuts']),
       },
       {
@@ -134,7 +129,7 @@ export class App implements OnInit, OnDestroy {
         label: 'Apri/Chiudi Menu laterale',
         category: 'Navigazione',
         icon: 'menu',
-        shortcut: fmt('nav.menu'),
+        shortcutId: 'nav.menu',
         action: () => this.opened.update(v => !v),
       },
       {
@@ -143,11 +138,19 @@ export class App implements OnInit, OnDestroy {
         description: 'Esegui l\'azione di salvataggio corrente',
         category: 'Azioni',
         icon: 'save',
-        shortcut: fmt('app.save'),
+        shortcutId: 'app.save',
         action: () => {
           const saveFn = this.navigationService.onSaveAction();
           if (saveFn) saveFn();
         },
+      },
+      {
+        id: 'test.notifications',
+        label: 'Test Notifiche',
+        description: 'Invia notifiche di test dal backend',
+        category: 'Test',
+        icon: 'bug_report',
+        action: () => window.electronAPI.invoke('test:test-notifications'),
       },
     ]);
   }

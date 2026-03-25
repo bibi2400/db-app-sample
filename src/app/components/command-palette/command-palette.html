@@ -35,8 +35,8 @@
                     <span class="item-description">{{ item.description }}</span>
                   }
                 </div>
-                @if (item.shortcut) {
-                  <kbd class="item-shortcut">{{ item.shortcut }}</kbd>
+                @if (item.shortcutId) {
+                  <kbd class="item-shortcut">{{ paletteService.formatShortcut(item) }}</kbd>
                 }
               </div>
             }

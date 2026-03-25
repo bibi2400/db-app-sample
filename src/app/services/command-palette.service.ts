@@ -1,12 +1,20 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { CommandPaletteItem } from '../types/command-palette';
+import { ShortcutService } from './shortcut.service';
 
 @Injectable({ providedIn: 'root' })
 export class CommandPaletteService {
+  private shortcutService = inject(ShortcutService);
   private commands = new Map<string, CommandPaletteItem>();
 
   readonly isOpen = signal(false);
   readonly items = signal<CommandPaletteItem[]>([]);
+
+  formatShortcut(item: CommandPaletteItem): string | undefined {
+    if (!item.shortcutId) return undefined;
+    const binding = this.shortcutService.getBinding(item.shortcutId);
+    return binding ? this.shortcutService.formatBinding(binding) : undefined;
+  }
 
   register(item: CommandPaletteItem): void {
     this.commands.set(item.id, item);

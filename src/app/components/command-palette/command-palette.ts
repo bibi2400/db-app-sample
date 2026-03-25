@@ -26,7 +26,7 @@ import { CommandPaletteItem } from '../../types/command-palette';
   },
 })
 export class CommandPalette implements OnDestroy {
-  private paletteService = inject(CommandPaletteService);
+  readonly paletteService = inject(CommandPaletteService);
   private inputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   readonly isOpen = this.paletteService.isOpen;
