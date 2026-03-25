@@ -26,6 +26,7 @@ jobs:
           fetch-depth: 0
 
       - name: Calcola versione, aggiorna package.json e controlla tag
+        id: version
         shell: bash
         run: |
           # Estrae la versione base dal package.json (es. 1.1.0)
@@ -50,8 +51,8 @@ jobs:
           
           TAG_NAME="v$FULL_VERSION"
           
-          # Salviamo il nome del tag in una variabile globale per gli step successivi
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+          # Salviamo il nome del tag in un output per gli step successivi
+          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
           
           # Controlla se il tag esiste già nel repository remoto
           if git ls-remote --tags origin refs/tags/$TAG_NAME | grep -q $TAG_NAME; then
@@ -78,6 +79,8 @@ jobs:
 
       - name: Genera changelog
         shell: bash
+        env:
+          TAG_NAME: ${{ steps.version.outputs.TAG_NAME }}
         run: |
           # Trova il tag precedente (il più recente prima di quello attuale)
           PREV_TAG=$(git tag --sort=-v:refname | grep -v "^$TAG_NAME$" | head -n 1)
@@ -108,8 +111,8 @@ jobs:
         with:
           # Se arriviamo a questo step, l'azione di GitHub crea in automatico il tag
           # e lo associa alla release caricando i file.
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
+          tag_name: ${{ steps.version.outputs.TAG_NAME }}
+          name: Release ${{ steps.version.outputs.TAG_NAME }}
 
           # Se il branch è 'staging', questa opzione spunta automaticamente la casella
           # "Set as a pre-release" sulla pagina di GitHub
