@@ -50,6 +50,7 @@ export class ElectronSplashWindowService {
       height: mergedConfig.height,
       transparent: true,
       frame: false,
+      show: false, // REMOVE ME, aggiunto solo per debug
       alwaysOnTop: true,
       skipTaskbar: true,
       resizable: false,

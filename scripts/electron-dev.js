@@ -43,7 +43,7 @@ console.log('[dev] TypeScript watch started');
 tscProcess.stdout.on('data', (data) => {
   const output = data.toString();
   process.stdout.write(output);
-  
+
   // Buffer output to handle partial messages
   outputBuffer += output;
 
@@ -54,7 +54,7 @@ tscProcess.stdout.on('data', (data) => {
       restartElectron();
     }
   }
-  
+
   // Clear buffer on new compilation start to avoid stale matches
   if (output.includes('File change detected') || output.includes('Starting compilation')) {
     outputBuffer = '';
@@ -68,7 +68,7 @@ function restartElectron() {
     const oldProcess = electronProcess;
     electronProcess = null; // Clear reference first to prevent shutdown trigger
     killProcessTree(oldProcess);
-    
+
     // Wait a bit for the process to fully terminate (longer on Windows)
     setTimeout(() => {
       startElectron();
@@ -80,21 +80,21 @@ function restartElectron() {
 
 function startElectron() {
   if (isShuttingDown) return;
-  
+
   console.log('[dev] Starting Electron...');
 
   const electronPath = require('electron');
-  electronProcess = spawn(electronPath, ['.', '--serve'], {
+  electronProcess = spawn(electronPath, ['--inspect=9229', '.', '--serve'], {
     stdio: 'inherit',
   });
 
   electronProcess.on('close', (code) => {
     console.log(`[dev] Electron exited with code ${code}`);
-    
+
     // Only trigger shutdown if this was a user-initiated close (not a restart)
     if (electronProcess !== null) {
       electronProcess = null;
-      
+
       // If electron exits normally (user closed the window), shutdown everything
       if (code === 0 && !isShuttingDown) {
         console.log('[dev] Electron closed normally, shutting down dev environment...');

@@ -37,6 +37,40 @@
           }
         }
       }
+    },
+    {
+      "label": "🚀 DEV",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "label": "📦 Bump Version",
+      "type": "shell",
+      "command": "npm version ${input:versionType} --no-git-tag-version",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "versionType",
+      "type": "pickString",
+      "description": "Quale versione incrementare?",
+      "options": ["patch", "minor", "major"],
+      "default": "patch"
     }
   ]
 }
