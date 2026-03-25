@@ -50,10 +50,10 @@ Lettura/scrittura dalla clipboard di sistema. Utile per copiare info rapidamente
 ### 1. **`electron-store`** ⭐
 Rimpiazza il vostro `AppConfigService` custom con JSON. Offre: **schema validation**, **migrazioni** tra versioni, **encryption** dei dati, watch dei cambiamenti. Molto più robusto della gestione manuale.
 
-### 2. **`electron-window-state`**
+### 2. **`electron-window-state` FATTO**
 Ricorda **posizione e dimensioni** della finestra tra i riavvii. Due righe di codice, zero manutenzione.
 
-### 3. **`electron-context-menu`**
+### 3. **`electron-context-menu` FATTO**
 Menu contestuale (tasto destro) con Copy/Paste/Inspect. Di default Electron non lo ha — l'utente fa tasto destro e non succede nulla.
 
 ### 4. **`electron-dl`**
@@ -62,7 +62,7 @@ Gestione download con progress bar, resume, retry. Se in futuro doveste scaricar
 ### 5. **`electron-devtools-installer`**
 Installa le DevTools di Angular/Chrome automaticamente in dev mode.
 
-### 6. **`electron-serve`** (di Sindre Sorhus)
+### 6. **`electron-serve` FATTO** (di Sindre Sorhus)
 Alternativa più pulita al vostro custom `ElectronProtocolService`. Fa la stessa cosa del protocol `app://` ma in modo battle-tested.
 
 ---
