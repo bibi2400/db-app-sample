@@ -210,8 +210,8 @@ export class LifecycleService {
 
   private async closeDatabase(): Promise<void> {
     try {
-      if (AppDataSource.isInitialized) {
-        await AppDataSource.destroy();
+      if (AppDataSource.instance.isInitialized) {
+        await AppDataSource.instance.destroy();
         Logger.info('[Lifecycle] Database connection closed');
       }
     } catch (error) {
@@ -223,8 +223,12 @@ export class LifecycleService {
     Logger.error('[Lifecycle] Emergency shutdown initiated');
 
     // Try to close database synchronously-ish
-    if (AppDataSource.isInitialized) {
-      AppDataSource.destroy().catch(() => {});
+    try {
+      if (AppDataSource.instance.isInitialized) {
+        AppDataSource.instance.destroy().catch(() => {});
+      }
+    } catch {
+      // DataSource may not have been initialized
     }
 
     // Force exit after a short delay

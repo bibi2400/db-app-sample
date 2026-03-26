@@ -1,7 +1,9 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { ElectronPushService } from './electron-api/electron-push.service';
 import { AppNotification, NotificationLevel } from '../types/notification';
 import { IpcResponse } from '../types/global';
+
+const STORAGE_KEY = 'app-notifications';
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +16,16 @@ export class NotificationService {
   readonly backendNotification$ = this.pushService.on<AppNotification>('push:notification:show');
 
   /** Full notification history */
-  readonly notifications = signal<AppNotification[]>([]);
+  readonly notifications = signal<AppNotification[]>(this.loadFromStorage());
 
   /** Number of unread notifications */
   readonly unreadCount = computed(() => this.notifications().filter(n => !n.read).length);
 
   private listeners: Array<(notification: AppNotification) => void> = [];
+
+  constructor() {
+    effect(() => this.saveToStorage(this.notifications()));
+  }
 
   /**
    * Tell the backend the notification channel is ready.
@@ -64,10 +70,28 @@ export class NotificationService {
     );
   }
 
+  markAsUnread(id: string): void {
+    this.notifications.update(list =>
+      list.map(n => n.id === id ? { ...n, read: false } : n)
+    );
+  }
+
   markAllAsRead(): void {
     this.notifications.update(list =>
       list.map(n => n.read ? n : { ...n, read: true })
     );
+  }
+
+  remove(id: string): void {
+    this.notifications.update(list => list.filter(n => n.id !== id));
+  }
+
+  clearRead(): void {
+    this.notifications.update(list => list.filter(n => !n.read));
+  }
+
+  clearAll(): void {
+    this.notifications.set([]);
   }
 
   debug(title: string, message: string, icon?: string): void {
@@ -84,5 +108,20 @@ export class NotificationService {
 
   error(title: string, message: string, icon?: string): void {
     this.notify('error', title, message, icon);
+  }
+
+  private loadFromStorage(): AppNotification[] {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveToStorage(notifications: AppNotification[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+    } catch { /* quota exceeded – silently ignore */ }
   }
 }

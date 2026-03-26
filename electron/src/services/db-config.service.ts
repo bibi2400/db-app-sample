@@ -8,7 +8,7 @@ export interface DbConfig {
 const DB_CONFIG_FILE = 'db-config.json';
 
 const DB_CONFIG_DEFAULTS: DbConfig = {
-  dbPath: "./database.sqlite",
+  dbPath: "./database/database.sqlite",
 };
 
 /**

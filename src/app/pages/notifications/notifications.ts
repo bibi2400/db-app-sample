@@ -83,6 +83,33 @@ export class Notifications implements OnInit {
     this.notificationService.markAllAsRead();
   }
 
+  toggleReadStatus(event: Event, notification: AppNotification): void {
+    event.stopPropagation();
+    if (notification.read) {
+      this.notificationService.markAsUnread(notification.id);
+    } else {
+      this.notificationService.markAsRead(notification.id);
+    }
+  }
+
+  removeNotification(event: Event, id: string): void {
+    event.stopPropagation();
+    if (this.expandedId() === id) {
+      this.expandedId.set(null);
+    }
+    this.notificationService.remove(id);
+  }
+
+  clearRead(): void {
+    this.expandedId.set(null);
+    this.notificationService.clearRead();
+  }
+
+  clearAll(): void {
+    this.expandedId.set(null);
+    this.notificationService.clearAll();
+  }
+
   isExpanded(id: string): boolean {
     return this.expandedId() === id;
   }

@@ -40,9 +40,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
   private unsubFrontend?: () => void;
 
   notifications = signal<AppNotification[]>([]);
-  expandedIds = signal<Set<string>>(new Set());
-
-  private readonly MESSAGE_COLLAPSE_THRESHOLD = 80;
 
   ngOnInit(): void {
     // Backend notifications via push channel
@@ -70,31 +67,9 @@ export class NotificationPanel implements OnInit, OnDestroy {
     return LEVEL_ICONS[level];
   }
 
-  isLongMessage(message: string): boolean {
-    return message.length > this.MESSAGE_COLLAPSE_THRESHOLD;
-  }
-
-  toggleExpand(id: string): void {
-    this.notificationService.markAsRead(id);
-    this.expandedIds.update(set => {
-      const next = new Set(set);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
   dismiss(id: string): void {
     this.notificationService.markAsRead(id);
     this.notifications.update(list => list.filter(n => n.id !== id));
-    this.expandedIds.update(set => {
-      const next = new Set(set);
-      next.delete(id);
-      return next;
-    });
     const timer = this.timers.get(id);
     if (timer) {
       clearTimeout(timer);

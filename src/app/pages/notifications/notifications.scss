@@ -15,7 +15,14 @@
     font-weight: 500;
   }
 
-  .mark-all-btn {
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mark-all-btn,
+  .clear-all-btn {
     mat-icon {
       font-size: 18px;
       width: 18px;
@@ -98,19 +105,34 @@
   text-overflow: ellipsis;
 }
 
-.unread-dot-container {
+.item-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
 }
 
-.unread-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #2196f3;
-  flex-shrink: 0;
+.action-btn {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.delete-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.notification-item:hover .delete-btn {
+  opacity: 1;
 }
 
 // Expanded notification detail
