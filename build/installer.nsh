@@ -18,13 +18,13 @@ Function readExistingDbPath
   StrCpy $DbConfigExists "0"
   StrCpy $DbPathValue ""
 
-  ${IfNot} ${FileExists} "$APPDATA\${APP_PRODUCT_FILENAME}\db-config.json"
+  ${IfNot} ${FileExists} "$APPDATA\${PRODUCT_NAME}\db-config.json"
     Return
   ${EndIf}
 
   StrCpy $DbConfigExists "1"
 
-  FileOpen $0 "$APPDATA\${APP_PRODUCT_FILENAME}\db-config.json" r
+  FileOpen $0 "$APPDATA\${PRODUCT_NAME}\db-config.json" r
 
   readLoop:
     FileRead $0 $1
@@ -126,9 +126,9 @@ FunctionEnd
     StrCpy $R0 "$DbPathValue\database.sqlite"
     ${WordReplace} $R0 "\" "/" "+" $R1
 
-    CreateDirectory "$APPDATA\${APP_PRODUCT_FILENAME}"
+    CreateDirectory "$APPDATA\${PRODUCT_NAME}"
 
-    FileOpen $0 "$APPDATA\${APP_PRODUCT_FILENAME}\db-config.json" w
+    FileOpen $0 "$APPDATA\${PRODUCT_NAME}\db-config.json" w
     FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
     FileClose $0
   ${EndIf}
