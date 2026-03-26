@@ -93,6 +93,12 @@
       "type": "shell",
       "command": "git checkout main && git pull && git merge - && git push && git checkout -",
       "problemMatcher": []
+    },
+    {
+      "label": "🚢 Publish Branch",
+      "dependsOrder": "sequence",
+      "dependsOn": ["⭐ Bump Version", "🔀 Merge in Main"],
+      "problemMatcher": []
     }
   ],
   "inputs": [
