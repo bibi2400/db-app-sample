@@ -4,6 +4,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NavigationService } from './services/navigation.service';
 import { ElectronUpdateService } from './services/electron-api/electron-update.service';
+import { ElectronAppService } from './services/electron-api/electron-app.service';
 import { ShortcutService } from './services/shortcut.service';
 import { CommandPaletteService } from './services/command-palette.service';
 import { NotificationService } from './services/notification.service';
@@ -36,6 +37,7 @@ export class App implements OnInit, OnDestroy {
   author = 'bibi';
 
   private updateService = inject(ElectronUpdateService);
+  private appService = inject(ElectronAppService);
   private navigationService = inject(NavigationService);
   private notificationService = inject(NotificationService);
   private shortcutService = inject(ShortcutService);
@@ -79,9 +81,9 @@ export class App implements OnInit, OnDestroy {
 
     this.registerCommands();
 
-    window.electronAPI.invoke<{ success: boolean; data?: { name: string; version: string } }>('app:info').then(response => {
-      if (response.success && response.data) {
-        this.version = response.data.version;
+    this.appService.getInfo().then(info => {
+      if (info) {
+        this.version = info.version;
       }
     });
   }
@@ -132,6 +134,13 @@ export class App implements OnInit, OnDestroy {
         icon: 'keyboard',
         shortcutId: 'nav.shortcuts',
         action: () => this.router.navigate(['/shortcuts']),
+      },
+      {
+        id: 'nav.appInfo',
+        label: 'Vai a Info Applicazione',
+        category: 'Navigazione',
+        icon: 'info',
+        action: () => this.router.navigate(['/app-info']),
       },
       {
         id: 'nav.menu',

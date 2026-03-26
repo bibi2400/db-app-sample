@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { ElectronBackupService } from '../../services/electron-api/electron-backup.service';
+import { ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { BackupInfo, BackupStats } from '../../types/backup';
 import { NavigationService } from '../../services/navigation.service';
 
@@ -27,6 +28,7 @@ import { NavigationService } from '../../services/navigation.service';
 })
 export class BackupManagement {
   private backupService = inject(ElectronBackupService);
+  private appService = inject(ElectronAppService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private navigationService = inject(NavigationService);
@@ -120,7 +122,7 @@ export class BackupManagement {
           );
           // Ricarica l'applicazione per applicare i cambiamenti
           setTimeout(() => {
-            window.electronAPI.invoke('app:reload');
+            this.appService.reload();
           }, 2000);
         } else {
           this.snackBar.open(`Errore: ${result.message}`, 'Chiudi', { duration: 5000 });

@@ -54,7 +54,7 @@
 
 - [ ] [ANGULAR] refactor struttura base di angular (app, sidebar, sidenav)
   - [x] componentizzare sidebar, sidenav
-  - [ ] rivedere push event lato frontend
+  - [x] rivedere push event lato frontend
   - [ ] rivedere service api e wrapper risposte
   - [ ] standardizzare stili box, possibilmente a tutta pagina
   - [ ] aggiungere gestione errori
@@ -77,10 +77,7 @@
 - [x] implementare gestione multifinestra
   implementato parzialmente, è possibile aprire più istanze della stessa finestra che inizia con la dashboard, con navigazioni separate, ma non è possibile aprire finestre su pagine precise. richiede modifiche più strutturali che vediamo di fare dopo
 
-- [ ] gestire DB path a interfaccia
-  - vedi todo su config service
-  - gestire caricamento "a caldo" del database
-    - per ora non lo farei. per cambiare db path si può usare il bottone reinstalla
+- [x] gestire DB path a interfaccia
 
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file uploads (tipo file excel e altro)
 

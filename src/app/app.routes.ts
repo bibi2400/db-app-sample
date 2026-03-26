@@ -28,6 +28,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/shortcut-management/shortcut-management').then(m => m.ShortcutManagement)
   },
   {
+    path: 'app-info',
+    loadComponent: () => import('./pages/app-info/app-info').then(m => m.AppInfo)
+  },
+  {
     path: '**',
     redirectTo: 'dashboard'
   }

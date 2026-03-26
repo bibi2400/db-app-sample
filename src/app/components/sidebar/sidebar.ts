@@ -2,8 +2,10 @@ import { Component, ChangeDetectionStrategy, input, output, inject } from '@angu
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { MenuItem, NavigationService } from '../../services/navigation.service';
+import { ElectronAppService } from '../../services/electron-api/electron-app.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -11,6 +13,7 @@ import { MenuItem, NavigationService } from '../../services/navigation.service';
     MatButtonModule,
     MatIcon,
     MatListModule,
+    MatTooltipModule,
   ],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss',
@@ -23,6 +26,7 @@ export class Sidebar {
 
   readonly navigationService = inject(NavigationService);
   private router = inject(Router);
+  private appService = inject(ElectronAppService);
 
   get menu() {
     return this.navigationService.menu;
@@ -46,5 +50,9 @@ export class Sidebar {
       this.closed.emit();
       this.router.navigate([menuItem.route]);
     }
+  }
+
+  openAppData(): void {
+    this.appService.openAppData();
   }
 }

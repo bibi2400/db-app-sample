@@ -40,6 +40,11 @@ export class NavigationService {
           title: 'Scorciatoie',
           icon: 'keyboard',
           route: '/shortcuts'
+        },
+        {
+          title: 'Info Applicazione',
+          icon: 'info',
+          route: '/app-info'
         }
       ]
     }

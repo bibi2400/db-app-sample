@@ -1,0 +1,90 @@
+@if (details(); as d) {
+  <div class="info-page">
+    <h2>Info Applicazione</h2>
+
+    <mat-card class="info-card">
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <mat-icon>label</mat-icon>
+            <div>
+              <span class="info-label">Nome</span>
+              <span class="info-value">{{ d.name }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>tag</mat-icon>
+            <div>
+              <span class="info-label">Versione</span>
+              <span class="info-value">{{ d.version }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>storage</mat-icon>
+            <div>
+              <span class="info-label">Percorso Database</span>
+              <span class="info-value path">{{ d.dbPath }}</span>
+              @if (dbPathError()) {
+                <span class="db-path-error">
+                  <mat-icon>warning</mat-icon>
+                  {{ dbPathError() }}
+                </span>
+              }
+            </div>
+            <mat-icon class="edit-icon" (click)="changeDbPath()" matTooltip="Cambia percorso database">edit</mat-icon>
+          </div>
+
+          <div class="info-item clickable" (click)="openAppData()" matTooltip="Apri in Explorer">
+            <mat-icon>folder</mat-icon>
+            <div>
+              <span class="info-label">Cartella AppData</span>
+              <span class="info-value path">{{ d.appDataPath }}</span>
+            </div>
+            <mat-icon class="open-icon">open_in_new</mat-icon>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>install_desktop</mat-icon>
+            <div>
+              <span class="info-label">Percorso Installazione</span>
+              <span class="info-value path">{{ d.installPath }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="info-card">
+      <mat-card-content>
+        <h3>Runtime</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <mat-icon>memory</mat-icon>
+            <div>
+              <span class="info-label">Electron</span>
+              <span class="info-value">{{ d.electron }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>code</mat-icon>
+            <div>
+              <span class="info-label">Node.js</span>
+              <span class="info-value">{{ d.node }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <mat-icon>language</mat-icon>
+            <div>
+              <span class="info-label">Chromium</span>
+              <span class="info-value">{{ d.chrome }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+}
