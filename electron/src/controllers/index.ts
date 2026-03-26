@@ -6,7 +6,7 @@ import './test.controller';
 import './update.controller';
 
 import { Injector } from '../helpers/mini-pie/injector';
-import { ControllerService } from '../services/controller.service';
+import { ControllerService } from '../services/system-services/controller.service';
 
 export { AppController } from './app.controller';
 

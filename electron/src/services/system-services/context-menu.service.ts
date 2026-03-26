@@ -1,8 +1,8 @@
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 import { DevModeService } from './dev-mode.service';
 import { ControllerService } from './controller.service';
-import { TestController } from '../controllers/test.controller';
+import { TestController } from '../../controllers/test.controller';
 
 /**
  * Service that manages the right-click context menu for all windows

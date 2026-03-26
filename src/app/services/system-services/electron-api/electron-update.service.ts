@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ElectronPushService } from './electron-push.service';
-import { DownloadProgress, UpdateStatus } from '../../types/update';
-import { IpcResponse } from '../../types/global';
+import { DownloadProgress, UpdateStatus } from '../../../types/update';
+import { IpcResponse } from '../../../types/global';
 
 @Injectable({
   providedIn: 'root'

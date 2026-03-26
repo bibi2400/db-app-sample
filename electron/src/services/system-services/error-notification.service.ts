@@ -1,5 +1,5 @@
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 import { NotificationService } from './notification.service';
 
 /**

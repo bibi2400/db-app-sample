@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { CommandPaletteItem } from '../types/command-palette';
+import { CommandPaletteItem } from '../../types/command-palette';
 import { ShortcutService } from './shortcut.service';
 
 @Injectable({ providedIn: 'root' })
@@ -13,19 +13,31 @@ export class CommandPaletteService {
   formatShortcut(item: CommandPaletteItem): string | undefined {
     if (!item.shortcutId) return undefined;
     const binding = this.shortcutService.getBinding(item.shortcutId);
-    return binding ? this.shortcutService.formatBinding(binding) : undefined;
+    return binding ? this.shortcutService.formatBinding(binding, '') : undefined;
   }
 
   register(item: CommandPaletteItem): void {
+    this.ensureShortcut(item);
     this.commands.set(item.id, item);
     this.refreshItems();
   }
 
   registerMany(items: CommandPaletteItem[]): void {
     for (const item of items) {
+      this.ensureShortcut(item);
       this.commands.set(item.id, item);
     }
     this.refreshItems();
+  }
+
+  private ensureShortcut(item: CommandPaletteItem): void {
+    const id = item.shortcutId ?? item.id;
+    if (!this.shortcutService.getBinding(id)) {
+      this.shortcutService.registerDynamic(id, item.label, item.description ?? '', item.category);
+    }
+    if (!item.shortcutId) {
+      item.shortcutId = item.id;
+    }
   }
 
   unregister(id: string): void {

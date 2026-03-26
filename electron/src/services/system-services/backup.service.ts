@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
 import { DbConfigService } from "./db-config.service";
-import { Injectable } from "../helpers/mini-pie/decorators";
+import { Injectable } from "../../helpers/mini-pie/decorators";
 
 export interface BackupInfo {
   filename: string;

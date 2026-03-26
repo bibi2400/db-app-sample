@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { app } from "electron";
-import { Injectable } from "../helpers/mini-pie/decorators";
-import { Logger } from "../helpers/logger";
+import { Injectable } from "../../helpers/mini-pie/decorators";
+import { Logger } from "../../helpers/logger";
 import { DevModeService } from "./dev-mode.service";
 
 /**

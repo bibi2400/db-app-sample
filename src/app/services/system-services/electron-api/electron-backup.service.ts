@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BackupInfo, BackupOptions, RestoreResult, BackupStats } from '../../types/backup';
-import { IpcResponse } from '../../types/global';
+import { BackupInfo, BackupOptions, RestoreResult, BackupStats } from '../../../types/backup';
+import { IpcResponse } from '../../../types/global';
 
 @Injectable({
   providedIn: 'root'

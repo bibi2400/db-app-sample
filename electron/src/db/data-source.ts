@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { DbConfigService } from "../services/db-config.service";
+import { DbConfigService } from "../services/system-services/db-config.service";
 import { MODELS, Model } from './entities';
 import { Injector } from "../helpers/mini-pie/injector";
 

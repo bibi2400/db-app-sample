@@ -1,4 +1,4 @@
-import { Injectable } from "../helpers/mini-pie/decorators";
+import { Injectable } from "../../helpers/mini-pie/decorators";
 
 /**
  * Servizio che gestisce la rilevazione della modalità di sviluppo.

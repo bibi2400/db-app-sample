@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { KeyBinding, ShortcutDefinition } from '../../../types/shortcut';
-import { ShortcutService } from '../../../services/shortcut.service';
+import { ShortcutService } from 'src/app/services/system-services/shortcut.service';
 
 export interface ShortcutRecordDialogData {
   shortcut: ShortcutDefinition;

@@ -9,8 +9,8 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Subscription } from 'rxjs';
-import { NotificationService } from '../../services/notification.service';
 import { AppNotification, NotificationLevel } from '../../types/notification';
+import { NotificationService } from 'src/app/services/system-services/notification.service';
 
 const LEVEL_ICONS: Record<NotificationLevel, string> = {
   debug: 'bug_report',

@@ -3,13 +3,13 @@ import * as path from 'path';
 import { spawn } from 'child_process';
 import { app, net } from 'electron';
 import { autoUpdater, UpdateInfo } from 'electron-updater';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { PushChannel, PushEvent } from '../decorators/push-channel.decorator';
-import { PushEmitter } from '../helpers/push/push-emitter';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { PushChannel, PushEvent } from '../../decorators/push-channel.decorator';
+import { PushEmitter } from '../../helpers/push/push-emitter';
 import { PushService } from './push.service';
 import { DevModeService } from './dev-mode.service';
-import { Logger } from '../helpers/logger';
-import { RUNTIME_CONFIG } from '../config/runtime-config';
+import { Logger } from '../../helpers/logger';
+import { RUNTIME_CONFIG } from '../../config/runtime-config';
 
 export type UpdateStatusType = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
 

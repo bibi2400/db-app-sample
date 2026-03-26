@@ -35,9 +35,16 @@
                     <span class="item-description">{{ item.description }}</span>
                   }
                 </div>
-                @if (item.shortcutId) {
+                @if (item.shortcutId && paletteService.formatShortcut(item)) {
                   <kbd class="item-shortcut">{{ paletteService.formatShortcut(item) }}</kbd>
                 }
+                <button
+                  class="item-shortcut-btn"
+                  (click)="goToShortcut(item, $event)"
+                  title="Modifica scorciatoia"
+                >
+                  <mat-icon>keyboard</mat-icon>
+                </button>
               </div>
             }
           </div>

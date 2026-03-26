@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
-import { AppDataSource } from '../db/data-source';
-import { AppController, registerAllControllers } from '../controllers';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
+import { AppDataSource } from '../../db/data-source';
+import { AppController, registerAllControllers } from '../../controllers';
 import { AppConfigService } from './app-config.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
 import { ElectronMainWindowService } from './electron-main-window.service';
@@ -14,7 +14,7 @@ import { UpdaterService } from './updater.service';
 import { DevModeService } from './dev-mode.service';
 import { ErrorNotificationService } from './error-notification.service';
 import { ContextMenuService } from './context-menu.service';
-import { initChronomancerForElectron, Chronomancer } from '../helpers/chronomancer.adapter';
+import { initChronomancerForElectron, Chronomancer } from '../../helpers/chronomancer.adapter';
 
 /**
  * Service that orchestrates the application bootstrap process.

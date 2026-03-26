@@ -6,8 +6,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
-import { NavigationService } from '../../services/navigation.service';
-import { NotificationService } from '../../services/notification.service';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
+import { NotificationService } from 'src/app/services/system-services/notification.service';
 
 @Component({
   selector: 'app-toolbar',

@@ -2,8 +2,8 @@ import { BrowserWindow, app } from 'electron';
 import * as path from 'path';
 import * as http from 'http';
 import windowStateKeeper from 'electron-window-state';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
 import { DevModeService } from './dev-mode.service';
@@ -26,7 +26,7 @@ const DEFAULT_MAIN_WINDOW_CONFIG: Required<MainWindowConfig> = {
   height: 800,
   title: 'App',
   // Path relative to dist-electron/src/services/ -> goes to src/assets/
-  icon: '../../../../src/assets/icon.png',
+  icon: '../../../../../src/assets/icon.png',
   devServerUrl: 'http://localhost:4202',
   prodAppUrl: 'app://-',
   devServerMaxAttempts: 30,
@@ -77,7 +77,7 @@ export class ElectronMainWindowService {
         nodeIntegration: false,
         contextIsolation: true,
         // preload.js is at dist-electron/electron/preload.js, service is at dist-electron/electron/src/services/
-        preload: path.join(__dirname, '../../preload.js'),
+        preload: path.join(__dirname, '../../../preload.js'),
       },
     });
 

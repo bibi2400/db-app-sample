@@ -1,8 +1,8 @@
 import { BrowserWindow } from 'electron';
-import { getPushChannelPrefix, getPushEventMetadata } from '../decorators/push-channel.decorator';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
-import { PushEmitter } from '../helpers/push/push-emitter';
+import { getPushChannelPrefix, getPushEventMetadata } from '../../decorators/push-channel.decorator';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
+import { PushEmitter } from '../../helpers/push/push-emitter';
 
 /**
  * Injectable service that manages push events from Electron main process to renderer.

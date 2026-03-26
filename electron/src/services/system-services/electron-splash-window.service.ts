@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import * as path from 'path';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 import { ElectronWindowService } from './electron-window.service';
 import { DevModeService } from './dev-mode.service';
 
@@ -18,7 +18,7 @@ const DEFAULT_SPLASH_CONFIG: Required<SplashConfig> = {
   width: 600,
   height: 400,
   // Path relative to dist-electron/electron/src/services/ -> goes to src/assets/
-  devPath: '../../../../../src/assets/splash.html',
+  devPath: '../../../../../../src/assets/splash.html',
   prodPath: 'splash.html',
 };
 

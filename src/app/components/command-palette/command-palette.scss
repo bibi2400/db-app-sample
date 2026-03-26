@@ -135,6 +135,38 @@
   white-space: nowrap;
 }
 
+.item-shortcut-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #999;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+
+    mat-icon {
+      color: #555;
+    }
+  }
+}
+
+.command-palette-item:hover .item-shortcut-btn {
+  opacity: 1;
+}
+
 .command-palette-empty {
   padding: 24px 16px;
   text-align: center;

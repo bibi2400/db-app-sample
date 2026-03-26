@@ -7,11 +7,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
-import { ElectronUpdateService } from '../../services/electron-api/electron-update.service';
-import { NavigationService } from '../../services/navigation.service';
 import { ChangelogEntry, DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
 import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 import { FullscreenLoaderComponent } from '../../components/fullscreen-loader/fullscreen-loader';
+import { ElectronUpdateService } from 'src/app/services/system-services/electron-api/electron-update.service';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
 
 @Component({
   selector: 'app-update-management',

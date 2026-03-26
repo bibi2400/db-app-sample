@@ -1,10 +1,10 @@
 import { ipcMain } from 'electron';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Injector } from '../helpers/mini-pie/injector';
-import { Constructor } from '../helpers/mini-pie/types';
-import { Logger } from '../helpers/logger';
-import { getControllerMetadata, getRegisteredControllers, isController } from '../decorators/controller.decorator';
-import { getIpcHandlerMetadata } from '../decorators/ipc-handler.decorator';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Injector } from '../../helpers/mini-pie/injector';
+import { Constructor } from '../../helpers/mini-pie/types';
+import { Logger } from '../../helpers/logger';
+import { getControllerMetadata, getRegisteredControllers, isController } from '../../decorators/controller.decorator';
+import { getIpcHandlerMetadata } from '../../decorators/ipc-handler.decorator';
 import { ErrorNotificationService } from './error-notification.service';
 
 export interface IpcResponse<T = unknown> {

@@ -13,9 +13,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { NotificationService } from '../../services/notification.service';
-import { NavigationService } from '../../services/navigation.service';
 import { AppNotification, NotificationLevel } from '../../types/notification';
+import { NotificationService } from 'src/app/services/system-services/notification.service';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
 
 const LEVEL_ICONS: Record<NotificationLevel, string> = {
   debug: 'bug_report',

@@ -4,9 +4,9 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { NavigationService } from '../../services/navigation.service';
-import { ElectronAppService, AppDetails } from '../../services/electron-api/electron-app.service';
 import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
+import { AppDetails, ElectronAppService } from 'src/app/services/system-services/electron-api/electron-app.service';
 
 @Component({
   selector: 'app-info',

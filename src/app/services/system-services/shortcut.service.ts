@@ -1,6 +1,6 @@
 import { Injectable, NgZone, inject, signal } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { KeyBinding, ShortcutDefinition } from '../types/shortcut';
+import { KeyBinding, ShortcutDefinition } from '../../types/shortcut';
 import { SHORTCUT_REGISTRY } from './shortcut-registry';
 
 const STORAGE_KEY = 'app-shortcut-bindings';
@@ -88,7 +88,21 @@ export class ShortcutService {
     );
   }
 
-  formatBinding(binding: KeyBinding): string {
+  registerDynamic(id: string, name: string, description: string, category: string): void {
+    if (SHORTCUT_REGISTRY[id]) return;
+    SHORTCUT_REGISTRY[id] = {
+      name,
+      description,
+      category,
+      defaultBinding: { key: '' },
+    };
+    this.bindings.set(id, { key: '' });
+    this.subjects.set(id, new Subject<KeyboardEvent>());
+    this.refreshDefinitions();
+  }
+
+  formatBinding(binding: KeyBinding, notFoundText = 'Non assegnata'): string {
+    if (!binding.key) return notFoundText;
     const parts: string[] = [];
     if (binding.ctrl) parts.push('Ctrl');
     if (binding.alt) parts.push('Alt');

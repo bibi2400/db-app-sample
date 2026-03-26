@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IpcResponse } from '../../types/global';
+import { IpcResponse } from '../../../types/global';
 
 export interface AppInfo {
   name: string;

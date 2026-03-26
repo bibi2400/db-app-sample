@@ -1,8 +1,8 @@
 import { app, BrowserWindow } from "electron";
 import { execSync } from "child_process";
-import { Injectable } from "../helpers/mini-pie/decorators";
-import { Logger } from "../helpers/logger";
-import { AppDataSource } from "../db/data-source";
+import { Injectable } from "../../helpers/mini-pie/decorators";
+import { Logger } from "../../helpers/logger";
+import { AppDataSource } from "../../db/data-source";
 import { DevModeService } from "./dev-mode.service";
 
 type CleanupCallback = () => void | Promise<void>;

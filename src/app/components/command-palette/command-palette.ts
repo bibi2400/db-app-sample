@@ -11,8 +11,9 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { CommandPaletteService } from '../../services/command-palette.service';
+import { Router } from '@angular/router';
 import { CommandPaletteItem } from '../../types/command-palette';
+import { CommandPaletteService } from 'src/app/services/system-services/command-palette.service';
 
 @Component({
   selector: 'app-command-palette',
@@ -27,6 +28,7 @@ import { CommandPaletteItem } from '../../types/command-palette';
 })
 export class CommandPalette implements OnDestroy {
   readonly paletteService = inject(CommandPaletteService);
+  private router = inject(Router);
   private inputRef = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
   readonly isOpen = this.paletteService.isOpen;
@@ -108,6 +110,12 @@ export class CommandPalette implements OnDestroy {
 
   executeItem(item: CommandPaletteItem): void {
     this.paletteService.execute(item.id);
+  }
+
+  goToShortcut(item: CommandPaletteItem, event: MouseEvent): void {
+    event.stopPropagation();
+    this.paletteService.close();
+    this.router.navigate(['/shortcuts'], { queryParams: { highlight: item.shortcutId } });
   }
 
   onBackdropClick(event: MouseEvent): void {

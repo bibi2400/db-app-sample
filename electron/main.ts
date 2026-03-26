@@ -5,7 +5,7 @@ import "reflect-metadata";
 import { Logger } from "./src/helpers/logger";
 import { Injector } from "./src/helpers/mini-pie/injector";
 import { SERVICES } from "./src/services";
-import { AppBootstrapService } from "./src/services/app-bootstrap.service";
+import { AppBootstrapService } from "./src/services/system-services/app-bootstrap.service";
 
 // Main application entry point (async to support dynamic import of ESM-only packages)
 async function main() {

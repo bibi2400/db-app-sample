@@ -6,10 +6,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
-import { ElectronBackupService } from '../../services/electron-api/electron-backup.service';
-import { ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { BackupInfo, BackupStats } from '../../types/backup';
-import { NavigationService } from '../../services/navigation.service';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
+import { ElectronAppService } from 'src/app/services/system-services/electron-api/electron-app.service';
+import { ElectronBackupService } from 'src/app/services/system-services/electron-api/electron-backup.service';
 
 @Component({
   selector: 'app-backup-management',

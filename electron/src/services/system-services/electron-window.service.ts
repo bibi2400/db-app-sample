@@ -1,6 +1,6 @@
 import { BrowserWindow, BrowserWindowConstructorOptions, app } from 'electron';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 
 export interface WindowConfig extends BrowserWindowConstructorOptions {
   /** Unique identifier for the window */

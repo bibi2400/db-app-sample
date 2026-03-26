@@ -1,5 +1,5 @@
-import { Injectable } from "../helpers/mini-pie/decorators";
-import { Logger } from "../helpers/logger";
+import { Injectable } from "../../helpers/mini-pie/decorators";
+import { Logger } from "../../helpers/logger";
 import { AppDataService } from "./app-data.service";
 
 const CACHE_DIR = 'cache';

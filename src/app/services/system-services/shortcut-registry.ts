@@ -1,4 +1,4 @@
-import { ShortcutEntry } from '../types/shortcut';
+import { ShortcutEntry } from '../../types/shortcut';
 
 /**
  * Registry dichiarativo degli shortcut dell'applicazione.

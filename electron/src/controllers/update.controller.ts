@@ -1,4 +1,4 @@
-import { UpdaterService } from '../services/updater.service';
+import { UpdaterService } from '../services/system-services/updater.service';
 import { BaseController } from './base.controller';
 import { IpcHandler } from '../decorators/ipc-handler.decorator';
 import { Controller } from '../decorators/controller.decorator';

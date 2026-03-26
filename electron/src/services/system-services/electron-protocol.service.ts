@@ -1,8 +1,8 @@
 import { net, protocol } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Injectable } from '../helpers/mini-pie/decorators';
-import { Logger } from '../helpers/logger';
+import { Injectable } from '../../helpers/mini-pie/decorators';
+import { Logger } from '../../helpers/logger';
 import { AppConfigService } from './app-config.service';
 
 /**

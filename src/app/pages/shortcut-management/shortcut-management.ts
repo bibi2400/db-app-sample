@@ -1,17 +1,18 @@
-import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, computed, AfterViewInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ShortcutService } from '../../services/shortcut.service';
-import { NavigationService } from '../../services/navigation.service';
 import { ShortcutDefinition, KeyBinding } from '../../types/shortcut';
 import {
   ShortcutRecordDialog,
   ShortcutRecordDialogData,
 } from '../../components/dialogs/shortcut-record-dialog/shortcut-record-dialog';
+import { NavigationService } from 'src/app/services/system-services/navigation.service';
+import { ShortcutService } from 'src/app/services/system-services/shortcut.service';
 
 @Component({
   selector: 'app-shortcut-management',
@@ -27,9 +28,10 @@ import {
   styleUrl: './shortcut-management.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ShortcutManagement {
+export class ShortcutManagement implements AfterViewInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
+  private route = inject(ActivatedRoute);
   private navigationService = inject(NavigationService);
   readonly shortcutService = inject(ShortcutService);
 
@@ -46,6 +48,24 @@ export class ShortcutManagement {
 
   constructor() {
     this.navigationService.setTitle('Scorciatoie da Tastiera', 'keyboard');
+  }
+
+  ngAfterViewInit(): void {
+    const highlightId = this.route.snapshot.queryParamMap.get('highlight');
+    if (!highlightId) return;
+
+    setTimeout(() => {
+      const el = document.getElementById(`shortcut-${highlightId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlight');
+      }
+
+      const shortcut = this.shortcutService.definitions().find(d => d.id === highlightId);
+      if (shortcut && !shortcut.currentBinding.key) {
+        this.editShortcut(shortcut);
+      }
+    }, 300);
   }
 
   editShortcut(shortcut: ShortcutDefinition): void {

@@ -4,8 +4,8 @@ import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { MenuItem, NavigationService } from '../../services/navigation.service';
-import { ElectronAppService } from '../../services/electron-api/electron-app.service';
+import { ElectronAppService } from 'src/app/services/system-services/electron-api/electron-app.service';
+import { MenuItem, NavigationService } from 'src/app/services/system-services/navigation.service';
 
 @Component({
   selector: 'app-sidebar',

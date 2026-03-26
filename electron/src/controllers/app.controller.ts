@@ -5,9 +5,9 @@ import { BaseController } from './base.controller';
 import { IpcHandler } from '../decorators/ipc-handler.decorator';
 import { Controller } from '../decorators/controller.decorator';
 import { Logger } from '../helpers/logger';
-import { AppConfigService } from '../services/app-config.service';
-import { AppDataService } from '../services/app-data.service';
-import { DbConfigService } from '../services/db-config.service';
+import { AppConfigService } from '../services/system-services/app-config.service';
+import { AppDataService } from '../services/system-services/app-data.service';
+import { DbConfigService } from '../services/system-services/db-config.service';
 
 @Controller({ prefix: 'app' })
 export class AppController extends BaseController {

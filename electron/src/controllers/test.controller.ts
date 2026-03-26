@@ -1,5 +1,5 @@
-import { TestService } from "../services/test.service";
-import { NotificationService } from "../services/notification.service";
+import { TestService } from "../services/system-services/test.service";
+import { NotificationService } from "../services/system-services/notification.service";
 import { BaseController } from "./base.controller";
 import { IpcHandler } from "../decorators/ipc-handler.decorator";
 import { Controller } from "../decorators/controller.decorator";

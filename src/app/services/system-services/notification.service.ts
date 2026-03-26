@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { ElectronPushService } from './electron-api/electron-push.service';
-import { AppNotification, NotificationLevel } from '../types/notification';
-import { IpcResponse } from '../types/global';
+import { AppNotification, NotificationLevel } from '../../types/notification';
+import { IpcResponse } from '../../types/global';
 
 const STORAGE_KEY = 'app-notifications';
 

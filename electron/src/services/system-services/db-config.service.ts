@@ -1,4 +1,4 @@
-import { Injectable } from "../helpers/mini-pie/decorators";
+import { Injectable } from "../../helpers/mini-pie/decorators";
 import { ConfigService } from "./config.service";
 
 export interface DbConfig {

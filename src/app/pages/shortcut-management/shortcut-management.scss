@@ -56,6 +56,10 @@
       background-color: rgba(0, 0, 0, 0.02);
     }
 
+    &.highlight {
+      animation: shortcutHighlight 2s ease-out;
+    }
+
     .shortcut-info {
       flex: 1;
 
@@ -97,5 +101,14 @@
       display: flex;
       gap: 4px;
     }
+  }
+}
+
+@keyframes shortcutHighlight {
+  0%, 30% {
+    background-color: #e3f2fd;
+  }
+  100% {
+    background-color: transparent;
   }
 }

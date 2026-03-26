@@ -6,7 +6,7 @@
  */
 
 import { Injectable, isDevMode } from '@angular/core';
-import { Chronomancer, type ChronoLogger, type TimeProvider, type ChronoReport, type MeasurementStats } from '../../../shared/chronomancer';
+import { Chronomancer, type ChronoLogger, type TimeProvider, type ChronoReport, type MeasurementStats } from '../../../../shared/chronomancer';
 
 // Browser time provider using Performance API
 const browserTimeProvider: TimeProvider = {
@@ -142,5 +142,5 @@ export class ChronoService {
 }
 
 // Also export static Chronomancer for direct usage (e.g., in decorators)
-export { Chronomancer } from '../../../shared/chronomancer';
-export type * from '../../../shared/chronomancer';
+export { Chronomancer } from '../../../../shared/chronomancer';
+export type * from '../../../../shared/chronomancer';

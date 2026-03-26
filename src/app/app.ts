@@ -2,18 +2,18 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal }
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { NavigationService } from './services/navigation.service';
-import { ElectronUpdateService } from './services/electron-api/electron-update.service';
-import { ElectronAppService } from './services/electron-api/electron-app.service';
-import { ShortcutService } from './services/shortcut.service';
-import { CommandPaletteService } from './services/command-palette.service';
-import { NotificationService } from './services/notification.service';
 import { UpdateStatusType } from './types/update';
 import { NotificationPanel } from './components/notification-panel/notification-panel';
 import { CommandPalette } from './components/command-palette/command-palette';
 import { Sidebar } from './components/sidebar/sidebar';
 import { Toolbar } from './components/toolbar/toolbar';
 import "./types/global";
+import { NavigationService } from './services/system-services/navigation.service';
+import { CommandPaletteService } from './services/system-services/command-palette.service';
+import { ElectronAppService } from './services/system-services/electron-api/electron-app.service';
+import { ElectronUpdateService } from './services/system-services/electron-api/electron-update.service';
+import { NotificationService } from './services/system-services/notification.service';
+import { ShortcutService } from './services/system-services/shortcut.service';
 
 const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
 
