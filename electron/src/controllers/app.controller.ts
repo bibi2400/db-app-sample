@@ -77,14 +77,10 @@ export class AppController extends BaseController {
   async getAppDetails() {
     try {
       const info = this.appConfigService.getInfo();
-      const dbPath = this.dbConfigService.dbPath;
-      const resolvedDbPath = path.isAbsolute(dbPath)
-        ? dbPath
-        : path.resolve(app.getAppPath(), dbPath);
       return this.success({
         name: info.name,
         version: info.version,
-        dbPath: resolvedDbPath,
+        dbPath: this.dbConfigService.dbPath,
         appDataPath: this.appDataService.getBasePath(),
         installPath: app.getAppPath(),
         electron: process.versions.electron,

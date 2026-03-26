@@ -35,16 +35,11 @@ Function readExistingDbPath
     ; Check if this line contains "dbPath"
     ${WordFind} $1 '"dbPath"' "E+1{" $2
     ${If} $2 != $1
-      ; Found dbPath line — extract value between quotes after the colon
-      ; Line format:   "dbPath": "some/path/database.sqlite"
-      ; Extract everything after the first colon
-      ${WordFind} $1 ":" "+1}" $3
-      ; Strip line-ending characters
-      ${WordReplace} $3 '$\r' "" "+" $3
-      ${WordReplace} $3 '$\n' "" "+" $3
-      ; Get everything after the first quote → value"
-      ${WordFind} $3 '"' "+1}" $3
-      ; Get everything before the next quote → value
+      ; Found dbPath line — extract value between quotes
+      ; Line has 4 quotes: "dbPath": "value"
+      ; Extract everything after the 3rd quote → value"
+      ${WordFind} $1 '"' "+3}" $3
+      ; Extract everything before the next quote → value
       ${WordFind} $3 '"' "+1{" $3
       ; Remove the trailing "database.sqlite" to get just the folder path
       ${WordReplace} $3 "/database.sqlite" "" "+" $3
