@@ -46,7 +46,7 @@ export class UpdaterService {
   @PushEvent('download-progress')
   readonly downloadProgress = new PushEmitter<DownloadProgress>();
 
-  private static readonly CHECK_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+  private static readonly CHECK_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
   private periodicCheckTimer: ReturnType<typeof setInterval> | null = null;
   private currentStatus: UpdateStatus;
 
