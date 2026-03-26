@@ -91,7 +91,7 @@
     {
       "label": "🔀 Merge in Main",
       "type": "shell",
-      "command": "git checkout main && git merge - && git push && git checkout -",
+      "command": "git checkout main && git pull && git merge - && git push && git checkout -",
       "problemMatcher": []
     }
   ],
