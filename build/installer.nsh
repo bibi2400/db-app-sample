@@ -42,8 +42,10 @@ Function readExistingDbPath
       ; Strip line-ending characters
       ${WordReplace} $3 '$\r' "" "+" $3
       ${WordReplace} $3 '$\n' "" "+" $3
-      ; Extract the value between the double quotes (preserves spaces in paths)
-      ${WordFind} $3 '"' "+2" $3
+      ; Get everything after the first quote → value"
+      ${WordFind} $3 '"' "+1}" $3
+      ; Get everything before the next quote → value
+      ${WordFind} $3 '"' "+1{" $3
       ; Remove the trailing "database.sqlite" to get just the folder path
       ${WordReplace} $3 "/database.sqlite" "" "+" $3
       ${WordReplace} $3 "\database.sqlite" "" "+" $3
