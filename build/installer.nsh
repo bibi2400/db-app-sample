@@ -33,8 +33,9 @@ Function readExistingDbPath
     ${EndIf}
 
     ; Check if this line contains "dbPath"
+    ClearErrors
     ${WordFind} $1 '"dbPath"' "E+1{" $2
-    ${If} $2 != $1
+    ${IfNot} ${Errors}
       ; Found dbPath line — extract value between quotes
       ; Line has 4 quotes: "dbPath": "value"
       ; Extract everything after the 3rd quote → value"

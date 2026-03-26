@@ -35,6 +35,14 @@ export class ElectronAppService {
     await window.electronAPI.invoke<IpcResponse<null>>('app:open-appdata');
   }
 
+  async openDbFolder(): Promise<void> {
+    await window.electronAPI.invoke<IpcResponse<null>>('app:open-db-folder');
+  }
+
+  async openInstallFolder(): Promise<void> {
+    await window.electronAPI.invoke<IpcResponse<null>>('app:open-install-folder');
+  }
+
   async getDetails(): Promise<AppDetails | null> {
     const response = await window.electronAPI.invoke<IpcResponse<AppDetails>>('app:details');
     return response.success && response.data ? response.data : null;

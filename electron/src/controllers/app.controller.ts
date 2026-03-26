@@ -73,6 +73,30 @@ export class AppController extends BaseController {
     }
   }
 
+  @IpcHandler('open-db-folder')
+  async openDbFolder() {
+    try {
+      const dbPath = this.dbConfigService.dbPath;
+      const folder = path.isAbsolute(dbPath)
+        ? path.dirname(dbPath)
+        : path.resolve(app.getAppPath(), path.dirname(dbPath));
+      shell.openPath(folder);
+      return this.success(null);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler('open-install-folder')
+  async openInstallFolder() {
+    try {
+      shell.openPath(app.getAppPath());
+      return this.success(null);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
   @IpcHandler('details')
   async getAppDetails() {
     try {

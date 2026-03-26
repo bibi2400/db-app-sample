@@ -33,16 +33,21 @@
                 </span>
               }
             </div>
-            <mat-icon class="edit-icon" (click)="changeDbPath()" matTooltip="Cambia percorso database">edit</mat-icon>
+            <div class="action-icons">
+              <mat-icon class="action-icon" (click)="openDbFolder()" matTooltip="Apri in Explorer">folder_open</mat-icon>
+              <mat-icon class="action-icon" (click)="changeDbPath()" matTooltip="Cambia percorso database">drive_file_move</mat-icon>
+            </div>
           </div>
 
-          <div class="info-item clickable" (click)="openAppData()" matTooltip="Apri in Explorer">
+          <div class="info-item">
             <mat-icon>folder</mat-icon>
             <div>
               <span class="info-label">Cartella AppData</span>
               <span class="info-value path">{{ d.appDataPath }}</span>
             </div>
-            <mat-icon class="open-icon">open_in_new</mat-icon>
+            <div class="action-icons">
+              <mat-icon class="action-icon" (click)="openAppData()" matTooltip="Apri in Explorer">folder_open</mat-icon>
+            </div>
           </div>
 
           <div class="info-item">
@@ -50,6 +55,9 @@
             <div>
               <span class="info-label">Percorso Installazione</span>
               <span class="info-value path">{{ d.installPath }}</span>
+            </div>
+            <div class="action-icons">
+              <mat-icon class="action-icon" (click)="openInstallFolder()" matTooltip="Apri in Explorer">folder_open</mat-icon>
             </div>
           </div>
         </div>

@@ -46,6 +46,14 @@ export class AppInfo implements OnInit {
     this.appService.openAppData();
   }
 
+  openDbFolder(): void {
+    this.appService.openDbFolder();
+  }
+
+  openInstallFolder(): void {
+    this.appService.openInstallFolder();
+  }
+
   async changeDbPath(): Promise<void> {
     this.dbPathError.set(null);
     try {
