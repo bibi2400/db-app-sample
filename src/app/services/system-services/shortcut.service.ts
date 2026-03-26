@@ -96,7 +96,8 @@ export class ShortcutService {
       category,
       defaultBinding: { key: '' },
     };
-    this.bindings.set(id, { key: '' });
+    const overrides = this.loadOverrides();
+    this.bindings.set(id, overrides[id] ?? { key: '' });
     this.subjects.set(id, new Subject<KeyboardEvent>());
     this.refreshDefinitions();
   }

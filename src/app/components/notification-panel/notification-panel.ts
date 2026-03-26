@@ -82,6 +82,14 @@ export class NotificationPanel implements OnInit, OnDestroy {
   }
 
   private addNotification(notification: AppNotification): void {
+    // Remove existing toast with the same dedupId
+    if (notification.dedupId) {
+      const existing = this.notifications().find(n => n.dedupId === notification.dedupId);
+      if (existing) {
+        this.removeToast(existing.id);
+      }
+    }
+
     this.notifications.update(list => [...list, notification]);
 
     const duration = AUTO_DISMISS_MS[notification.level];

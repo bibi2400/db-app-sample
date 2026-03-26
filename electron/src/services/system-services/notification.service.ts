@@ -13,6 +13,7 @@ export interface AppNotification {
   level: NotificationLevel;
   icon?: string;
   timestamp: number;
+  dedupId?: string;
 }
 
 @PushChannel('notification')
@@ -46,7 +47,7 @@ export class NotificationService {
    * Send a notification to the renderer process.
    * If the channel is not yet enabled, notifications are queued.
    */
-  notify(level: NotificationLevel, title: string, message: string, icon?: string): void {
+  notify(level: NotificationLevel, title: string, message: string, icon?: string, dedupId?: string): void {
     const notification: AppNotification = {
       id: `be-${Date.now()}-${++this.counter}`,
       title,
@@ -54,6 +55,7 @@ export class NotificationService {
       level,
       icon,
       timestamp: Date.now(),
+      dedupId,
     };
 
     if (this.enabled) {
@@ -65,19 +67,19 @@ export class NotificationService {
     Logger.info(`[Notification] ${level}: ${title}`);
   }
 
-  debug(title: string, message: string, icon?: string): void {
-    this.notify('debug', title, message, icon);
+  debug(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('debug', title, message, icon, dedupId);
   }
 
-  info(title: string, message: string, icon?: string): void {
-    this.notify('info', title, message, icon);
+  info(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('info', title, message, icon, dedupId);
   }
 
-  warn(title: string, message: string, icon?: string): void {
-    this.notify('warn', title, message, icon);
+  warn(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('warn', title, message, icon, dedupId);
   }
 
-  error(title: string, message: string, icon?: string): void {
+  error(title: string, message: string, icon?: string, dedupId?: string): void {
     this.notify('error', title, message, icon);
   }
 }

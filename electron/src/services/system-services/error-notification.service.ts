@@ -20,6 +20,7 @@ export class ErrorNotificationService {
       `Errore: ${channel}`,
       message,
       'error',
+      `controller-error:${channel}`,
     );
   }
 
@@ -33,6 +34,7 @@ export class ErrorNotificationService {
       `Errore avvio: ${phase}`,
       message,
       'warning',
+      `bootstrap-error:${phase}`,
     );
   }
 

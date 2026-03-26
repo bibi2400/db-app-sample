@@ -56,6 +56,7 @@ export class App implements OnInit, OnDestroy {
           'Aggiornamento disponibile',
           `È disponibile la versione ${status.availableVersion}. Vai alla sezione Aggiornamenti per scaricarla.`,
           'system_update',
+          'update-available',
         );
       }
     });

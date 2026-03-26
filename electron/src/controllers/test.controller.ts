@@ -77,20 +77,39 @@ export class TestController extends BaseController {
 
   @IpcHandler("test-notifications")
   async testNotifications() {
-    this.notificationService.info('Test Info', 'Questa è una notifica informativa di test dal backend.');
+    this.notificationService.info(
+      'Test Info',
+      'Questa è una notifica informativa di test dal backend.',
+      "rocket_launch", 
+      "test-info"
+    );
 
     await this.simulateWork(1500);
-    this.notificationService.warn('Test Warning', 'Attenzione: questa è una notifica di avviso dal backend.');
+    this.notificationService.warn(
+      'Test Warning',
+      'Attenzione: questa è una notifica di avviso dal backend.',
+      "rocket_launch",
+      "test-warn"
+    );
 
     await this.simulateWork(1500);
     try {
       throw new Error
     } catch(e) {
-      this.notificationService.error('Test Error', 'Errore simulato dal backend per verificare il sistema di notifiche.\n'+(<Error>e).stack);
+      this.notificationService.error(
+        'Test Error',
+        'Errore simulato dal backend per verificare il sistema di notifiche.\n'+(<Error>e).stack,
+        "rocket_launch",
+        "test-error-1"
+      );
     }
 
     await this.simulateWork(1500);
-    this.notificationService.debug('Test Debug', 'Messaggio di debug dal backend con dettagli tecnici sulla richiesta.');
+    this.notificationService.debug('Test Debug',
+      'Messaggio di debug dal backend con dettagli tecnici sulla richiesta.',
+      "rocket_launch",
+      "test-debug"
+    );
 
     throw new Error("Test error")
   }

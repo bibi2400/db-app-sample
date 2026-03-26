@@ -44,7 +44,7 @@ export class NotificationService {
   }
 
   /** Add a notification to history and broadcast to listeners */
-  notify(level: NotificationLevel, title: string, message: string, icon?: string): void {
+  notify(level: NotificationLevel, title: string, message: string, icon?: string, dedupId?: string): void {
     const notification: AppNotification = {
       id: `fe-${Date.now()}-${++this.counter}`,
       title,
@@ -53,6 +53,7 @@ export class NotificationService {
       icon,
       timestamp: Date.now(),
       read: false,
+      dedupId,
     };
     this.addToHistory(notification);
     this.listeners.forEach(l => l(notification));
@@ -61,7 +62,12 @@ export class NotificationService {
   /** Add a notification to history (called for both frontend and backend notifications) */
   addToHistory(notification: AppNotification): void {
     const n = notification.read !== undefined ? notification : { ...notification, read: false };
-    this.notifications.update(list => [n, ...list]);
+    this.notifications.update(list => {
+      if (n.dedupId) {
+        return [n, ...list.filter(existing => existing.dedupId !== n.dedupId)];
+      }
+      return [n, ...list];
+    });
   }
 
   markAsRead(id: string): void {
@@ -94,20 +100,20 @@ export class NotificationService {
     this.notifications.set([]);
   }
 
-  debug(title: string, message: string, icon?: string): void {
-    this.notify('debug', title, message, icon);
+  debug(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('debug', title, message, icon, dedupId);
   }
 
-  info(title: string, message: string, icon?: string): void {
-    this.notify('info', title, message, icon);
+  info(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('info', title, message, icon, dedupId);
   }
 
-  warn(title: string, message: string, icon?: string): void {
-    this.notify('warn', title, message, icon);
+  warn(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('warn', title, message, icon, dedupId);
   }
 
-  error(title: string, message: string, icon?: string): void {
-    this.notify('error', title, message, icon);
+  error(title: string, message: string, icon?: string, dedupId?: string): void {
+    this.notify('error', title, message, icon, dedupId);
   }
 
   private loadFromStorage(): AppNotification[] {

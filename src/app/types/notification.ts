@@ -8,4 +8,5 @@ export interface AppNotification {
   icon?: string;
   timestamp: number;
   read: boolean;
+  dedupId?: string;
 }
