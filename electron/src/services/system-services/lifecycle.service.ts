@@ -2,7 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { execSync } from "child_process";
 import { Injectable } from "../../helpers/mini-pie/decorators";
 import { Logger } from "../../helpers/logger";
-import { AppDataSource } from "../../db/data-source";
+import { DataSourceService } from "./data-source.service";
 import { DevModeService } from "./dev-mode.service";
 
 type CleanupCallback = () => void | Promise<void>;
@@ -18,7 +18,10 @@ export class LifecycleService {
   private isQuitting = false;
   private cleanupCallbacks: CleanupCallback[] = [];
 
-  constructor(private readonly devModeService: DevModeService) {}
+  constructor(
+    private readonly devModeService: DevModeService,
+    private readonly dataSourceService: DataSourceService,
+  ) {}
 
   /**
    * Initialize the lifecycle service with the main window.
@@ -210,8 +213,8 @@ export class LifecycleService {
 
   private async closeDatabase(): Promise<void> {
     try {
-      if (AppDataSource.instance.isInitialized) {
-        await AppDataSource.instance.destroy();
+      if (this.dataSourceService.isInitialized) {
+        await this.dataSourceService.destroy();
         Logger.info('[Lifecycle] Database connection closed');
       }
     } catch (error) {
@@ -224,8 +227,8 @@ export class LifecycleService {
 
     // Try to close database synchronously-ish
     try {
-      if (AppDataSource.instance.isInitialized) {
-        AppDataSource.instance.destroy().catch(() => {});
+      if (this.dataSourceService.isInitialized) {
+        this.dataSourceService.destroy().catch(() => {});
       }
     } catch {
       // DataSource may not have been initialized

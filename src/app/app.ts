@@ -163,6 +163,23 @@ export class App implements OnInit, OnDestroy {
         },
       },
       {
+        id: 'action.checkUpdates',
+        label: 'Controlla Aggiornamenti',
+        description: 'Vai agli aggiornamenti e controlla se ci sono nuove versioni',
+        category: 'Azioni',
+        icon: 'system_update',
+        route: '/updates',
+        action: () => this.updateService.checkForUpdates(),
+      },
+      {
+        id: 'action.reload',
+        label: 'Ricarica Applicazione',
+        description: 'Ricarica la finestra dell\'applicazione',
+        category: 'Azioni',
+        icon: 'refresh',
+        action: () => this.appService.reload(),
+      },
+      {
         id: 'test.notifications',
         label: 'Test Notifiche',
         description: 'Invia notifiche di test dal backend',

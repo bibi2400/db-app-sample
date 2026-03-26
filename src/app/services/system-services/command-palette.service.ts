@@ -1,10 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommandPaletteItem } from '../../types/command-palette';
 import { ShortcutService } from './shortcut.service';
 
 @Injectable({ providedIn: 'root' })
 export class CommandPaletteService {
   private shortcutService = inject(ShortcutService);
+  private router = inject(Router);
   private commands = new Map<string, CommandPaletteItem>();
 
   readonly isOpen = signal(false);
@@ -57,12 +59,14 @@ export class CommandPaletteService {
     this.isOpen.update(v => !v);
   }
 
-  execute(id: string): void {
+  async execute(id: string): Promise<void> {
     const cmd = this.commands.get(id);
-    if (cmd) {
-      this.close();
-      cmd.action();
+    if (!cmd) return;
+    this.close();
+    if (cmd.route) {
+      await this.router.navigate([cmd.route]);
     }
+    cmd.action();
   }
 
   private refreshItems(): void {

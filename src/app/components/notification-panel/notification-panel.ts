@@ -69,6 +69,10 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
   dismiss(id: string): void {
     this.notificationService.markAsRead(id);
+    this.removeToast(id);
+  }
+
+  private removeToast(id: string): void {
     this.notifications.update(list => list.filter(n => n.id !== id));
     const timer = this.timers.get(id);
     if (timer) {
@@ -82,8 +86,7 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
     const duration = AUTO_DISMISS_MS[notification.level];
     const timer = setTimeout(() => {
-      this.dismiss(notification.id);
-      this.timers.delete(notification.id);
+      this.removeToast(notification.id);
     }, duration);
     this.timers.set(notification.id, timer);
   }

@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import { Injectable } from '../../helpers/mini-pie/decorators';
 import { Logger } from '../../helpers/logger';
-import { AppDataSource } from '../../db/data-source';
+import { DataSourceService } from './data-source.service';
 import { AppController, registerAllControllers } from '../../controllers';
 import { AppConfigService } from './app-config.service';
 import { ElectronSplashWindowService } from './electron-splash-window.service';
@@ -36,6 +36,7 @@ export class AppBootstrapService {
     private readonly devModeService: DevModeService,
     private readonly errorNotificationService: ErrorNotificationService,
     private readonly contextMenuService: ContextMenuService,
+    private readonly dataSourceService: DataSourceService,
   ) {}
 
   /**
@@ -107,7 +108,7 @@ export class AppBootstrapService {
       Logger.debug('[Bootstrap] Process resource path:', process.resourcesPath);
 
       Chronomancer.start('database-init', 'bootstrap');
-      await AppDataSource.initialize();
+      await this.dataSourceService.initialize();
       Chronomancer.stop('database-init', 'bootstrap');
       Logger.info('[Bootstrap] ✓ Database connection established');
 
