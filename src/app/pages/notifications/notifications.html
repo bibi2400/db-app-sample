@@ -1,12 +1,27 @@
 <div class="notifications-page">
   <div class="notifications-header">
     <h2>Notifiche</h2>
-    @if (unreadCount() > 0) {
-      <button mat-stroked-button (click)="markAllAsRead()" class="mark-all-btn">
-        <mat-icon>done_all</mat-icon>
-        Segna tutte come lette
-      </button>
-    }
+    <div class="header-actions">
+      @if (unreadCount() > 0) {
+        <button mat-stroked-button (click)="markAllAsRead()" class="mark-all-btn">
+          <mat-icon>done_all</mat-icon>
+          Segna tutte come lette
+        </button>
+      }
+      @if (hasNotifications()) {
+        @if (unreadCount() > 0) {
+          <button mat-stroked-button color="warn" (click)="clearRead()" class="clear-all-btn">
+            <mat-icon>delete_sweep</mat-icon>
+            Cancella lette
+          </button>
+        } @else {
+          <button mat-stroked-button color="warn" (click)="clearAll()" class="clear-all-btn">
+            <mat-icon>delete_sweep</mat-icon>
+            Cancella tutte
+          </button>
+        }
+      }
+    </div>
   </div>
 
   @if (hasNotifications()) {
@@ -33,11 +48,26 @@
           <div matListItemLine class="notification-preview">
             {{ n.message }}
           </div>
-          @if (!n.read) {
-            <div matListItemMeta class="unread-dot-container">
-              <span class="unread-dot" aria-label="Non letta"></span>
-            </div>
-          }
+          <div matListItemMeta class="item-meta">
+            <button
+              mat-icon-button
+              class="action-btn"
+              (click)="toggleReadStatus($event, n)"
+              [matTooltip]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
+              [attr.aria-label]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
+            >
+              <mat-icon>{{ n.read ? 'mark_email_unread' : 'mark_email_read' }}</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="action-btn delete-btn"
+              (click)="removeNotification($event, n.id)"
+              matTooltip="Cancella notifica"
+              aria-label="Cancella notifica"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
         </mat-list-item>
         @if (isExpanded(n.id)) {
           <div class="notification-expanded"

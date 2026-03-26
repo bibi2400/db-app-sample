@@ -1,5 +1,5 @@
 import { inject, Injectable, NgZone } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 /**
  * Centralized service for receiving push events from the Electron main process.
@@ -34,6 +34,9 @@ export class ElectronPushService {
       return () => {
         window.electronAPI.off(channel, handler);
       };
-    });
+    }).pipe(map(e => {
+      console.info('%c🎯 Push Event%c received from backend', 'color: #f39121; font-weight: bold', 'color: inherit', channel, e);
+      return e;
+    }));
   }
 }

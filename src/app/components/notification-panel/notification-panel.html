@@ -6,8 +6,8 @@
       [class.level-info]="n.level === 'info'"
       [class.level-warn]="n.level === 'warn'"
       [class.level-error]="n.level === 'error'"
-      [class.expanded]="expandedIds().has(n.id)"
       role="status"
+      (click)="dismiss(n.id)"
     >
       <div class="notification-header">
         <mat-icon class="notification-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
@@ -21,19 +21,10 @@
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      <div class="notification-body" (click)="toggleExpand(n.id)">
-        <p class="notification-message" [class.collapsed]="!expandedIds().has(n.id)">
+      <div class="notification-body">
+        <p class="notification-message">
           {{ n.message }}
         </p>
-        @if (isLongMessage(n.message)) {
-          <button
-            class="expand-toggle"
-            (click)="toggleExpand(n.id); $event.stopPropagation()"
-            [attr.aria-label]="expandedIds().has(n.id) ? 'Comprimi messaggio' : 'Espandi messaggio'"
-          >
-            {{ expandedIds().has(n.id) ? 'Mostra meno' : 'Mostra tutto' }}
-          </button>
-        }
       </div>
     </div>
   }
