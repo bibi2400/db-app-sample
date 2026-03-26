@@ -87,6 +87,12 @@
       "type": "shell",
       "command": "npx tsx scripts/generate.ts electron-controller ${input:electronControllerName}",
       "problemMatcher": []
+    },
+    {
+      "label": "🔀 Merge in Main",
+      "type": "shell",
+      "command": "git checkout main && git merge - && git push && git checkout -",
+      "problemMatcher": []
     }
   ],
   "inputs": [
