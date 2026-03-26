@@ -35,7 +35,7 @@ export class ElectronPushService {
         window.electronAPI.off(channel, handler);
       };
     }).pipe(map(e => {
-      console.info('%c🎯 Push Event%c received from backend', 'color: #f39121; font-weight: bold', 'color: inherit', channel, e);
+      console.info('%c🎯 Push Event%c', 'color: #f39121; font-weight: bold', 'color: inherit', channel, e);
       return e;
     }));
   }
