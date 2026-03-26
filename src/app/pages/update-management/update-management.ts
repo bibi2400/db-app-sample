@@ -11,6 +11,7 @@ import { ElectronUpdateService } from '../../services/electron-api/electron-upda
 import { NavigationService } from '../../services/navigation.service';
 import { ChangelogEntry, DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
 import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
+import { FullscreenLoaderComponent } from '../../components/fullscreen-loader/fullscreen-loader';
 
 @Component({
   selector: 'app-update-management',
@@ -22,6 +23,7 @@ import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/
     MatProgressSpinnerModule,
     MatDialogModule,
     DatePipe,
+    FullscreenLoaderComponent,
   ],
   templateUrl: './update-management.html',
   styleUrl: './update-management.scss',
@@ -48,6 +50,8 @@ export class UpdateManagement implements OnInit, OnDestroy {
   isDownloading = computed(() => this.status() === 'downloading');
   isDownloaded = computed(() => this.status() === 'downloaded');
   isError = computed(() => this.status() === 'error');
+
+  repairing = signal(false);
 
   showChangelog = computed(() => this.changelogs().length > 0);
 
@@ -152,6 +156,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
+        this.repairing.set(true);
         this.updateService.repairInstallation();
       }
     });

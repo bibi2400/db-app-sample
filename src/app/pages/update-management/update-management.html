@@ -108,9 +108,13 @@
     <button
       mat-stroked-button
       (click)="repairInstallation()"
-      [disabled]="isChecking() || isDownloading() || isPreparingDownload()">
+      [disabled]="isChecking() || isDownloading() || isPreparingDownload() || repairing()">
       <mat-icon>build</mat-icon>
       Ripara installazione
     </button>
   </div>
+
+  @if (repairing()) {
+    <app-fullscreen-loader message="Riparazione in corso... l'applicazione verrà chiusa a breve." />
+  }
 </div>

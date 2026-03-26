@@ -36,18 +36,18 @@ Function readExistingDbPath
     ${WordFind} $1 '"dbPath"' "E+1{" $2
     ${If} $2 != $1
       ; Found dbPath line — extract value between quotes after the colon
-      ; Line format: "dbPath": "some/path/database.sqlite"
+      ; Line format:   "dbPath": "some/path/database.sqlite"
       ; Extract everything after the first colon
       ${WordFind} $1 ":" "+1}" $3
-      ; Trim spaces and quotes
-      ${WordReplace} $3 '"' "" "+" $3
+      ; Strip line-ending characters
       ${WordReplace} $3 '$\r' "" "+" $3
       ${WordReplace} $3 '$\n' "" "+" $3
-      ${WordReplace} $3 ' ' "" "+" $3
+      ; Extract the value between the double quotes (preserves spaces in paths)
+      ${WordFind} $3 '"' "+2" $3
       ; Remove the trailing "database.sqlite" to get just the folder path
       ${WordReplace} $3 "/database.sqlite" "" "+" $3
       ${WordReplace} $3 "\database.sqlite" "" "+" $3
-      ; Convert forward slashes back to backslashes for Windows display
+      ; Convert forward slashes to backslashes for Windows display
       ${WordReplace} $3 "/" "\" "+" $3
       StrCpy $DbPathValue $3
       Goto readDone
@@ -119,9 +119,9 @@ FunctionEnd
 !macroend
 
 ; ── After installation: write/update db-config.json ─────────────
-; Se il file non esiste lo crea con il solo dbPath.
-; Se il file esiste già, sostituisce solo la riga di dbPath
-; preservando tutti gli altri campi gestiti da ConfigService.
+; Scrive sempre un file minimale con il solo dbPath.
+; ConfigService fa shallow merge con i defaults alla lettura,
+; quindi eventuali altri campi vengono ripristinati automaticamente.
 !macro customInstall
   ; In silent mode (auto-update) preserve the existing db-config.json
   ${IfNot} ${Silent}
@@ -131,41 +131,9 @@ FunctionEnd
 
     CreateDirectory "$APPDATA\${APP_PACKAGE_NAME}"
 
-    ${If} $DbConfigExists == "1"
-      ; ── File exists: read, replace dbPath line, write back ──
-      ; Read entire file content
-      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" r
-      StrCpy $R5 ""
-
-      replaceLoop:
-        FileRead $0 $R2
-        ${If} $R2 == ""
-          Goto replaceDone
-        ${EndIf}
-
-        ; Check if line contains "dbPath"
-        ${WordFind} $R2 '"dbPath"' "E+1{" $R3
-        ${If} $R3 != $R2
-          ; Replace this line with new dbPath value
-          StrCpy $R2 '  "dbPath": "$R1"$\r$\n'
-        ${EndIf}
-
-        StrCpy $R5 "$R5$R2"
-        Goto replaceLoop
-
-      replaceDone:
-      FileClose $0
-
-      ; Write back modified content
-      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
-      FileWrite $0 $R5
-      FileClose $0
-    ${Else}
-      ; ── New install: create minimal file ──
-      FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
-      FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
-      FileClose $0
-    ${EndIf}
+    FileOpen $0 "$APPDATA\${APP_PACKAGE_NAME}\db-config.json" w
+    FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
+    FileClose $0
   ${EndIf}
 !macroend
 
