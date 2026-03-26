@@ -89,7 +89,7 @@
       "problemMatcher": []
     },
     {
-      "label": "� Commit Version Bump",
+      "label": "📝 Commit Version Bump",
       "type": "shell",
       "command": "git add package.json package-lock.json && git commit -m \"bump version\"",
       "dependsOn": ["⭐ Bump Version"],
