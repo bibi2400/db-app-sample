@@ -69,6 +69,9 @@
 
 - [x] [ANGULAR] - command palette
 
+- [ ] trovare un modo per ricevere gli aggiornamenti della repo dello scaffold (questa per ora) senza rompere tutto
+  - renderlo una specie di framework?
+
 ## Bonus Tracks:
 
 - [x] implementare gestione notifiche di sistema
