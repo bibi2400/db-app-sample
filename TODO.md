@@ -57,7 +57,7 @@
   - [x] rivedere push event lato frontend
   - [ ] rivedere service api e wrapper risposte
   - [ ] standardizzare stili box, possibilmente a tutta pagina
-  - [ ] aggiungere gestione errori
+  - [x] aggiungere gestione errori
 
 - [x] [ELECTRON][DEV] trovare il modo di avere l'hot reload anche su electron, come su angular, in modalità dev
 
