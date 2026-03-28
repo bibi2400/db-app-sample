@@ -69,6 +69,8 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@bibi2400'
 
       - name: Setup Python (for node-gyp)
         uses: actions/setup-python@v5
@@ -120,16 +122,9 @@ jobs:
       # │ Pubblica anche il tarball nella GitHub Release come backup.        │
       # └─────────────────────────────────────────────────────────────────────┘
       - name: Pubblica framework su GitHub Packages
-        shell: bash
+        run: cd packages/framework && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd packages/framework
-          # Configura il registry npm per GitHub Packages
-          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          echo "@bibi2400:registry=https://npm.pkg.github.com" >> .npmrc
-          npm publish
-          echo "📦 Framework pubblicato su GitHub Packages"
 
       - name: Pacchettizza framework come npm tarball
         shell: bash
