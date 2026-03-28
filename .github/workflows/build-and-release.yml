@@ -17,6 +17,7 @@ jobs:
     # Permessi necessari per creare il tag e la release su GitHub
     permissions:
       contents: write
+      packages: write
 
     steps:
       - name: Checkout del codice
