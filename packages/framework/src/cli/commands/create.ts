@@ -109,14 +109,6 @@ export function create(name: string | undefined): void {
     private: true,
     dependencies: {
       [`${PKG}`]: '*',
-      'electron-context-menu': '^4.1.2',
-      'electron-log': '^5.4.3',
-      'electron-serve': '^3.0.1',
-      'electron-updater': '^6.8.3',
-      'electron-window-state': '^5.0.3',
-      'reflect-metadata': '^0.2.2',
-      'sqlite3': '^5.1.7',
-      'typeorm': '^0.3.28',
     },
     devDependencies: {
       '@angular/build': '^21.0.2',
