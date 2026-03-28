@@ -102,12 +102,6 @@
       "problemMatcher": []
     },
     {
-      "label": "🚢 Publish Branch (Staging)",
-      "dependsOrder": "sequence",
-      "dependsOn": ["📝 Commit Version Bump", "🔀 Merge in Staging"],
-      "problemMatcher": []
-    },
-    {
       "label": "🔀 Merge in Main",
       "type": "shell",
       "command": "git checkout main && git pull && git merge - && git push && git checkout -",
