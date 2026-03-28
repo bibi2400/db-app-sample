@@ -2,49 +2,130 @@
 
 ## Overview
 
-Template desktop app: **Angular 21 frontend + Electron backend + SQLite database**.
-Monorepo structure. Italian UI locale. Windows NSIS installer via electron-builder. GitHub-based auto-update.
+Desktop app built with **Angular 21 + Electron + SQLite**, powered by the **@bibi2400/electron-angular-framework** package.
+Monorepo with npm workspaces. Italian UI locale. Windows NSIS installer via electron-builder. GitHub-based auto-update with staging (beta) and production channels.
 
-## Project Structure
+## Monorepo Structure
 
 ```
-electron/          → Electron main process (TypeScript → CommonJS via tsc)
-  src/
-    controllers/   → IPC request handlers (@Controller + @IpcHandler)
-    services/      → Business logic (@Injectable via mini-pie DI)
-    db/entities/   → TypeORM entities
-    decorators/    → @Controller, @IpcHandler, @PushChannel, @PushEvent
-    helpers/       → mini-pie DI framework, PushEmitter, Logger
-    config/        → Runtime configuration
-src/app/           → Angular frontend (standalone components)
-  pages/           → Routable page components (lazy-loaded)
-  components/      → Reusable UI components
-  services/        → Angular services + Electron API wrappers
-  types/           → Shared TypeScript interfaces
-  pipes/           → Angular pipes
-shared/            → Code shared between Electron and Angular (@shared/* alias)
-  chronomancer/    → Performance measurement utility
-scripts/           → Code generation and build utilities
+db-app-sample/                   ← Root (consumer app)
+├── packages/
+│   └── framework/               ← @bibi2400/electron-angular-framework (npm library)
+│       ├── src/
+│       │   ├── cli/             → CLI: eaf create, generate, build, package, inject-token
+│       │   │   ├── commands/    → Command implementations (build.ts, create.ts, generate.ts, inject-token.ts)
+│       │   │   ├── scripts/     → Dev orchestrator scripts (dev.js, electron-dev.js)
+│       │   │   └── build/       → NSIS installer script (installer.nsh)
+│       │   ├── electron/        → Electron framework: bootstrap, DI, controllers, services, decorators
+│       │   ├── angular/         → Angular framework: shell, components, pages, services, types
+│       │   ├── preload/         → Preload bridge (contextBridge)
+│       │   └── shared/          → Shared code: Chronomancer, types (IPC, backup, update, etc.)
+│       ├── dist/                → Compiled output (CommonJS) — excludes angular/
+│       ├── tsconfig.json
+│       └── package.json
+├── electron/                    ← Consumer Electron main process
+│   ├── main.ts                  → Entry point: loads bootstrap with app entities & services
+│   ├── preload.ts               → Re-exports framework preload
+│   └── src/
+│       ├── controllers/         → App-specific IPC controllers
+│       ├── services/            → App-specific business logic services
+│       └── db/entities/         → App-specific TypeORM entities
+├── src/app/                     ← Consumer Angular frontend
+│   ├── app.ts                   → Root component (wraps FrameworkShell)
+│   ├── app.config.ts            → Angular config (uses FrameworkConfig)
+│   ├── app.routes.ts            → Routes: app pages + FrameworkRoutes
+│   ├── pages/                   → App-specific page components
+│   ├── components/              → App-specific reusable components
+│   ├── services/                → App-specific Angular services
+│   └── types/                   → App-specific TypeScript interfaces
+├── scripts/
+│   ├── dev.js                   → Thin wrapper → framework dev.js
+│   ├── electron-dev.js          → Thin wrapper → framework electron-dev.js
+│   └── sync-version.ts          → Pre-commit hook: syncs version to framework
+├── .githooks/pre-commit         → Runs sync-version.ts
+├── .github/workflows/           → CI/CD pipeline
+├── .npmrc                       → GitHub Packages registry (@bibi2400 scope)
+└── package.json                 → Consumer app config + electron-builder config
 ```
+
+## Framework Package
+
+The framework (`@bibi2400/electron-angular-framework`) provides:
+
+| Export Path | Content | Compilation |
+|---|---|---|
+| `./electron` | Bootstrap, DI, services, controllers, decorators | Compiled to `dist/` (CommonJS) |
+| `./angular` | Shell, components, pages, services, types | Distributed as TypeScript source |
+| `./preload` | contextBridge security bridge | Compiled to `dist/` |
+| `./shared` | Chronomancer, shared types | Compiled to `dist/` |
+| `./scripts/dev` | Full dev orchestrator (ng serve + electron-dev) | Plain JS |
+| `./scripts/electron-dev` | Framework build + tsc watch + Electron restart | Plain JS |
+
+**CLI binary**: `eaf` — scaffolding, code generation, build orchestration.
+
+### Dependency Strategy
+
+- **Framework `dependencies`** (installed transitively for consumer): electron-log, electron-serve, electron-updater, electron-context-menu, electron-window-state, reflect-metadata, sqlite3, typeorm
+- **Framework `peerDependencies`** (consumer must install): Angular, Electron, rxjs, ag-grid (optional)
+- **Consumer `dependencies`**: only `@bibi2400/electron-angular-framework`
+- **Consumer `devDependencies`**: Angular packages, Electron, electron-builder, typescript, tsx, rxjs
 
 ## Technology Stack
 
-- **Angular 21** — standalone components, signals, OnPush change detection, Angular Material, ag-Grid
-- **Electron** — with preload security bridge (contextBridge)
+- **Angular 21** — standalone components, signals, OnPush, Angular Material, ag-Grid
+- **Electron 39** — with preload security bridge (contextBridge)
 - **TypeORM + SQLite3** — database with auto-sync enabled
 - **mini-pie** — custom lightweight DI framework for Electron services
-- **Chronomancer** — custom performance measurement (works in both Node.js and browser)
+- **Chronomancer** — custom performance measurement (Node.js + browser)
 - **RxJS** — reactive programming in Angular services
 - **electron-log** — Electron logging
-- **electron-updater** — auto-update system
+- **electron-updater** — auto-update with staging (beta.yml) + production (latest.yml) channels
 
-## Build System
+## Build System & Scripts
 
-- `npm run dev` — concurrent Angular dev server + Electron watch
-- `npm run build:all` — Angular build + Electron TypeScript compilation
-- `npm run package:win` — Windows installer with update token
-- Electron TypeScript compiled with `tsc` (NOT bundled), outputs to `electron/dist-electron/`
-- Angular compiled with `ng build`, outputs to `dist/`
+### Consumer Scripts (package.json)
+
+| Script | Command | Purpose |
+|---|---|---|
+| `dev` | `node scripts/dev.js` | Full dev: ng serve + tsc watch + Electron |
+| `dev:no-splash` | `node scripts/dev.js --no-splash` | Dev without splash screen |
+| `build:all` | `npx eaf build` | Build framework + Angular + Electron |
+| `package:win` | `npx eaf package` | Full release: clean → inject-token → build → electron-builder |
+| `package:win:noUpdateToken` | `npx eaf package --no-token` | Package without update token |
+
+### EAF CLI Commands
+
+| Command | Purpose |
+|---|---|
+| `eaf create <name>` | Scaffold a new project |
+| `eaf generate <type> <name>` | Generate Angular/Electron components |
+| `eaf build [target]` | Build framework/angular/electron (or all) |
+| `eaf clean` | Remove release/ directory |
+| `eaf package [--no-token]` | Full packaging pipeline |
+| `eaf inject-token` | Inject GitHub update token |
+
+### Build Pipeline
+
+```
+eaf build:
+  1. Framework:  cd packages/framework && tsc -p tsconfig.json
+  2. Angular:    ng build → dist/
+  3. Electron:   tsc -p electron/tsconfig.json → electron/dist-electron/
+```
+
+### Dev Pipeline
+
+```
+npm run dev → scripts/dev.js → framework dev.js:
+  1. ng serve (port 4202)           — Angular dev server
+  2. framework electron-dev.js:
+     a. Build framework (tsc)       — if packages/framework exists
+     b. tsc --watch electron/       — TypeScript watch
+     c. Start Electron (--serve)    — restarts on changes
+```
+
+- No shell wrappers (avoids Windows cmd.exe hangs on Ctrl+C)
+- Stdio piped through Node (prevents Chromium from corrupting console encoding)
 
 ## Communication: Angular ↔ Electron
 
@@ -52,7 +133,7 @@ scripts/           → Code generation and build utilities
 
 ```
 Angular Service → window.electronAPI.invoke('prefix:action', ...args)
-  → ipcMain.handle() → Controller.method()
+  → preload → ipcMain.handle() → Controller.method()
   → returns IpcResponse<T> { success, data?, error? }
 ```
 
@@ -61,28 +142,27 @@ Angular Service → window.electronAPI.invoke('prefix:action', ...args)
 ```
 Electron: PushEmitter.emit(data)
   → webContents.send('push:prefix:event', data)
+  → preload (allows 'push:' prefix only)
   → Angular: ElectronPushService.on('push:prefix:event') → Observable<T>
 ```
 
-Security: preload only allows channels starting with `push:` for `.on()/.off()`.
-
 ## Naming Conventions
 
-| Element               | File Name                 | Class Name               |
-|-----------------------|---------------------------|--------------------------|
-| Page                  | `kebab-case.ts`           | `PascalCase`             |
-| Component             | `kebab-case.ts`           | `PascalCase`             |
-| Angular Service       | `kebab-case.service.ts`   | `PascalCaseService`      |
-| Electron Service      | `kebab-case.service.ts`   | `PascalCaseService`      |
-| Controller            | `kebab-case.controller.ts`| `PascalCaseController`   |
-| Pipe                  | `kebab-case.pipe.ts`      | `PascalCasePipe`         |
-| Entity                | `kebab-case.ts`           | `PascalCase`             |
-| IPC Channel           | `prefix:action`           | —                        |
-| Push Channel          | `push:prefix:event`       | —                        |
+| Element | File Name | Class Name |
+|---|---|---|
+| Page | `kebab-case.ts` | `PascalCase` |
+| Component | `kebab-case.ts` | `PascalCase` |
+| Angular Service | `kebab-case.service.ts` | `PascalCaseService` |
+| Electron Service | `kebab-case.service.ts` | `PascalCaseService` |
+| Controller | `kebab-case.controller.ts` | `PascalCaseController` |
+| Pipe | `kebab-case.pipe.ts` | `PascalCasePipe` |
+| Entity | `kebab-case.ts` | `PascalCase` |
+| IPC Channel | `prefix:action` | — |
+| Push Channel | `push:prefix:event` | — |
 
 ## Key Patterns
 
-### Electron Controller Pattern
+### Electron Controller
 
 ```typescript
 @Controller({ prefix: "backup" })
@@ -101,12 +181,11 @@ export class BackupController extends BaseController {
 }
 ```
 
-- Always extend `BaseController`
-- Use `this.success(data)` / `this.error(error)` for responses
+- Extend `BaseController`, use `this.success(data)` / `this.error(error)`
 - Full channel: `{prefix}:{handlerName}` (e.g. `backup:create`)
-- Register controller in `electron/src/controllers/index.ts` CONTROLLERS array
+- Register in `electron/src/controllers/index.ts` CONTROLLERS array
 
-### Electron Service Pattern
+### Electron Service
 
 ```typescript
 @Injectable()
@@ -118,13 +197,11 @@ export class MyService {
 }
 ```
 
-- Decorated with `@Injectable()` (mini-pie DI, no parameters)
-- Dependencies injected via constructor (type-based resolution)
-- Singletons — one instance per app lifetime
+- `@Injectable()` (mini-pie DI, no parameters), constructor injection
+- Singletons, topological sort load order
 - Register in `electron/src/services/system-services/index.ts` SYSTEM_SERVICES array
-- Load order: automatic topological sort by dependency graph
 
-### Angular Component/Page Pattern
+### Angular Component/Page
 
 ```typescript
 @Component({
@@ -137,18 +214,13 @@ export class MyService {
 export class MyPage implements OnInit {
   private readonly someService = inject(SomeService);
   protected readonly data = signal<Data | null>(null);
-
-  ngOnInit() { /* ... */ }
 }
 ```
 
-- **Always standalone** (no NgModule)
-- **Always OnPush** change detection
-- Use `inject()` not constructor injection
-- Use `signal()` for reactive state
-- Use `input()` / `output()` for parent-child communication (not @Input/@Output)
+- **Always standalone**, **always OnPush**
+- `inject()` for DI, `signal()` for state, `input()` / `output()` for parent-child
 
-### Angular Electron Wrapper Service Pattern
+### Angular Electron Wrapper Service
 
 ```typescript
 @Injectable({ providedIn: 'root' })
@@ -160,19 +232,19 @@ export class ElectronBackupService {
 }
 ```
 
-### Push Event Pattern (Electron → Angular)
+### Push Events (Electron → Angular)
 
-Electron side:
+Electron:
 ```typescript
 @PushChannel('update')
+@Injectable()
 export class UpdaterService {
   @PushEvent('status-changed')
   statusEmitter = new PushEmitter<UpdateStatus>();
-  // Emit: this.statusEmitter.emit(status);
 }
 ```
 
-Angular side:
+Angular:
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class ElectronUpdateService {
@@ -181,7 +253,7 @@ export class ElectronUpdateService {
 }
 ```
 
-### TypeORM Entity Pattern
+### TypeORM Entity
 
 ```typescript
 @Entity()
@@ -203,17 +275,18 @@ export class MyEntity {
 - `strictPropertyInitialization: false` (for DI injected properties)
 - Electron: `"module": "commonjs"`, `"target": "es2020"`
 - Angular: `"module": "preserve"`, `"target": "ES2022"`
+- Framework: `"module": "commonjs"`, `"target": "ES2022"`, outputs to `dist/`, excludes `src/angular/`
 
 ## Code Generation
 
-Use the VS Code tasks or CLI:
+Use VS Code tasks or CLI:
 ```bash
-npx tsx scripts/generate.ts angular-page <name>
-npx tsx scripts/generate.ts angular-component <name>
-npx tsx scripts/generate.ts angular-service <name>
-npx tsx scripts/generate.ts angular-pipe <name>
-npx tsx scripts/generate.ts electron-service <name>
-npx tsx scripts/generate.ts electron-controller <name>
+npx eaf generate angular-page <name>
+npx eaf generate angular-component <name>
+npx eaf generate angular-service <name>
+npx eaf generate angular-pipe <name>
+npx eaf generate electron-service <name>
+npx eaf generate electron-controller <name>
 ```
 
 These auto-create files with correct structure and update barrel files.
@@ -225,3 +298,26 @@ When adding new elements, remember to register them:
 2. **Controllers** → add to `CONTROLLERS` in `electron/src/controllers/index.ts`
 3. **Entities** → add to `MODELS` in `electron/src/db/entities/index.ts`
 4. **Angular Routes** → add to `src/app/app.routes.ts`
+
+## CI/CD Pipeline
+
+**Trigger**: push to `main` or `staging`, or manual dispatch.
+
+### Version Strategy
+- **main**: uses `package.json` version as-is (e.g. `2.0.1`)
+- **staging**: appends `-beta.{run_number}` (e.g. `2.0.1-beta.25`)
+
+### Pipeline Steps
+1. Checkout (full history for tags)
+2. Compute version + check tag uniqueness
+3. Setup Node 20 (with GitHub Packages registry) + Python 3.12
+4. `npm ci` (triggers framework `prepare` → tsc)
+5. Generate changelog from git log between previous tag and HEAD
+6. `npm run package:win` (clean → inject-token → build → electron-builder)
+7. Publish framework to GitHub Packages (`npm publish`)
+8. Create GitHub Release with installer, blockmap, yml, tgz
+
+### Git Branching Model
+- Feature branches → merge into `staging` → beta releases
+- `staging` → merge into `main` → production releases
+- VS Code tasks: "🔀 Merge in Staging", "🚢 Publish Branch (Staging)", "🔀 Merge in Main", "🚢 Publish Branch"

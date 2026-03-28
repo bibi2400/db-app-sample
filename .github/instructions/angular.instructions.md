@@ -5,6 +5,63 @@ description: "Instructions for Angular frontend code: standalone components, pag
 
 # Angular Frontend Instructions
 
+## Directory Structure
+
+```
+src/app/
+├── app.ts                → Root component (wraps FrameworkShell)
+├── app.config.ts         → Angular config (uses FrameworkConfig from framework)
+├── app.routes.ts         → Routes: app pages + FrameworkRoutes
+├── app.html              → Root template
+├── app.scss              → Root styles
+├── pages/                → Routable page components (lazy-loaded)
+│   └── dashboard/        → Default page (eager-loaded)
+├── components/           → Reusable UI components
+├── services/             → Angular services + Electron API wrappers
+├── types/                → App-specific TypeScript interfaces
+└── pipes/                → Custom Angular pipes
+```
+
+**Framework provides** (imported from `@bibi2400/electron-angular-framework/angular`):
+- `FrameworkShell` — full app layout (sidebar + toolbar + notification panel + command palette)
+- `FrameworkConfig` — Angular provider configuration (provideHttpClient, provideAnimations, etc.)
+- `FrameworkRoutes` — routes for built-in pages (backup, updates, notifications, shortcuts, app-info)
+- Built-in services: `NavigationService`, `ElectronPushService`, `ElectronAppService`, `ElectronBackupService`, `ElectronUpdateService`, `AngularNotificationService`, `ShortcutService`, `CommandPaletteService`, `ChronoService`
+- Built-in components: `Sidebar`, `Toolbar`, `NotificationPanel`, `CommandPalette`, `ConfirmDialogComponent`, `ShortcutRecordDialog`, `FullscreenLoaderComponent`
+- Types: re-exported from `shared/types/`
+
+## Root App Setup
+
+### app.ts
+
+```typescript
+@Component({
+  selector: 'app-root',
+  imports: [FrameworkShell],
+  template: '<framework-shell />'
+})
+export class App {}
+```
+
+### app.config.ts
+
+```typescript
+import { FrameworkConfig } from '@bibi2400/electron-angular-framework/angular';
+export const appConfig = FrameworkConfig;
+```
+
+### app.routes.ts
+
+```typescript
+import { FrameworkRoutes } from '@bibi2400/electron-angular-framework/angular';
+export const routes: Routes = [
+  { path: '', component: Dashboard },
+  { path: 'my-page', loadComponent: () =>
+    import('./pages/my-page/my-page').then(m => m.MyPage) },
+  ...FrameworkRoutes,
+];
+```
+
 ## Component/Page Pattern
 
 All components and pages follow the same pattern:
@@ -41,8 +98,8 @@ Rules:
 - **inject()** — never constructor injection
 - **signal()** — for component state (not plain properties)
 - **input() / output()** — for parent-child communication (not @Input/@Output decorators)
-- Pages go in `src/app/pages/<name>/` with `.ts`, `.html`, `.scss`
-- Components go in `src/app/components/<name>/` with `.ts`, `.html`, `.scss`
+- Pages go in `src/app/pages/<kebab-name>/` with `.ts`, `.html`, `.scss`
+- Components go in `src/app/components/<kebab-name>/` with `.ts`, `.html`, `.scss`
 
 ## Routing
 
@@ -54,11 +111,13 @@ export const routes: Routes = [
   { path: 'backup', loadComponent: () =>             // lazy loaded
     import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
   },
+  ...FrameworkRoutes,                                // built-in framework pages
 ];
 ```
 
 - Dashboard is eager-loaded (default route)
 - All other pages are lazy-loaded via `loadComponent`
+- `FrameworkRoutes` adds: backup-management, update-management, notifications, shortcut-management, app-info
 
 ## Angular Services
 
@@ -112,7 +171,9 @@ export class ElectronUpdateService {
 - Automatically runs inside NgZone for change detection
 - Channel format: `push:{prefix}:{eventName}`
 
-## Key Angular Services Reference
+## Framework Angular Services Reference
+
+These are provided by the framework and available for injection anywhere:
 
 | Service | Purpose |
 |---------|---------|
@@ -122,22 +183,25 @@ export class ElectronUpdateService {
 | `ElectronUpdateService` | Subscribe to update push events |
 | `ElectronPushService` | Generic Observable wrapper for push channels |
 | `ChronoService` | Angular-side Chronomancer performance timing |
-| `NotificationService` | UI notification display and management |
-| `ShortcutService` | Keyboard shortcut registration |
+| `AngularNotificationService` | UI notification display and management |
+| `ShortcutService` | Keyboard shortcut registration and handling |
 | `CommandPaletteService` | Command palette state (Ctrl+K) |
 
 ## Type Definitions
 
-Shared types live in `src/app/types/`:
+App-specific types live in `src/app/types/`. Framework types are imported from `@bibi2400/electron-angular-framework/angular`:
 
-| File | Types |
+| Framework Type | Purpose |
 |------|-------|
-| `global.ts` | `IpcResponse<T>`, `window.electronAPI` type |
-| `backup.ts` | `BackupInfo`, `BackupOptions`, `RestoreResult`, `BackupStats` |
-| `update.ts` | `UpdateStatus`, `UpdateStatusType`, `DownloadProgress`, `ChangelogEntry` |
-| `notification.ts` | Notification system types |
-| `shortcut.ts` | Keyboard shortcut types |
-| `command-palette.ts` | Command palette types |
+| `IpcResponse<T>` | Standard IPC response shape: `{ success, data?, error? }` |
+| `MenuItem` | Sidebar navigation menu item |
+| `CommandPaletteItem` | Command palette entry |
+| `AppNotification` | Notification system data |
+| `UpdateStatus` | Auto-update status info |
+| `BackupInfo`, `BackupOptions` | Backup system types |
+| `DownloadProgress`, `ChangelogEntry` | Update download types |
+
+The `window.electronAPI` type is declared in `src/app/types/global.ts`.
 
 ## Pipe Pattern
 
@@ -153,6 +217,16 @@ export class MyPipe implements PipeTransform {
 ## UI Framework
 
 - **Angular Material** — primary UI library (MatButton, MatIcon, MatDialog, MatList, etc.)
-- **ag-Grid** — data tables
+- **ag-Grid** — data tables (optional peer dependency)
 - **SCSS** — styling with component-scoped styles
 - **Italian locale** — all user-facing strings in Italian
+
+## Code Generation
+
+Use VS Code tasks or CLI to generate Angular elements:
+```bash
+npx eaf generate angular-page <name>         # Creates page in src/app/pages/
+npx eaf generate angular-component <name>    # Creates component in src/app/components/
+npx eaf generate angular-service <name>      # Creates service in src/app/services/
+npx eaf generate angular-pipe <name>         # Creates pipe in src/app/pipes/
+```
