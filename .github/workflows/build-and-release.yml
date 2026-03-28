@@ -43,6 +43,9 @@ jobs:
             # senza creare commit. Serve per far generare a electron-builder il file beta.yml
             npm --no-git-tag-version version $FULL_VERSION
             
+            # Aggiorna anche la versione del framework per pubblicare il pacchetto npm con la stessa versione beta
+            cd packages/framework && npm --no-git-tag-version version $FULL_VERSION && cd ../..
+            
             echo "🔧 Versione impostata per lo staging: $FULL_VERSION"
           else
             # Se siamo su main, usiamo la versione pulita

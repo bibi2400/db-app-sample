@@ -1,0 +1,12 @@
+import { Routes } from '@angular/router';
+import { FrameworkRoutes } from '{{PKG}}/angular';
+import { Dashboard } from './pages/dashboard/dashboard';
+
+const appRoutes: Routes = [
+  {
+    path: 'dashboard',
+    component: Dashboard,
+  },
+];
+
+export const routes = FrameworkRoutes.build(appRoutes, 'dashboard');

@@ -1,0 +1,10 @@
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { FrameworkShell } from '{{PKG}}/angular';
+
+@Component({
+  selector: 'app-root',
+  imports: [FrameworkShell],
+  template: '<eaf-shell author="" />',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class App { }

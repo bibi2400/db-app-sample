@@ -1,0 +1,28 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "sourceMap": true,
+    "outDir": "./dist-electron",
+    "rootDir": "..",
+    "baseUrl": "..",
+    "paths": {
+      "{{PKG}}/electron": [
+        "packages/framework/dist/electron/index"
+      ],
+      "{{PKG}}/preload": [
+        "packages/framework/dist/preload/index"
+      ]
+    },
+    "module": "commonjs",
+    "target": "es2020",
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "./**/*.ts"
+  ]
+}

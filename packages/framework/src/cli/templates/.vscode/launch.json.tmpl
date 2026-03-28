@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug APP",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/electron/dist-electron/**/*.js"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/**",
+        "!**/node_modules/**"
+      ],
+      "timeout": 30000,
+      "restart": true
+    }
+  ]
+}

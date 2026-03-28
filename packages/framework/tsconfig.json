@@ -25,6 +25,7 @@
   "exclude": [
     "dist",
     "node_modules",
-    "src/angular/**"
+    "src/angular/**",
+    "src/cli/templates/**"
   ]
 }

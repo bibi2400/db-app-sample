@@ -56,7 +56,8 @@
     "dist/",
     "src/angular/",
     "src/cli/scripts/",
-    "src/cli/build/"
+    "src/cli/build/",
+    "src/cli/templates/"
   ],
   "scripts": {
     "prepare": "tsc -p tsconfig.json",
