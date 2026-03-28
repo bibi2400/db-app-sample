@@ -234,6 +234,12 @@ Features:
 - Writes it to `packages/framework/package.json`
 - Ensures both versions are always in sync
 
+## Template System
+
+I template in `src/cli/templates/` vengono usati dal comando `eaf create <name>` per generare nuovi progetti consumer. Vedere le istruzioni dedicate in `.github/instructions/templates.instructions.md` per i dettagli.
+
+**Regola fondamentale**: i file template vengono usati una sola volta alla creazione del progetto.
+
 ## Publishing
 
 - Published to GitHub Packages: `@bibi2400:registry=https://npm.pkg.github.com`

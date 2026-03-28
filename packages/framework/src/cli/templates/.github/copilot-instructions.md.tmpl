@@ -1,56 +1,42 @@
-# DB App Sample — Project Instructions
+# {{PRODUCT_NAME}} — Project Instructions
 
 ## Overview
 
-Desktop app built with **Angular 21 + Electron + SQLite**, powered by the **@bibi2400/electron-angular-framework** package.
+Desktop app built with **Angular + Electron + SQLite**, powered by the **{{PKG}}** package.
 Monorepo with npm workspaces. Italian UI locale. Windows NSIS installer via electron-builder. GitHub-based auto-update with staging (beta) and production channels.
 
-## Monorepo Structure
+## Project Structure
 
 ```
-db-app-sample/                   ← Root (consumer app)
+{{KEBAB}}/                        ← Root (consumer app)
 ├── packages/
-│   └── framework/               ← @bibi2400/electron-angular-framework (npm library)
-│       ├── src/
-│       │   ├── cli/             → CLI: eaf create, generate, build, package, inject-token
-│       │   │   ├── commands/    → Command implementations (build.ts, create.ts, generate.ts, inject-token.ts)
-│       │   │   ├── scripts/     → Dev orchestrator scripts (dev.js, electron-dev.js)
-│       │   │   └── build/       → NSIS installer script (installer.nsh)
-│       │   ├── electron/        → Electron framework: bootstrap, DI, controllers, services, decorators
-│       │   ├── angular/         → Angular framework: shell, components, pages, services, types
-│       │   ├── preload/         → Preload bridge (contextBridge)
-│       │   └── shared/          → Shared code: Chronomancer, types (IPC, backup, update, etc.)
-│       ├── dist/                → Compiled output (CommonJS) — excludes angular/
-│       ├── tsconfig.json
-│       └── package.json
-├── electron/                    ← Consumer Electron main process
-│   ├── main.ts                  → Entry point: loads bootstrap with app entities & services
-│   ├── preload.ts               → Re-exports framework preload
+│   └── framework/                ← {{PKG}} (npm library, symlinked)
+├── electron/                     ← Electron main process
+│   ├── main.ts                   → Entry point: loads bootstrap with app entities & services
+│   ├── preload.ts                → Re-exports framework preload
 │   └── src/
-│       ├── controllers/         → App-specific IPC controllers
-│       ├── services/            → App-specific business logic services
-│       └── db/entities/         → App-specific TypeORM entities
-├── src/app/                     ← Consumer Angular frontend
-│   ├── app.ts                   → Root component (wraps FrameworkShell)
-│   ├── app.config.ts            → Angular config (uses FrameworkConfig)
-│   ├── app.routes.ts            → Routes: app pages + FrameworkRoutes
-│   ├── pages/                   → App-specific page components
-│   ├── components/              → App-specific reusable components
-│   ├── services/                → App-specific Angular services
-│   └── types/                   → App-specific TypeScript interfaces
+│       ├── controllers/          → App-specific IPC controllers
+│       ├── services/             → App-specific business logic services
+│       └── db/entities/          → App-specific TypeORM entities
+├── src/app/                      ← Angular frontend
+│   ├── app.ts                    → Root component (wraps FrameworkShell)
+│   ├── app.config.ts             → Angular config (uses FrameworkConfig)
+│   ├── app.routes.ts             → Routes: app pages + FrameworkRoutes
+│   ├── pages/                    → App-specific page components
+│   ├── components/               → App-specific reusable components
+│   ├── services/                 → App-specific Angular services
+│   └── types/                    → App-specific TypeScript interfaces
 ├── scripts/
-│   ├── dev.js                   → Thin wrapper → framework dev.js
-│   ├── electron-dev.js          → Thin wrapper → framework electron-dev.js
-│   └── sync-version.ts          → Pre-commit hook: syncs version to framework
-├── .githooks/pre-commit         → Runs sync-version.ts
-├── .github/workflows/           → CI/CD pipeline
-├── .npmrc                       → GitHub Packages registry (@bibi2400 scope)
-└── package.json                 → Consumer app config + electron-builder config
+│   ├── dev.js                    → Thin wrapper → framework dev.js
+│   └── electron-dev.js           → Thin wrapper → framework electron-dev.js
+├── .github/workflows/            → CI/CD pipeline
+├── .npmrc                        → GitHub Packages registry (@bibi2400 scope)
+└── package.json                  → Consumer app config + electron-builder config
 ```
 
 ## Framework Package
 
-The framework (`@bibi2400/electron-angular-framework`) provides:
+The framework (`{{PKG}}`) provides:
 
 | Export Path | Content | Compilation |
 |---|---|---|
@@ -65,15 +51,15 @@ The framework (`@bibi2400/electron-angular-framework`) provides:
 
 ### Dependency Strategy
 
-- **Framework `dependencies`** (installed transitively for consumer): electron-log, electron-serve, electron-updater, electron-context-menu, electron-window-state, reflect-metadata, sqlite3, typeorm
+- **Framework `dependencies`** (installed transitively): electron-log, electron-serve, electron-updater, electron-context-menu, electron-window-state, reflect-metadata, sqlite3, typeorm
 - **Framework `peerDependencies`** (consumer must install): Angular, Electron, rxjs, ag-grid (optional)
-- **Consumer `dependencies`**: only `@bibi2400/electron-angular-framework`
+- **Consumer `dependencies`**: only `{{PKG}}`
 - **Consumer `devDependencies`**: Angular packages, Electron, electron-builder, typescript, tsx, rxjs
 
 ## Technology Stack
 
-- **Angular 21** — standalone components, signals, OnPush, Angular Material, ag-Grid
-- **Electron 39** — with preload security bridge (contextBridge)
+- **Angular** — standalone components, signals, OnPush, Angular Material, ag-Grid
+- **Electron** — with preload security bridge (contextBridge)
 - **TypeORM + SQLite3** — database with auto-sync enabled
 - **mini-pie** — custom lightweight DI framework for Electron services
 - **Chronomancer** — custom performance measurement (Node.js + browser)
@@ -199,7 +185,7 @@ export class MyService {
 
 - `@Injectable()` (mini-pie DI, no parameters), constructor injection
 - Singletons, topological sort load order
-- Register in `electron/src/services/system-services/index.ts` SYSTEM_SERVICES array
+- Register in `electron/src/services/index.ts` APP_SERVICES array
 
 ### Angular Component/Page
 
@@ -234,17 +220,22 @@ export class ElectronBackupService {
 
 ### Push Events (Electron → Angular)
 
-Electron:
+Electron side:
 ```typescript
 @PushChannel('update')
 @Injectable()
 export class UpdaterService {
   @PushEvent('status-changed')
   statusEmitter = new PushEmitter<UpdateStatus>();
+
+  async checkForUpdates() {
+    this.statusEmitter.emit({ checking: true });
+    // ...
+  }
 }
 ```
 
-Angular:
+Angular side:
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class ElectronUpdateService {
@@ -256,6 +247,8 @@ export class ElectronUpdateService {
 ### TypeORM Entity
 
 ```typescript
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+
 @Entity()
 export class MyEntity {
   @PrimaryGeneratedColumn()
@@ -263,10 +256,32 @@ export class MyEntity {
 
   @Column()
   name!: string;
+
+  @Column({ nullable: true })
+  description?: string;
 }
 ```
 
 - Register in `electron/src/db/entities/index.ts` MODELS array
+
+## Bootstrap Flow
+
+```
+electron/main.ts
+  → app.whenReady()
+  → AppBootstrap.init({ models: MODELS, services: [...SYSTEM_SERVICES, ...APP_SERVICES], controllers: CONTROLLERS })
+    → Injector.load(SERVICES) — topologically sorted DI
+    → AppBootstrapService.bootstrap()
+      → Init Chronomancer (performance tracking)
+      → Load app config from package.json
+      → Initialize DataSource (TypeORM + SQLite)
+      → Register all controllers (IPC handlers)
+      → Create splash window (if enabled)
+      → Create main window
+      → Init context menu
+      → Run startup tasks (backup, updates)
+      → Print performance report
+```
 
 ## TypeScript Configuration
 
@@ -276,27 +291,6 @@ export class MyEntity {
 - Electron: `"module": "commonjs"`, `"target": "es2020"`
 - Angular: `"module": "preserve"`, `"target": "ES2022"`
 - Framework: `"module": "commonjs"`, `"target": "ES2022"`, outputs to `dist/`, excludes `src/angular/`
-
-## Template System (Project Scaffolding)
-
-The framework includes a template system in `packages/framework/src/cli/templates/` used by `eaf create <name>` to scaffold new consumer projects.
-
-### ⚠️ Template vs Consumer: Regola Importante
-
-I file nella directory `templates/` vengono usati **una sola volta** alla creazione del progetto.
-
-- Modificare un template **non ha effetto** sui progetti già esistenti
-- Per cambiare il progetto corrente → modificare il file nel progetto consumer (es. `package.json`, `angular.json`, `.vscode/tasks.json`)
-- Per cambiare la struttura di base dei nuovi progetti futuri → modificare il template corrispondente in `packages/framework/src/cli/templates/`
-
-### Placeholder Template
-
-| Placeholder | Descrizione | Esempio (`eaf create my-app`) |
-|---|---|---|
-| `{{KEBAB}}` | Nome kebab-case | `my-app` |
-| `{{PASCAL}}` | Nome PascalCase | `MyApp` |
-| `{{PRODUCT_NAME}}` | Nome leggibile | `My App` |
-| `{{PKG}}` | Nome pacchetto framework | `@bibi2400/electron-angular-framework` |
 
 ## Code Generation
 
@@ -315,10 +309,65 @@ These auto-create files with correct structure and update barrel files.
 ## Important Registration Points
 
 When adding new elements, remember to register them:
-1. **Electron Services** → add to `SYSTEM_SERVICES` in `electron/src/services/system-services/index.ts`
-2. **Controllers** → add to `CONTROLLERS` in `electron/src/controllers/index.ts`
+1. **Electron Services** → add to `APP_SERVICES` in `electron/src/services/index.ts`
+2. **Controllers** → add to `CONTROLLERS` in `electron/src/controllers/index.ts` (side-effect imports)
 3. **Entities** → add to `MODELS` in `electron/src/db/entities/index.ts`
 4. **Angular Routes** → add to `src/app/app.routes.ts`
+
+## Framework Angular Services Reference
+
+These are provided by the framework and available for injection anywhere:
+
+| Service | Purpose |
+|---------|---------|
+| `NavigationService` | Sidebar menu items, active links, toolbar actions |
+| `ElectronAppService` | App info, window control, paths IPC calls |
+| `ElectronBackupService` | Backup create/list/restore IPC calls |
+| `ElectronUpdateService` | Subscribe to update push events |
+| `ElectronPushService` | Generic Observable wrapper for push channels |
+| `ChronoService` | Angular-side Chronomancer performance timing |
+| `AngularNotificationService` | UI notification display and management |
+| `ShortcutService` | Keyboard shortcut registration and handling |
+| `CommandPaletteService` | Command palette state (Ctrl+K) |
+
+## Framework Electron Services Reference
+
+These system services are provided by the framework:
+
+| Service | Purpose |
+|---------|---------|
+| `AppConfigService` | App info from package.json + persistent settings |
+| `DataSourceService` | TypeORM DataSource init + `.model(Entity)` for repositories |
+| `ControllerService` | Registers controllers' IPC handlers on ipcMain |
+| `PushService` | Initializes PushEmitters, sends events to renderer |
+| `BackupService` | DB backup/restore (auto + manual), integrity check |
+| `UpdaterService` | Check/download/install updates, status push events |
+| `ConfigService` | Persistent JSON config file read/write |
+| `DbConfigService` | Database file path configuration |
+| `AppDataService` | App data directory paths |
+| `DevModeService` | Development mode detection (`ELECTRON_IS_DEV` env) |
+| `LifecycleService` | App quit/window close handlers |
+| `CacheService` | In-memory caching |
+| `ElectronMainWindowService` | Main BrowserWindow creation |
+| `ElectronSplashWindowService` | Splash screen window |
+| `ElectronWindowService` | Window management utilities |
+| `ContextMenuService` | Right-click context menu |
+| `NotificationService` | Notification system (Electron side) |
+| `ErrorNotificationService` | Error notification handling |
+
+## Framework Angular Types
+
+Types importable from `{{PKG}}/angular`:
+
+| Type | Purpose |
+|------|---------|
+| `IpcResponse<T>` | Standard IPC response: `{ success, data?, error? }` |
+| `MenuItem` | Sidebar navigation menu item |
+| `CommandPaletteItem` | Command palette entry |
+| `AppNotification` | Notification system data |
+| `UpdateStatus` | Auto-update status info |
+| `BackupInfo`, `BackupOptions` | Backup system types |
+| `DownloadProgress`, `ChangelogEntry` | Update download types |
 
 ## CI/CD Pipeline
 
@@ -341,4 +390,3 @@ When adding new elements, remember to register them:
 ### Git Branching Model
 - Feature branches → merge into `staging` → beta releases
 - `staging` → merge into `main` → production releases
-- VS Code tasks: "🔀 Merge in Staging", "🚢 Publish Branch (Staging)", "🔀 Merge in Main", "🚢 Publish Branch"
