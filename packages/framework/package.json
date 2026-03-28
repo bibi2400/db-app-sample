@@ -13,9 +13,6 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
-  "scripts": {
-    "prepare": "tsc -p tsconfig.json"
-  },
   "exports": {
     "./electron": {
       "types": "./dist/electron/index.d.ts",
@@ -62,6 +59,7 @@
     "src/cli/build/"
   ],
   "scripts": {
+    "prepare": "tsc -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -p tsconfig.json --watch"
   },
