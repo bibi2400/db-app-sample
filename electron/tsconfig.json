@@ -6,7 +6,8 @@
     "rootDir": "..",
     "baseUrl": "..",
     "paths": {
-      "@shared/*": ["shared/*"]
+      "@bibi2400/electron-angular-framework/electron": ["packages/framework/dist/electron/index"],
+      "@bibi2400/electron-angular-framework/preload": ["packages/framework/dist/preload/index"]
     },
     "module": "commonjs",
     "target": "es2020",
@@ -18,7 +19,6 @@
     "emitDecoratorMetadata": true
   },
   "include": [
-    "./**/*.ts",
-    "../shared/**/*.ts"
+    "./**/*.ts"
   ]
 }

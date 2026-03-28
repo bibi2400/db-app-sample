@@ -1,0 +1,3 @@
+#!/bin/sh
+# Pre-commit hook: sync framework version with root app version
+npx tsx scripts/sync-version.ts

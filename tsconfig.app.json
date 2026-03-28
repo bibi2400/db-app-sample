@@ -8,7 +8,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "shared/**/*.ts"
+    "packages/framework/src/angular/**/*.ts",
+    "packages/framework/src/shared/**/*.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts"

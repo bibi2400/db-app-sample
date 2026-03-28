@@ -1,6 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { Chronomancer } from '@shared/chronomancer';
-import { ChronoService } from 'src/app/services/system-services/chrono.service';
+import { ChronoService, Chronomancer } from '@bibi2400/electron-angular-framework/angular';
 
 @Component({
   selector: 'app-dashboard',

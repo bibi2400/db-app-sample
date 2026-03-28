@@ -48,6 +48,9 @@ electron/dist-electron
 release
 appdata
 
+# Framework build output
+packages/framework/dist
+
 # Programmino
 db-config.json
 

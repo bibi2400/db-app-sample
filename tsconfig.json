@@ -5,7 +5,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["shared/*"]
+      "@bibi2400/electron-angular-framework/angular": ["packages/framework/src/angular/index.ts"]
     },
     "strict": true,
     "noImplicitOverride": true,

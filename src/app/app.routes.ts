@@ -1,38 +1,14 @@
 import { Routes } from '@angular/router';
+import { FrameworkRoutes } from '@bibi2400/electron-angular-framework/angular';
 import { Dashboard } from './pages/dashboard/dashboard';
 
-export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
-  },
+// Consumer-specific routes
+const appRoutes: Routes = [
   {
     path: 'dashboard',
     component: Dashboard
   },
-  {
-    path: 'backup',
-    loadComponent: () => import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
-  },
-  {
-    path: 'updates',
-    loadComponent: () => import('./pages/update-management/update-management').then(m => m.UpdateManagement)
-  },
-  {
-    path: 'notifications',
-    loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
-  },
-  {
-    path: 'shortcuts',
-    loadComponent: () => import('./pages/shortcut-management/shortcut-management').then(m => m.ShortcutManagement)
-  },
-  {
-    path: 'app-info',
-    loadComponent: () => import('./pages/app-info/app-info').then(m => m.AppInfo)
-  },
-  {
-    path: '**',
-    redirectTo: 'dashboard'
-  }
 ];
+
+// Merge with framework stock routes (backup, updates, notifications, shortcuts, app-info)
+export const routes = FrameworkRoutes.build(appRoutes, 'dashboard');

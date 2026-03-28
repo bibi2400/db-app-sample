@@ -55,37 +55,37 @@
     {
       "label": "🅰️ Angular: Nuova Pagina",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts angular-page ${input:angularPageName}",
+      "command": "npx eaf generate angular-page ${input:angularPageName}",
       "problemMatcher": []
     },
     {
       "label": "🅰️ Angular: Nuovo Componente",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts angular-component ${input:angularComponentName}",
+      "command": "npx eaf generate angular-component ${input:angularComponentName}",
       "problemMatcher": []
     },
     {
       "label": "🅰️ Angular: Nuovo Service",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts angular-service ${input:angularServiceName}",
+      "command": "npx eaf generate angular-service ${input:angularServiceName}",
       "problemMatcher": []
     },
     {
       "label": "🅰️ Angular: Nuova Pipe",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts angular-pipe ${input:angularPipeName}",
+      "command": "npx eaf generate angular-pipe ${input:angularPipeName}",
       "problemMatcher": []
     },
     {
       "label": "⚡️ Electron: Nuovo Service",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts electron-service ${input:electronServiceName}",
+      "command": "npx eaf generate electron-service ${input:electronServiceName}",
       "problemMatcher": []
     },
     {
       "label": "⚡️ Electron: Nuovo Controller",
       "type": "shell",
-      "command": "npx tsx scripts/generate.ts electron-controller ${input:electronControllerName}",
+      "command": "npx eaf generate electron-controller ${input:electronControllerName}",
       "problemMatcher": []
     },
     {
@@ -93,6 +93,18 @@
       "type": "shell",
       "command": "git add package.json package-lock.json && git commit -m \"bump version\" && git push",
       "dependsOn": ["⭐ Bump Version"],
+      "problemMatcher": []
+    },
+    {
+      "label": "🔀 Merge in Staging",
+      "type": "shell",
+      "command": "git checkout staging && git pull && git merge - && git push && git checkout -",
+      "problemMatcher": []
+    },
+    {
+      "label": "🚢 Publish Branch (Staging)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["📝 Commit Version Bump", "🔀 Merge in Staging"],
       "problemMatcher": []
     },
     {

@@ -1,24 +1,20 @@
 {
   "name": "db-app-sample",
   "productName": "Db App Sample",
-  "version": "1.5.5",
+  "version": "2.0.0",
   "main": "electron/dist-electron/electron/main.js",
   "author": "bibi",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4202",
-    "build": "npx ng build",
-    "electron:build": "npx tsc -p electron/tsconfig.json",
-    "electron:dev": "npm run electron:build && electron . --serve",
-    "electron:watch": "node scripts/electron-dev.js",
-    "dev": "concurrently --kill-others \"npm start\" \"npm run electron:watch\"",
-    "dev:no-splash": "concurrently --kill-others \"npm start\" \"npm run electron:watch -- --no-splash\"",
-    "build:all": "npm run build && npm run electron:build",
-    "clean:release": "node -e \"require('fs').rmSync('release', {recursive: true, force: true})\"",
-    "inject:token": "node scripts/inject-token.js",
-    "package:win": "npm run clean:release && npm run inject:token && npm run build:all && electron-builder build --win",
-    "package:win:noUpdateToken": "npm run clean:release && npm run build:all && electron-builder build --win",
-    "rename-app": "tsx scripts/rename-app.ts"
+    "dev": "node scripts/dev.js",
+    "dev:no-splash": "node scripts/dev.js --no-splash",
+    "build:all": "npx eaf build",
+    "package:win": "npx eaf package",
+    "package:win:noUpdateToken": "npx eaf package --no-token"
   },
   "build": {
     "appId": "com.db-app-sample.app",
@@ -63,7 +59,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": false,
-      "include": "build/installer.nsh"
+      "include": "node_modules/@bibi2400/electron-angular-framework/src/cli/build/installer.nsh"
     },
     "win": {
       "target": "nsis",
@@ -82,6 +78,7 @@
   "private": true,
   "packageManager": "npm@10.9.0",
   "dependencies": {
+    "@bibi2400/electron-angular-framework": "*",
     "electron-context-menu": "^4.1.2",
     "electron-log": "^5.4.3",
     "electron-serve": "^3.0.1",
