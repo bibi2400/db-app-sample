@@ -72,9 +72,47 @@
       "type": "shell",
       "command": "npx eaf generate electron-controller ${input:electronControllerName}",
       "problemMatcher": []
+    },
+    {
+      "label": "⭐ Bump Version",
+      "type": "shell",
+      "command": "npm version ${input:versionType} --no-git-tag-version",
+      "problemMatcher": []
+    },
+    {
+      "label": "📝 Commit Version Bump",
+      "type": "shell",
+      "command": "git add package.json package-lock.json && git commit -m \"v$(node -p \"require('./package.json').version\")\" && git push",
+      "dependsOn": ["⭐ Bump Version"],
+      "problemMatcher": []
+    },
+    {
+      "label": "🔀 Merge in Staging",
+      "type": "shell",
+      "command": "git checkout staging && git pull && git merge - && git push && git checkout -",
+      "problemMatcher": []
+    },
+    {
+      "label": "🚢 Publish Branch (Staging)",
+      "dependsOrder": "sequence",
+      "dependsOn": ["📝 Commit Version Bump", "🔀 Merge in Staging"],
+      "problemMatcher": []
+    },
+    {
+      "label": "🔀 Merge in Main",
+      "type": "shell",
+      "command": "git checkout main && git pull && git merge - && git push && git checkout -",
+      "problemMatcher": []
+    },
+    {
+      "label": "🚢 Publish Branch",
+      "dependsOrder": "sequence",
+      "dependsOn": ["📝 Commit Version Bump", "🔀 Merge in Main"],
+      "problemMatcher": []
     }
   ],
   "inputs": [
+    { "id": "versionType", "type": "pickString", "description": "Quale versione incrementare?", "options": ["patch", "minor", "major"], "default": "patch" },
     { "id": "angularPageName", "type": "promptString", "description": "Nome della pagina (es. user-profile)" },
     { "id": "angularComponentName", "type": "promptString", "description": "Nome del componente (es. data-table)" },
     { "id": "angularServiceName", "type": "promptString", "description": "Nome del service (es. auth)" },

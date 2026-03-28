@@ -91,7 +91,7 @@
     {
       "label": "📝 Commit Version Bump",
       "type": "shell",
-      "command": "git add package.json package-lock.json && git commit -m \"bump version\" && git push",
+      "command": "git add package.json package-lock.json && git commit -m \"v$(node -p \"require('./package.json').version\")\" && git push",
       "dependsOn": ["⭐ Bump Version"],
       "problemMatcher": []
     },
