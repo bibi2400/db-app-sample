@@ -29,6 +29,7 @@ Il comando `eaf create` in `packages/framework/src/cli/commands/create.ts`:
 3. Copia ricorsivamente tutti i file `.tmpl` dalla directory `templates/`
 4. Sostituisce i placeholder nel contenuto
 5. Rimuove l'estensione `.tmpl` dal nome file
+6. Inizializza una repository Git con branch `main` e `staging` e un primo commit con i file generati
 
 ### Convenzione File `.tmpl`
 

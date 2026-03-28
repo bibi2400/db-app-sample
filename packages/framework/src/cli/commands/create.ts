@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import { toKebabCase, toPascalCase } from '../helpers';
 
 const PKG = '@bibi2400/electron-angular-framework';
@@ -49,6 +50,9 @@ export function create(name: string | undefined): void {
 
   copyTemplates(TEMPLATES_DIR, dir, replacements);
 
+  // Initialize git repository with main and staging branches
+  initGitRepo(dir);
+
   console.log(`\n✨ Progetto "${productName}" creato con successo!\n`);
   console.log('Prossimi passi:');
   console.log(`  1. cd ${kebab}`);
@@ -89,5 +93,24 @@ function copyTemplates(srcDir: string, destDir: string, replacements: Record<str
     const relPath = path.relative(path.resolve(destDir, '..', path.basename(destDir)), destPath)
       || outputName;
     console.log(`  ✅ ${relPath}`);
+  }
+}
+
+/**
+ * Initializes a git repository with an initial commit on main,
+ * then creates a staging branch.
+ */
+function initGitRepo(dir: string): void {
+  const git = (args: string) => execSync(`git ${args}`, { cwd: dir, stdio: 'pipe' });
+
+  try {
+    console.log('\n📦 Inizializzazione repository Git...');
+    git('init -b main');
+    git('add -A');
+    git('commit -m "Initial commit"');
+    git('branch staging');
+    console.log('  ✅ Repository creata con branch main e staging');
+  } catch {
+    console.warn('  ⚠️  Impossibile inizializzare la repository Git (git non disponibile?)');
   }
 }
