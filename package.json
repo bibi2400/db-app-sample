@@ -43,11 +43,11 @@
     ],
     "extraResources": [
       {
-        "from": "src/assets/splash.html",
+        "from": "angular/src/assets/splash.html",
         "to": "splash.html"
       },
       {
-        "from": "src/assets/splash.png",
+        "from": "angular/src/assets/splash.png",
         "to": "splash.png"
       },
       {
@@ -63,7 +63,7 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "src/assets/icon.png"
+      "icon": "angular/src/assets/icon.png"
     },
     "releaseInfo": {
       "releaseNotesFile": "changelog.txt"

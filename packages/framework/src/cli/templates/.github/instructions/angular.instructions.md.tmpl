@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**"
+applyTo: "angular/src/**"
 description: "Instructions for Angular frontend code: standalone components, pages, services, signals, Electron API wrappers, routing, pipes."
 ---
 
@@ -8,7 +8,7 @@ description: "Instructions for Angular frontend code: standalone components, pag
 ## Directory Structure
 
 ```
-src/app/
+angular/src/app/
 ├── app.ts                → Root component (wraps FrameworkShell)
 ├── app.config.ts         → Angular config (uses FrameworkConfig from framework)
 ├── app.routes.ts         → Routes: app pages + FrameworkRoutes
@@ -96,12 +96,12 @@ Rules:
 - **inject()** — never constructor injection
 - **signal()** — for component state (not plain properties)
 - **input() / output()** — for parent-child communication (not @Input/@Output decorators)
-- Pages go in `src/app/pages/<kebab-name>/` with `.ts`, `.html`, `.scss`
-- Components go in `src/app/components/<kebab-name>/` with `.ts`, `.html`, `.scss`
+- Pages go in `angular/src/app/pages/<kebab-name>/` with `.ts`, `.html`, `.scss`
+- Components go in `angular/src/app/components/<kebab-name>/` with `.ts`, `.html`, `.scss`
 
 ## Routing
 
-Routes in `src/app/app.routes.ts`:
+Routes in `angular/src/app/app.routes.ts`:
 
 ```typescript
 export const routes: Routes = [
@@ -187,7 +187,7 @@ These are provided by the framework and available for injection anywhere:
 
 ## Type Definitions
 
-App-specific types live in `src/app/types/`. Framework types are imported from `{{PKG}}/angular`:
+App-specific types live in `angular/src/app/types/`. Framework types are imported from `{{PKG}}/angular`:
 
 | Framework Type | Purpose |
 |------|-------|
@@ -199,7 +199,7 @@ App-specific types live in `src/app/types/`. Framework types are imported from `
 | `BackupInfo`, `BackupOptions` | Backup system types |
 | `DownloadProgress`, `ChangelogEntry` | Update download types |
 
-The `window.electronAPI` type is declared in `src/app/types/global.ts`.
+The `window.electronAPI` type is declared in `angular/src/app/types/global.ts`.
 
 ## Pipe Pattern
 
@@ -223,8 +223,8 @@ export class MyPipe implements PipeTransform {
 
 Use VS Code tasks or CLI to generate Angular elements:
 ```bash
-npx eaf generate angular-page <name>         # Creates page in src/app/pages/
-npx eaf generate angular-component <name>    # Creates component in src/app/components/
-npx eaf generate angular-service <name>      # Creates service in src/app/services/
-npx eaf generate angular-pipe <name>         # Creates pipe in src/app/pipes/
+npx eaf generate angular-page <name>         # Creates page in angular/src/app/pages/
+npx eaf generate angular-component <name>    # Creates component in angular/src/app/components/
+npx eaf generate angular-service <name>      # Creates service in angular/src/app/services/
+npx eaf generate angular-pipe <name>         # Creates pipe in angular/src/app/pipes/
 ```

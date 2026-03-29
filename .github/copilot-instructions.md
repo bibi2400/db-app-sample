@@ -30,14 +30,18 @@ db-app-sample/                   ← Root (consumer app)
 │       ├── controllers/         → App-specific IPC controllers
 │       ├── services/            → App-specific business logic services
 │       └── db/entities/         → App-specific TypeORM entities
-├── src/app/                     ← Consumer Angular frontend
-│   ├── app.ts                   → Root component (wraps FrameworkShell)
-│   ├── app.config.ts            → Angular config (uses FrameworkConfig)
-│   ├── app.routes.ts            → Routes: app pages + FrameworkRoutes
-│   ├── pages/                   → App-specific page components
-│   ├── components/              → App-specific reusable components
-│   ├── services/                → App-specific Angular services
-│   └── types/                   → App-specific TypeScript interfaces
+├── angular/src/                 ← Consumer Angular frontend
+│   ├── app/
+│   │   ├── app.ts               → Root component (wraps FrameworkShell)
+│   │   ├── app.config.ts        → Angular config (uses FrameworkConfig)
+│   │   ├── app.routes.ts        → Routes: app pages + FrameworkRoutes
+│   │   ├── pages/               → App-specific page components
+│   │   ├── components/          → App-specific reusable components
+│   │   ├── services/            → App-specific Angular services
+│   │   └── types/               → App-specific TypeScript interfaces
+│   ├── main.ts                  → Angular entry point
+│   ├── styles.scss              → Global styles
+│   └── assets/                  → Static assets (splash, icons)
 ├── scripts/
 │   ├── dev.js                   → Thin wrapper → framework dev.js
 │   ├── electron-dev.js          → Thin wrapper → framework electron-dev.js
@@ -318,7 +322,7 @@ When adding new elements, remember to register them:
 1. **Electron Services** → add to `SYSTEM_SERVICES` in `electron/src/services/system-services/index.ts`
 2. **Controllers** → add to `CONTROLLERS` in `electron/src/controllers/index.ts`
 3. **Entities** → add to `MODELS` in `electron/src/db/entities/index.ts`
-4. **Angular Routes** → add to `src/app/app.routes.ts`
+4. **Angular Routes** → add to `angular/src/app/app.routes.ts`
 
 ## CI/CD Pipeline
 

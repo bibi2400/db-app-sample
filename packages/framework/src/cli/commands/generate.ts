@@ -9,7 +9,7 @@ const PKG = '@bibi2400/electron-angular-framework';
 function generateAngularPage(name: string): void {
   const kebab = toKebabCase(name);
   const pascal = toPascalCase(name);
-  const dir = path.join('src', 'app', 'pages', kebab);
+  const dir = path.join('angular', 'src', 'app', 'pages', kebab);
 
   console.log(`\n🔵 Generazione pagina Angular: ${pascal}\n`);
 
@@ -39,7 +39,7 @@ export class ${pascal} {
 `);
 
   console.log(`\n✨ Pagina "${pascal}" creata in ${dir}`);
-  console.log(`\n📝 Ricorda di aggiungere la route in src/app/app.routes.ts:`);
+  console.log(`\n📝 Ricorda di aggiungere la route in angular/src/app/app.routes.ts:`);
   console.log(`   {`);
   console.log(`     path: '${kebab}',`);
   console.log(`     loadComponent: () => import('./pages/${kebab}/${kebab}').then(m => m.${pascal})`);
@@ -51,7 +51,7 @@ export class ${pascal} {
 function generateAngularComponent(name: string): void {
   const kebab = toKebabCase(name);
   const pascal = toPascalCase(name);
-  const dir = path.join('src', 'app', 'components', kebab);
+  const dir = path.join('angular', 'src', 'app', 'components', kebab);
 
   console.log(`\n🔵 Generazione componente Angular: ${pascal}\n`);
 
@@ -88,7 +88,7 @@ export class ${pascal} {
 function generateAngularService(name: string): void {
   const kebab = toKebabCase(name);
   const pascal = toPascalCase(name);
-  const filePath = path.join('src', 'app', 'services', `${kebab}.service.ts`);
+  const filePath = path.join('angular', 'src', 'app', 'services', `${kebab}.service.ts`);
 
   console.log(`\n🔵 Generazione service Angular: ${pascal}Service\n`);
 
@@ -112,7 +112,7 @@ function generateAngularPipe(name: string): void {
   const kebab = toKebabCase(name);
   const pascal = toPascalCase(name);
   const camel = toCamelCase(name);
-  const dir = path.join('src', 'app', 'pipes');
+  const dir = path.join('angular', 'src', 'app', 'pipes');
   const filePath = path.join(dir, `${kebab}.pipe.ts`);
 
   console.log(`\n🔵 Generazione pipe Angular: ${pascal}Pipe\n`);

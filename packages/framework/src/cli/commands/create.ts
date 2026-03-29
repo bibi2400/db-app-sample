@@ -30,8 +30,8 @@ export function create(name: string | undefined): void {
 
   // Create extra empty directories not covered by templates
   const extraDirs = [
-    'src/app/components',
-    'src/app/services',
+    'angular/src/app/components',
+    'angular/src/app/services',
     'public',
     'build',
   ];

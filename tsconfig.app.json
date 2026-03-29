@@ -7,11 +7,11 @@
     "types": []
   },
   "include": [
-    "src/**/*.ts",
+    "angular/src/**/*.ts",
     "packages/framework/src/angular/**/*.ts",
     "packages/framework/src/shared/**/*.ts"
   ],
   "exclude": [
-    "src/**/*.spec.ts"
+    "angular/src/**/*.spec.ts"
   ]
 }

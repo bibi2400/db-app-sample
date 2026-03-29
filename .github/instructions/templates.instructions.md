@@ -25,7 +25,7 @@ Modificare un template nella libreria **non ha alcun effetto** sui progetti già
 Il comando `eaf create` in `packages/framework/src/cli/commands/create.ts`:
 
 1. Crea la directory del progetto
-2. Crea directory vuote extra (`src/app/components/`, `src/app/services/`, `public/`, `build/`)
+2. Crea directory vuote extra (`angular/src/app/components/`, `angular/src/app/services/`, `public/`, `build/`)
 3. Copia ricorsivamente tutti i file `.tmpl` dalla directory `templates/`
 4. Sostituisce i placeholder nel contenuto
 5. Rimuove l'estensione `.tmpl` dal nome file
@@ -71,23 +71,23 @@ packages/framework/src/cli/templates/
 │       ├── db/entities/index.ts.tmpl                → Registry entità
 │       └── services/index.ts.tmpl                   → Registry servizi
 ├── package.json.tmpl                                → Config root + electron-builder
-├── packages/framework/.gitkeep.tmpl                 → Placeholder per symlink framework
 ├── scripts/
 │   ├── dev.js.tmpl                                  → Orchestrator dev
 │   └── electron-dev.js.tmpl                         → Watch Electron
-├── src/
-│   ├── index.html.tmpl
-│   ├── main.ts.tmpl                                 → Bootstrap Angular
-│   ├── styles.scss.tmpl                             → Stili globali
-│   ├── assets/splash.html.tmpl                      → Splash screen
-│   └── app/
-│       ├── app.ts.tmpl                              → Root component
-│       ├── app.config.ts.tmpl                       → Angular config
-│       ├── app.routes.ts.tmpl                       → Routes
-│       └── pages/dashboard/                         → Pagina default
-│           ├── dashboard.ts.tmpl
-│           ├── dashboard.html.tmpl
-│           └── dashboard.scss.tmpl
+├── angular/
+│   └── src/
+│       ├── index.html.tmpl
+│       ├── main.ts.tmpl                                 → Bootstrap Angular
+│       ├── styles.scss.tmpl                             → Stili globali
+│       ├── assets/splash.html.tmpl                      → Splash screen
+│       └── app/
+│           ├── app.ts.tmpl                              → Root component
+│           ├── app.config.ts.tmpl                       → Angular config
+│           ├── app.routes.ts.tmpl                       → Routes
+│           └── pages/dashboard/                         → Pagina default
+│               ├── dashboard.ts.tmpl
+│               ├── dashboard.html.tmpl
+│               └── dashboard.scss.tmpl
 ├── tsconfig.json.tmpl
 ├── tsconfig.app.json.tmpl
 └── tsconfig.spec.json.tmpl
@@ -99,9 +99,9 @@ Il comando `eaf generate` in `packages/framework/src/cli/commands/generate.ts` *
 
 | Tipo | File creati | Auto-update barrel |
 |---|---|---|
-| `angular-page` | `src/app/pages/{name}/` (.ts, .html, .scss) | No |
-| `angular-component` | `src/app/components/{name}/` (.ts, .html, .scss) | No |
-| `angular-service` | `src/app/services/{name}.service.ts` | No |
-| `angular-pipe` | `src/app/pipes/{name}.pipe.ts` | No |
+| `angular-page` | `angular/src/app/pages/{name}/` (.ts, .html, .scss) | No |
+| `angular-component` | `angular/src/app/components/{name}/` (.ts, .html, .scss) | No |
+| `angular-service` | `angular/src/app/services/{name}.service.ts` | No |
+| `angular-pipe` | `angular/src/app/pipes/{name}.pipe.ts` | No |
 | `electron-service` | `electron/src/services/{name}.service.ts` | Sì → `services/index.ts` |
 | `electron-controller` | `electron/src/controllers/{name}.controller.ts` | Sì → `controllers/index.ts` |

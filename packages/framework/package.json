@@ -55,6 +55,7 @@
   "files": [
     "dist/",
     "src/angular/",
+    "src/shared/",
     "src/cli/scripts/",
     "src/cli/build/",
     "src/cli/templates/"

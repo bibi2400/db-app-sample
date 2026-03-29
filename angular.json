@@ -15,13 +15,13 @@
         }
       },
       "root": "",
-      "sourceRoot": "src",
+      "sourceRoot": "angular/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "src/main.ts",
+            "browser": "angular/src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "baseHref": "./",
@@ -32,12 +32,12 @@
               },
               {
                 "glob": "**/*",
-                "input": "src/assets",
+                "input": "angular/src/assets",
                 "output": "/assets"
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "angular/src/styles.scss"
             ]
           },
           "configurations": {

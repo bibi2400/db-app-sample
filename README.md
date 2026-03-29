@@ -80,13 +80,17 @@ my-cool-app/
 │       ├── controllers/   → Controller IPC dell'app
 │       ├── services/      → Service Electron dell'app
 │       └── db/entities/   → Entità TypeORM
-├── src/app/               ← Frontend Angular
-│   ├── app.ts             → Componente root (wrappa FrameworkShell)
-│   ├── app.config.ts      → Configurazione Angular
-│   ├── app.routes.ts      → Route app + FrameworkRoutes
-│   ├── pages/dashboard/   → Pagina iniziale di esempio
-│   ├── components/        → Componenti riutilizzabili
-│   └── services/          → Service Angular
+├── angular/src/           ← Frontend Angular
+│   ├── app/
+│   │   ├── app.ts         → Componente root (wrappa FrameworkShell)
+│   │   ├── app.config.ts  → Configurazione Angular
+│   │   ├── app.routes.ts  → Route app + FrameworkRoutes
+│   │   ├── pages/         → Pagine (dashboard di esempio)
+│   │   ├── components/    → Componenti riutilizzabili
+│   │   └── services/      → Service Angular
+│   ├── main.ts            → Entry point Angular
+│   ├── styles.scss        → Stili globali
+│   └── assets/            → Risorse statiche (splash, icone)
 ├── scripts/               ← Script di sviluppo
 ├── packages/framework/    ← Placeholder per link locale al framework
 ├── .github/               ← CI/CD + Copilot instructions
@@ -101,7 +105,7 @@ my-cool-app/
 Dopo aver generato il progetto, ricorda di:
 
 - **Aggiornare `publish.owner`** in `package.json` con il tuo username/org GitHub
-- **Sostituire le icone** e la splash screen in `src/assets/`
+- **Sostituire le icone** e la splash screen in `angular/src/assets/`
 - **Configurare il repository GitHub** per gli auto-update (impostare `publish.repo` in `package.json`)
 
 ---
