@@ -145,6 +145,11 @@ jobs:
           tag_name: ${{ steps.version.outputs.TAG_NAME }}
           name: Release ${{ steps.version.outputs.TAG_NAME }}
 
+          # Fondamentale: senza questo parametro, il tag viene creato sul branch di default (main)
+          # invece che sul commit che ha triggerato la pipeline. Questo causava changelog duplicati
+          # perché tutti i tag beta puntavano allo stesso commit di main.
+          target_commitish: ${{ github.sha }}
+
           # Se il branch è 'staging', questa opzione spunta automaticamente la casella
           # "Set as a pre-release" sulla pagina di GitHub
           prerelease: ${{ github.ref_name == 'staging' }}
