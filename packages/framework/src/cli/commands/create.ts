@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { toKebabCase, toPascalCase } from '../helpers';
 
 const PKG = '@bibi2400/electron-angular-framework';
@@ -53,13 +53,16 @@ export function create(name: string | undefined): void {
   // Initialize git repository with main and staging branches
   initGitRepo(dir);
 
+  // Open VS Code (non-blocking)
+  openVSCode(dir);
+
+  // Install dependencies
+  installDependencies(dir);
+
   console.log(`\n✨ Progetto "${productName}" creato con successo!\n`);
   console.log('Prossimi passi:');
   console.log(`  1. cd ${kebab}`);
-  console.log('  2. Configura autenticazione GitHub Packages:');
-  console.log('     npm login --scope=@bibi2400 --registry=https://npm.pkg.github.com');
-  console.log('  3. npm install');
-  console.log('  4. npm run dev');
+  console.log('  2. npm run dev');
   console.log('');
 }
 
@@ -112,5 +115,32 @@ function initGitRepo(dir: string): void {
     console.log('  ✅ Repository creata con branch main e staging');
   } catch {
     console.warn('  ⚠️  Impossibile inizializzare la repository Git (git non disponibile?)');
+  }
+}
+
+/**
+ * Opens VS Code in the project directory (non-blocking, detached).
+ */
+function openVSCode(dir: string): void {
+  try {
+    console.log('\n💻 Apertura VS Code...');
+    const child = spawn('code', ['.'], { cwd: dir, stdio: 'ignore', detached: true, shell: true });
+    child.unref();
+    console.log('  ✅ VS Code avviato');
+  } catch {
+    console.warn('  ⚠️  Impossibile aprire VS Code (comando "code" non disponibile?)');
+  }
+}
+
+/**
+ * Runs npm install in the project directory.
+ */
+function installDependencies(dir: string): void {
+  try {
+    console.log('\n📦 Installazione dipendenze (npm install)...');
+    execSync('npm install', { cwd: dir, stdio: 'inherit' });
+    console.log('  ✅ Dipendenze installate');
+  } catch {
+    console.warn('  ⚠️  npm install fallito. Esegui manualmente: cd ' + path.basename(dir) + ' && npm install');
   }
 }
