@@ -26,7 +26,7 @@ jobs:
           BASE_VERSION=$(node -p "require('./package.json').version")
           if [ "${{ github.ref_name }}" == "staging" ]; then
             FULL_VERSION="${BASE_VERSION}-beta.${{ github.run_number }}"
-            npm --no-git-tag-version version $FULL_VERSION
+            npm --no-git-tag-version --ignore-scripts version $FULL_VERSION
           else
             FULL_VERSION=$BASE_VERSION
           fi

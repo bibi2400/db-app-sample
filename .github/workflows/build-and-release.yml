@@ -41,10 +41,11 @@ jobs:
             
             # Questo comando aggiorna temporaneamente il package.json della macchina virtuale
             # senza creare commit. Serve per far generare a electron-builder il file beta.yml
-            npm --no-git-tag-version version $FULL_VERSION
+            # --ignore-scripts evita che npm ricalcoli le dipendenze (workspace resolve)
+            npm --no-git-tag-version --ignore-scripts version $FULL_VERSION
             
             # Aggiorna anche la versione del framework per pubblicare il pacchetto npm con la stessa versione beta
-            cd packages/framework && npm --no-git-tag-version version $FULL_VERSION && cd ../..
+            cd packages/framework && npm --no-git-tag-version --ignore-scripts version $FULL_VERSION && cd ../..
             
             echo "🔧 Versione impostata per lo staging: $FULL_VERSION"
           else
