@@ -1,5 +1,8 @@
 <div class="sidebar-header">
-  <img src="assets/menu-logo.png" alt="Quality Manager" class="sidebar-logo">
+  <img src="assets/menu-logo.png" class="sidebar-logo" (error)="logoError = true" [hidden]="logoError">
+  @if (logoError) {
+    <span class="sidebar-app-name">{{ navigationService.appName() }}</span>
+  }
   <button mat-icon-button (click)="closed.emit()"><mat-icon>close</mat-icon></button>
 </div>
 <mat-nav-list class="sidebar-menu">

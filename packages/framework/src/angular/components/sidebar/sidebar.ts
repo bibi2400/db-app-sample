@@ -23,6 +23,7 @@ export class Sidebar {
   version = input('');
   author = input('');
   closed = output<void>();
+  logoError = false;
 
   readonly navigationService = inject(NavigationService);
   private router = inject(Router);

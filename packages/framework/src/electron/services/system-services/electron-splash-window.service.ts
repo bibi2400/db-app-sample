@@ -17,7 +17,7 @@ export interface SplashConfig {
 const DEFAULT_SPLASH_CONFIG: Required<SplashConfig> = {
   width: 600,
   height: 400,
-  devPath: 'src/assets/splash.html',
+  devPath: 'angular/src/assets/splash.html',
   prodPath: 'splash.html',
 };
 

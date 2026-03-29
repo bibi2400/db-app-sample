@@ -29,6 +29,7 @@ export class AppController extends BaseController {
     const info = this.appConfigService.getInfo();
     return this.success({
       name: info.name,
+      productName: info.name,
       version: info.version,
     });
   }

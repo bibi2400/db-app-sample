@@ -56,6 +56,7 @@ export class NavigationService {
   activeLink = signal<MenuItem>(this.menu[0]);
   expandedMenus = signal<Set<string>>(new Set());
   updateAvailable = signal(false);
+  appName = signal('');
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);

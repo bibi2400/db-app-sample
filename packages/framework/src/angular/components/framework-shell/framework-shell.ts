@@ -87,6 +87,7 @@ export class FrameworkShell implements OnInit, OnDestroy {
     this.appService.getInfo().then(info => {
       if (info) {
         this.version = info.version;
+        this.navigationService.appName.set(info.productName);
       }
     });
   }

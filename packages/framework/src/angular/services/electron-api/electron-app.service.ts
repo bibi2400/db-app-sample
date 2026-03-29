@@ -3,6 +3,7 @@ import { IpcResponse } from '../../types/global';
 
 export interface AppInfo {
   name: string;
+  productName: string;
   version: string;
 }
 
