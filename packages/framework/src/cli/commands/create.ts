@@ -138,7 +138,7 @@ function openVSCode(dir: string): void {
 function installDependencies(dir: string): void {
   try {
     console.log('\n📦 Installazione dipendenze (npm install)...');
-    execSync('npm install', { cwd: dir, stdio: 'inherit' });
+    execSync('npm ci', { cwd: dir, stdio: 'inherit' });
     console.log('  ✅ Dipendenze installate');
   } catch {
     console.warn('  ⚠️  npm install fallito. Esegui manualmente: cd ' + path.basename(dir) + ' && npm install');

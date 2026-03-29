@@ -75,6 +75,7 @@ export class ElectronMainWindowService {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
+        sandbox: false,
         preload: path.join(app.getAppPath(), 'electron', 'dist-electron', 'electron', 'preload.js'),
       },
     });
