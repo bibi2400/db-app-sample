@@ -72,6 +72,8 @@
 - [ ] trovare un modo per ricevere gli aggiornamenti della repo dello scaffold (questa per ora) senza rompere tutto
   - renderlo una specie di framework?
 
+- [ ] cambiare nome DB App Maker
+
 ## Bonus Tracks:
 
 - [x] implementare gestione notifiche di sistema
