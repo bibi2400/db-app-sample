@@ -23,6 +23,8 @@ export const RUNTIME_CONFIG = {
 };
 `;
 
+  console.log(content);
+
   // Find the framework package relative to the project root
   const frameworkConfigDir = path.join(process.cwd(), 'packages', 'framework', 'src', 'electron', 'config');
   fs.mkdirSync(frameworkConfigDir, { recursive: true });
