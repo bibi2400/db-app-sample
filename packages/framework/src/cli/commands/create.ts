@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync, spawn } from 'child_process';
 import { toKebabCase, toPascalCase } from '../helpers';
+import { MIGRATIONS, markAllAsApplied } from '../migrations';
 
 const PKG = '@bibi2400/electron-angular-framework';
 const TEMPLATES_DIR = path.join(__dirname, '..', '..', '..', 'src', 'cli', 'templates');
@@ -49,6 +50,11 @@ export function create(name: string | undefined): void {
   };
 
   copyTemplates(TEMPLATES_DIR, dir, replacements);
+
+  // Mark all existing migrations as applied (new project is already up-to-date)
+  if (MIGRATIONS.length > 0) {
+    markAllAsApplied(dir, MIGRATIONS);
+  }
 
   // Initialize git repository with main and staging branches
   initGitRepo(dir);

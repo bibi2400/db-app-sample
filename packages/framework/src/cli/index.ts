@@ -6,6 +6,7 @@ import { generate } from './commands/generate';
 import { injectToken } from './commands/inject-token';
 import { create } from './commands/create';
 import { build, clean, packageWin } from './commands/build';
+import { migrate } from './commands/migrate';
 
 const command = process.argv[2];
 
@@ -16,6 +17,7 @@ const COMMANDS: Record<string, string> = {
   'clean': 'Remove the release directory',
   'package': 'Full packaging pipeline (clean + build + electron-builder)',
   'inject-token': 'Inject GitHub update token into runtime config',
+  'migrate': 'Apply pending migrations to the current project',
 };
 
 if (!command || !COMMANDS[command]) {
@@ -33,6 +35,11 @@ if (!command || !COMMANDS[command]) {
   console.log('  eaf package');
   console.log('  eaf package --no-token');
   console.log('  eaf inject-token');
+  console.log('  eaf migrate');
+  console.log('  eaf migrate --list');
+  console.log('  eaf migrate --status');
+  console.log('  eaf migrate --dry-run');
+  console.log('  eaf migrate --init');
   process.exit(1);
 }
 
@@ -59,4 +66,8 @@ if (command === 'package') {
 
 if (command === 'inject-token') {
   injectToken();
+}
+
+if (command === 'migrate') {
+  migrate(process.argv.slice(3));
 }

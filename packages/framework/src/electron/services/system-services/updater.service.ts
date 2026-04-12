@@ -9,7 +9,7 @@ import { PushEmitter } from '../../helpers/push/push-emitter';
 import { PushService } from './push.service';
 import { DevModeService } from './dev-mode.service';
 import { Logger } from '../../helpers/logger';
-import { RUNTIME_CONFIG } from '../../config/runtime-config';
+import { RuntimeConfigHolder } from '../../config/runtime-config';
 
 export type UpdateStatusType = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
 
@@ -82,7 +82,7 @@ export class UpdaterService {
       provider: 'github',
       ...this.feedConfig,
       private: true,
-      token: RUNTIME_CONFIG.GH_TOKEN,
+      token: RuntimeConfigHolder.get().GH_TOKEN,
     });
   }
 
@@ -249,8 +249,8 @@ export class UpdaterService {
       'Accept': 'application/vnd.github+json',
       'User-Agent': 'electron-updater',
     };
-    if (RUNTIME_CONFIG.GH_TOKEN) {
-      headers['Authorization'] = `token ${RUNTIME_CONFIG.GH_TOKEN}`;
+    if (RuntimeConfigHolder.get().GH_TOKEN) {
+      headers['Authorization'] = `token ${RuntimeConfigHolder.get().GH_TOKEN}`;
     }
 
     const releaseBody = await this.httpGet(releaseUrl, headers);
@@ -325,8 +325,8 @@ export class UpdaterService {
         'Accept': 'application/vnd.github+json',
         'User-Agent': 'electron-updater',
       };
-      if (RUNTIME_CONFIG.GH_TOKEN) {
-        headers['Authorization'] = `token ${RUNTIME_CONFIG.GH_TOKEN}`;
+      if (RuntimeConfigHolder.get().GH_TOKEN) {
+        headers['Authorization'] = `token ${RuntimeConfigHolder.get().GH_TOKEN}`;
       }
 
       const body = await new Promise<string>((resolve, reject) => {

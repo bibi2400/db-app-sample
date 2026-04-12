@@ -23,7 +23,15 @@ packages/framework/
 │   │   │   ├── build.ts         → build(), clean(), packageWin() — build orchestration
 │   │   │   ├── create.ts        → eaf create <name> — full project scaffolding
 │   │   │   ├── generate.ts      → eaf generate <type> <name> — code generation
-│   │   │   └── inject-token.ts  → Injects ELECTRON_UPDATE_TOKEN into runtime-config.ts
+│   │   │   ├── inject-token.ts  → Injects ELECTRON_UPDATE_TOKEN into runtime-config.ts
+│   │   │   └── migrate.ts       → eaf migrate — apply pending migrations
+│   │   ├── migrations/          → Migration system
+│   │   │   ├── types.ts         → Migration, MigrationContext, MigrationState interfaces
+│   │   │   ├── context.ts       → MigrationContext implementation (file helpers)
+│   │   │   ├── runner.ts        → Engine: apply pending, track state in .eaf-migrations.json
+│   │   │   ├── registry.ts      → MIGRATIONS array (ordered list of all migrations)
+│   │   │   ├── index.ts         → Re-exports
+│   │   │   └── definitions/     → Individual migration files (001-xxx.ts, 002-xxx.ts, ...)
 │   │   ├── scripts/
 │   │   │   ├── dev.js           → Full dev orchestrator (ng serve + electron-dev)
 │   │   │   └── electron-dev.js  → Framework build + tsc watch + Electron restart
@@ -207,6 +215,90 @@ Full packaging pipeline:
 
 ### `eaf inject-token`
 Reads `ELECTRON_UPDATE_TOKEN` env var and writes it to `packages/framework/src/electron/config/runtime-config.ts`.
+
+### `eaf migrate [--list | --status | --dry-run | --init]`
+Applies pending migrations to the current consumer project.
+
+| Flag | Behavior |
+|---|---|
+| *(none)* | Apply all pending migrations |
+| `--list` | Show pending migrations without applying |
+| `--status` | Show full status: applied + pending |
+| `--dry-run` | Preview what would be applied without changes |
+| `--init` | Mark all migrations as already applied (for existing projects) |
+
+## Migration System
+
+Il sistema di migrazione propaga modifiche ai template verso i progetti consumer già esistenti.
+
+### Struttura
+
+```
+packages/framework/src/cli/migrations/
+├── types.ts         → Interfacce: Migration, MigrationContext, MigrationState
+├── context.ts       → Implementazione MigrationContext (helper per file)
+├── runner.ts        → Engine: applica migrazioni, traccia stato
+├── registry.ts      → Array MIGRATIONS (lista ordinata di tutte le migrazioni)
+├── index.ts         → Re-exports pubblici
+└── definitions/     → File delle singole migrazioni
+```
+
+### Come funziona
+
+1. Lo stato delle migrazioni applicate è salvato in `.eaf-migrations.json` alla root del progetto consumer
+2. Ogni migrazione ha `id` univoco, `description` e funzione `up(ctx: MigrationContext)`
+3. Il runner confronta le migrazioni registrate in `MIGRATIONS` con quelle già applicate
+4. Le migrazioni pendenti vengono eseguite in ordine; se una fallisce, le successive vengono annullate
+5. `eaf create` segna automaticamente tutte le migrazioni come applicate sui nuovi progetti
+
+### MigrationContext API
+
+L'oggetto `ctx` passato a `up()` fornisce:
+
+| Metodo | Descrizione |
+|---|---|
+| `createFile(path, content)` | Crea un file (errore se esiste) |
+| `writeFile(path, content)` | Crea o sovrascrive un file |
+| `readFile(path)` | Legge il contenuto di un file |
+| `fileExists(path)` | Verifica se un file esiste |
+| `deleteFile(path)` | Elimina un file |
+| `updateJson(path, fn)` | Legge, trasforma e riscrive un file JSON |
+| `replaceInFile(path, search, replace)` | Sostituisce testo in un file |
+| `insertAfter(path, search, content)` | Inserisce dopo la riga che matcha |
+| `insertBefore(path, search, content)` | Inserisce prima della riga che matcha |
+| `log(message)` / `warn(message)` | Logging |
+
+### Come creare una migrazione
+
+1. Crea un file in `migrations/definitions/`, es. `001-add-nvmrc.ts`:
+
+```typescript
+import { Migration } from '../types';
+
+export const migration: Migration = {
+  id: '001',
+  description: 'Aggiunge il file .nvmrc',
+  up: (ctx) => {
+    if (!ctx.fileExists('.nvmrc')) {
+      ctx.createFile('.nvmrc', '20\n');
+    }
+  },
+};
+```
+
+2. Registra in `migrations/registry.ts`:
+
+```typescript
+import { migration as m001 } from './definitions/001-add-nvmrc';
+
+export const MIGRATIONS: Migration[] = [
+  m001,
+];
+```
+
+### Regola: template + migrazione
+
+Quando si modifica un template e la modifica deve arrivare ai progetti esistenti, creare **sempre** anche la migrazione corrispondente.
 
 ## Dev Scripts (Plain JS)
 

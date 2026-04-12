@@ -12,8 +12,9 @@ db-app-sample/                   ← Root (consumer app)
 ├── packages/
 │   └── framework/               ← @bibi2400/electron-angular-framework (npm library)
 │       ├── src/
-│       │   ├── cli/             → CLI: eaf create, generate, build, package, inject-token
-│       │   │   ├── commands/    → Command implementations (build.ts, create.ts, generate.ts, inject-token.ts)
+│       │   ├── cli/             → CLI: eaf create, generate, build, package, inject-token, migrate
+│       │   │   ├── commands/    → Command implementations (build.ts, create.ts, generate.ts, inject-token.ts, migrate.ts)
+│       │   │   ├── migrations/  → Migration system (definitions, runner, registry, context)
 │       │   │   ├── scripts/     → Dev orchestrator scripts (dev.js, electron-dev.js)
 │       │   │   └── build/       → NSIS installer script (installer.nsh)
 │       │   ├── electron/        → Electron framework: bootstrap, DI, controllers, services, decorators
@@ -107,6 +108,11 @@ The framework (`@bibi2400/electron-angular-framework`) provides:
 | `eaf clean` | Remove release/ directory |
 | `eaf package [--no-token]` | Full packaging pipeline |
 | `eaf inject-token` | Inject GitHub update token |
+| `eaf migrate` | Apply pending migrations to current project |
+| `eaf migrate --list` | Show pending migrations |
+| `eaf migrate --status` | Show full migration status (applied + pending) |
+| `eaf migrate --dry-run` | Preview without applying |
+| `eaf migrate --init` | Mark all migrations as applied (for existing projects) |
 
 ### Build Pipeline
 
@@ -291,6 +297,7 @@ I file nella directory `templates/` vengono usati **una sola volta** alla creazi
 
 - Modificare un template **non ha effetto** sui progetti già esistenti
 - Per cambiare il progetto corrente → modificare il file nel progetto consumer (es. `package.json`, `angular.json`, `.vscode/tasks.json`)
+- Per propagare una modifica ai template verso i progetti già esistenti → creare una **migrazione** in `packages/framework/src/cli/migrations/definitions/`
 - Per cambiare la struttura di base dei nuovi progetti futuri → modificare il template corrispondente in `packages/framework/src/cli/templates/`
 
 ### Placeholder Template
@@ -301,6 +308,26 @@ I file nella directory `templates/` vengono usati **una sola volta** alla creazi
 | `{{PASCAL}}` | Nome PascalCase | `MyApp` |
 | `{{PRODUCT_NAME}}` | Nome leggibile | `My App` |
 | `{{PKG}}` | Nome pacchetto framework | `@bibi2400/electron-angular-framework` |
+
+## Migration System
+
+Il sistema di migrazione permette di propagare modifiche ai template verso i progetti consumer già esistenti.
+
+- Le migrazioni si trovano in `packages/framework/src/cli/migrations/definitions/`
+- Lo stato delle migrazioni applicate è tracciato nel file `.eaf-migrations.json` alla root del progetto consumer
+- Ogni migrazione ha un `id` univoco, una `description` e una funzione `up(ctx)` che riceve un `MigrationContext`
+- Le migrazioni vengono eseguite in ordine e sono idempotenti (se già applicata, viene saltata)
+- Il comando `eaf create` segna automaticamente tutte le migrazioni esistenti come applicate sui nuovi progetti
+
+### Quando creare una migrazione
+
+- Si modifica un template e si vuole che la modifica arrivi ai progetti esistenti
+- Si aggiunge un nuovo file di configurazione che tutti i progetti devono avere
+- Si rinomina/sposta un file che i progetti esistenti hanno nella vecchia posizione
+
+### Regola: template + migrazione
+
+Quando si modifica un template, creare **sempre** anche la migrazione corrispondente se la modifica deve essere propagata ai progetti esistenti.
 
 ## Code Generation
 

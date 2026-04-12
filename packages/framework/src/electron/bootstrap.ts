@@ -2,6 +2,7 @@ import { app, BrowserWindow, MenuItem } from 'electron';
 import * as fs from 'fs';
 import * as path from 'path';
 import "reflect-metadata";
+import { RuntimeConfig, RuntimeConfigHolder } from './config/runtime-config';
 import { Logger } from './helpers/logger';
 import { Injector } from './helpers/mini-pie/injector';
 import { Constructor } from './helpers/mini-pie/types';
@@ -48,6 +49,8 @@ export interface BootstrapConfig {
   hooks?: BootstrapHooks;
   /** Context menu customization */
   contextMenu?: ContextMenuConfig;
+  /** Runtime config (GH_TOKEN for auto-update). Injected at build time by `eaf inject-token`. */
+  runtimeConfig?: RuntimeConfig;
 }
 
 /**
@@ -85,6 +88,11 @@ export class AppBootstrap {
    * This is the single method the consumer needs to call.
    */
   async start(): Promise<void> {
+    // Apply runtime config (GH_TOKEN for auto-update)
+    if (this.config.runtimeConfig) {
+      RuntimeConfigHolder.set(this.config.runtimeConfig);
+    }
+
     const { default: serve } = await import('electron-serve');
     const pkg = JSON.parse(fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf-8'));
     serve({ directory: `dist/${pkg.name}/browser` });

@@ -5,6 +5,9 @@
 export { AppBootstrap } from './bootstrap';
 export type { BootstrapConfig, BootstrapHooks, ContextMenuConfig } from './bootstrap';
 
+// ─── Runtime Config ──────────────────────────────────────────────────────────
+export type { RuntimeConfig } from './config/runtime-config';
+
 // ─── DI Framework (mini-pie) ─────────────────────────────────────────────────
 export { Injectable } from './helpers/mini-pie/decorators';
 export { Injector } from './helpers/mini-pie/injector';

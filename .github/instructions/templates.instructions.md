@@ -17,6 +17,14 @@ Modificare un template nella libreria **non ha alcun effetto** sui progetti già
 - Si aggiunge un nuovo file/configurazione che tutti i nuovi progetti dovranno avere
 - Si corregge un errore nel template che produce progetti non funzionanti
 
+### Regola: template + migrazione
+
+Quando si modifica un template e la modifica deve arrivare anche ai progetti già esistenti, creare **sempre** una migrazione corrispondente in `packages/framework/src/cli/migrations/definitions/`.
+
+- Le migrazioni propagano le modifiche ai template verso i progetti consumer già creati
+- I nuovi progetti creati con `eaf create` ricevono i template aggiornati e tutte le migrazioni vengono segnate come già applicate
+- Per i dettagli sul sistema di migrazione, vedere `.github/instructions/framework.instructions.md` → sezione "Migration System"
+
 
 ## Come Funziona il Sistema di Template
 
