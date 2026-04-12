@@ -9,7 +9,7 @@ import * as path from 'path';
  * Writes to <projectRoot>/electron/src/config/runtime-config.ts
  */
 export function injectToken(): void {
-  const token = process.env['ELECTRON_UPDATE_TOKEN'] || '';
+  const token = (process.env['ELECTRON_UPDATE_TOKEN'] || '').trim();
 
   if (!token) {
     console.error('⚠️ Nessun token trovato (ELECTRON_UPDATE_TOKEN).');
@@ -24,6 +24,8 @@ export const RUNTIME_CONFIG: RuntimeConfig = {
   GH_TOKEN: '${token}',
 };
 `;
+
+  console.log(content)
 
   const configDir = path.join(process.cwd(), 'electron', 'src', 'config');
   fs.mkdirSync(configDir, { recursive: true });

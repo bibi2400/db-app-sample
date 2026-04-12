@@ -8,6 +8,7 @@
     "packages/*"
   ],
   "scripts": {
+    "prepare": "git config core.hooksPath .githooks",
     "ng": "ng",
     "start": "ng serve --port 4202",
     "dev": "node scripts/dev.js",
@@ -78,7 +79,7 @@
   "private": true,
   "packageManager": "npm@10.9.0",
   "dependencies": {
-    "@bibi2400/electron-angular-framework": "*"
+    "@bibi2400/electron-angular-framework": "file:packages/framework"
   },
   "devDependencies": {
     "@angular/build": "^21.0.2",
