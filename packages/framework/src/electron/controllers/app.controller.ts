@@ -91,7 +91,7 @@ export class AppController extends BaseController {
   @IpcHandler('open-install-folder')
   async openInstallFolder() {
     try {
-      shell.openPath(app.getAppPath());
+      shell.openPath(path.dirname(app.getPath('exe')));
       return this.success(null);
     } catch (error) {
       return this.error(error);
@@ -107,7 +107,7 @@ export class AppController extends BaseController {
         version: info.version,
         dbPath: this.dbConfigService.dbPath,
         appDataPath: this.appDataService.getBasePath(),
-        installPath: app.getAppPath(),
+        installPath: path.dirname(app.getPath('exe')),
         electron: process.versions.electron,
         node: process.versions.node,
         chrome: process.versions.chrome,
