@@ -153,12 +153,13 @@ export class ShortcutService {
     if (this.suspended) return;
 
     const target = event.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-      return;
-    }
+    const isEditable = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
     for (const [id, binding] of this.bindings) {
       if (this.matchesBinding(event, binding)) {
+        if (isEditable && !binding.ctrl && !binding.alt && !binding.meta) {
+          return;
+        }
         event.preventDefault();
         event.stopPropagation();
         const subject = this.subjects.get(id)!;

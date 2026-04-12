@@ -12,8 +12,9 @@
 
 - [ ] ⁠quando cambi path del db non si aggiorna per bene (necessario riavvio manuale)
 
-- [ ] ⁠in Info App, Percorso Installazione
+- [x] ⁠in Info App, Percorso Installazione punta all'archivio asar
 
+- [ ] aggiunta di esempi di configurazione del menu e dei comandi/shortcut nei template
 
 ## Bonus Tracks:
 
