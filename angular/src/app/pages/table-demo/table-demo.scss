@@ -1,0 +1,66 @@
+.table-demo-page {
+  padding: 24px;
+
+  h2 {
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 16px;
+  }
+
+  .price {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .chip-active {
+    --mat-chip-label-text-color: #2e7d32;
+  }
+
+  .chip-inactive {
+    --mat-chip-label-text-color: #c62828;
+  }
+
+  .category-filter {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .category-filter-title {
+      font-weight: 500;
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.6);
+      margin-bottom: 4px;
+    }
+  }
+
+  .star-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #bdbdbd;
+
+    &.star-filled {
+      color: #ffa000;
+    }
+  }
+
+  .status-available {
+    --mat-chip-label-text-color: #2e7d32;
+  }
+
+  .status-out-of-stock {
+    --mat-chip-label-text-color: #c62828;
+  }
+
+  .status-incoming {
+    --mat-chip-label-text-color: #1565c0;
+  }
+
+  .status-discontinued {
+    --mat-chip-label-text-color: #757575;
+  }
+}

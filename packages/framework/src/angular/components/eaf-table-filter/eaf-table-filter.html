@@ -1,0 +1,137 @@
+<div class="eaf-filter-container">
+  @switch (filterType()) {
+    @case ('text') {
+      <mat-form-field appearance="outline" class="eaf-filter-field">
+        <mat-label>Filtra...</mat-label>
+        <input matInput
+          [ngModel]="currentValue()"
+          (ngModelChange)="onValueChange($event)"
+          (keydown.escape)="onClear()">
+        @if (currentValue()) {
+          <button matSuffix mat-icon-button (click)="onClear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </mat-form-field>
+    }
+
+    @case ('number') {
+      @if (hasBothModes()) {
+        <mat-button-toggle-group [value]="numberMode()" (change)="onNumberModeChange($event.value)" class="eaf-filter-mode-toggle">
+          <mat-button-toggle value="equal">Uguale</mat-button-toggle>
+          <mat-button-toggle value="range">Range</mat-button-toggle>
+        </mat-button-toggle-group>
+      }
+      @if (numberMode() === 'equal' && hasMode('equal')) {
+        <mat-form-field appearance="outline" class="eaf-filter-field">
+          <mat-label>Uguale a</mat-label>
+          <input matInput type="number"
+            [ngModel]="numberEqual()"
+            (ngModelChange)="onNumberEqualChange($event)">
+        </mat-form-field>
+      }
+      @if (numberMode() === 'range' && hasMode('range')) {
+        <div class="eaf-filter-range">
+          <mat-form-field appearance="outline" class="eaf-filter-field">
+            <mat-label>Min</mat-label>
+            <input matInput type="number"
+              [ngModel]="rangeMin()"
+              (ngModelChange)="onRangeChange($event, rangeMax())">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="eaf-filter-field">
+            <mat-label>Max</mat-label>
+            <input matInput type="number"
+              [ngModel]="rangeMax()"
+              (ngModelChange)="onRangeChange(rangeMin(), $event)">
+          </mat-form-field>
+        </div>
+      }
+      @if (numberEqual() != null || rangeMin() != null || rangeMax() != null) {
+        <button mat-button (click)="onClear()" class="eaf-filter-clear">
+          <mat-icon>close</mat-icon> Pulisci
+        </button>
+      }
+    }
+
+    @case ('date') {
+      @if (hasBothModes()) {
+        <mat-button-toggle-group [value]="dateMode()" (change)="onDateModeChange($event.value)" class="eaf-filter-mode-toggle">
+          <mat-button-toggle value="equal">Uguale</mat-button-toggle>
+          <mat-button-toggle value="range">Range</mat-button-toggle>
+        </mat-button-toggle-group>
+      }
+      @if (dateMode() === 'equal' && hasMode('equal')) {
+        <mat-form-field appearance="outline" class="eaf-filter-field">
+          <mat-label>Data</mat-label>
+          <input matInput [matDatepicker]="pickerEqual"
+            [ngModel]="dateEqual()"
+            (ngModelChange)="onDateEqualChange($event)">
+          <mat-datepicker-toggle matSuffix [for]="pickerEqual" />
+          <mat-datepicker #pickerEqual />
+        </mat-form-field>
+      }
+      @if (dateMode() === 'range' && hasMode('range')) {
+        <div class="eaf-filter-range">
+          <mat-form-field appearance="outline" class="eaf-filter-field">
+            <mat-label>Da</mat-label>
+            <input matInput [matDatepicker]="pickerFrom"
+              [ngModel]="dateFrom()"
+              (ngModelChange)="onDateChange($event, dateTo())">
+            <mat-datepicker-toggle matSuffix [for]="pickerFrom" />
+            <mat-datepicker #pickerFrom />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="eaf-filter-field">
+            <mat-label>A</mat-label>
+            <input matInput [matDatepicker]="pickerTo"
+              [ngModel]="dateTo()"
+              (ngModelChange)="onDateChange(dateFrom(), $event)">
+            <mat-datepicker-toggle matSuffix [for]="pickerTo" />
+            <mat-datepicker #pickerTo />
+          </mat-form-field>
+        </div>
+      }
+      @if (dateEqual() || dateFrom() || dateTo()) {
+        <button mat-button (click)="onClear()" class="eaf-filter-clear">
+          <mat-icon>close</mat-icon> Pulisci
+        </button>
+      }
+    }
+
+    @case ('select') {
+      <eaf-select
+        [options]="selectOptions()"
+        [value]="currentValue()"
+        (valueChange)="onSelectValueChange($event)"
+        [multiple]="isMultiple()"
+        [autocomplete]="isAutocomplete()"
+        [showAllOption]="!isMultiple()"
+        label="Seleziona..." />
+    }
+
+    @case ('select-distinct') {
+      <eaf-select
+        [options]="selectOptions()"
+        [value]="currentValue()"
+        (valueChange)="onSelectValueChange($event)"
+        [multiple]="isMultiple()"
+        [autocomplete]="isAutocomplete()"
+        [showAllOption]="!isMultiple()"
+        label="Seleziona..." />
+    }
+
+    @case ('boolean') {
+      <div class="eaf-filter-boolean">
+        <mat-slide-toggle
+          [checked]="currentValue() === true"
+          (change)="onBooleanChange($event.checked)">
+          {{ currentValue() === true ? 'Sì' : currentValue() === false ? 'No' : 'Tutti' }}
+        </mat-slide-toggle>
+        @if (currentValue() != null) {
+          <button mat-icon-button (click)="onClear()">
+            <mat-icon>close</mat-icon>
+          </button>
+        }
+      </div>
+    }
+  }
+</div>

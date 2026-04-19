@@ -49,7 +49,7 @@ export class Sidebar {
     $event.preventDefault();
     if (menuItem.route) {
       this.closed.emit();
-      this.router.navigate([menuItem.route]);
+      this.router.navigate([menuItem.route], { queryParams: menuItem.queryParams });
     }
   }
 

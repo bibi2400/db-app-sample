@@ -8,6 +8,10 @@ const appRoutes: Routes = [
     path: 'dashboard',
     component: Dashboard
   },
+  {
+    path: 'table-demo',
+    loadComponent: () => import('./pages/table-demo/table-demo').then(m => m.TableDemo)
+  },
 ];
 
 // Merge with framework stock routes (backup, updates, notifications, shortcuts, app-info)

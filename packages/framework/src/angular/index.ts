@@ -17,6 +17,33 @@ export { ConfirmDialogComponent } from './components/dialogs/confirm-dialog/conf
 export { ShortcutRecordDialog } from './components/dialogs/shortcut-record-dialog/shortcut-record-dialog';
 export { FullscreenLoaderComponent } from './components/fullscreen-loader/fullscreen-loader';
 
+// ─── Form Elements ───────────────────────────────────────────────────────────
+export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
+
+// ─── EAF Table ───────────────────────────────────────────────────────────────
+export { EafTable } from './components/eaf-table/eaf-table';
+export { EafTableFilter } from './components/eaf-table-filter/eaf-table-filter';
+export { EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective } from './directives/eaf-table.directives';
+export { EafTableStorageService } from './services/eaf-table-storage.service';
+export type {
+  EafColumnDef,
+  EafColumnState,
+  EafFilterType,
+  EafFilterConfig,
+  EafSelectOption,
+  EafSelectPredicateOption,
+  EafPaginationConfig,
+  EafPageEvent,
+  EafSelectionMode,
+  EafSortState,
+  EafFilterValue,
+  EafTableState,
+  EafTableServerEvent,
+  EafCellContext,
+  EafFilterContext,
+  EafActionsContext,
+} from './types/eaf-table.types';
+
 // ─── Routes ──────────────────────────────────────────────────────────────────
 export { FrameworkRoutes } from './routes';
 

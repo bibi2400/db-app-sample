@@ -72,17 +72,7 @@
     "@angular/material": ">=21.0.0",
     "@angular/cdk": ">=21.0.0",
     "electron": ">=39.0.0",
-    "rxjs": ">=7.0.0",
-    "ag-grid-community": ">=35.0.0",
-    "ag-grid-angular": ">=35.0.0"
-  },
-  "peerDependenciesMeta": {
-    "ag-grid-community": {
-      "optional": true
-    },
-    "ag-grid-angular": {
-      "optional": true
-    }
+    "rxjs": ">=7.0.0"
   },
   "dependencies": {
     "electron-context-menu": "^4.1.2",

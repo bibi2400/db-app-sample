@@ -1,6 +1,5 @@
 import { ApplicationConfig, LOCALE_ID, Provider, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, Routes } from '@angular/router';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import { registerLocaleData } from '@angular/common';
 import localeIt from '@angular/common/locales/it';
 
@@ -13,7 +12,7 @@ export interface FrameworkConfigOptions {
 
 /**
  * Configurazione Angular del framework.
- * Registra il locale italiano, ag-Grid, e produce un `ApplicationConfig` pronto all'uso.
+ * Registra il locale italiano e produce un `ApplicationConfig` pronto all'uso.
  */
 export class FrameworkConfig {
   private readonly options: FrameworkConfigOptions;
@@ -23,7 +22,6 @@ export class FrameworkConfig {
 
     // Inizializzazioni una-tantum
     registerLocaleData(localeIt);
-    ModuleRegistry.registerModules([AllCommunityModule]);
   }
 
   /** Genera l'ApplicationConfig per `bootstrapApplication()` */

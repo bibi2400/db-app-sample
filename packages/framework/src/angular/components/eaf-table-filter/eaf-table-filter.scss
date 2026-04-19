@@ -1,0 +1,41 @@
+.eaf-filter-container {
+  padding: 12px;
+  min-width: 200px;
+}
+
+.eaf-filter-field {
+  width: 100%;
+}
+
+.eaf-filter-mode-toggle {
+  display: flex;
+  margin-bottom: 8px;
+  font-size: 12px;
+
+  mat-button-toggle {
+    flex: 1;
+  }
+}
+
+.eaf-filter-range {
+  display: flex;
+  gap: 8px;
+
+  .eaf-filter-field {
+    flex: 1;
+  }
+}
+
+.eaf-filter-clear {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.eaf-filter-boolean {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

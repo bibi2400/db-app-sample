@@ -1,0 +1,96 @@
+@if (autocomplete()) {
+  @if (multiple()) {
+    <!-- Multi autocomplete con chip grid -->
+    <mat-form-field appearance="outline" class="eaf-select-field">
+      <mat-label>{{ label() }}</mat-label>
+      <mat-chip-grid #chipGrid>
+        @for (chip of selectedOptions(); track chip.value) {
+          <mat-chip-row (removed)="removeChip(chip)">
+            {{ chip.label }}
+            <button matChipRemove>
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+        }
+      </mat-chip-grid>
+      <input #chipInput
+        [matChipInputFor]="chipGrid"
+        [matAutocomplete]="autoMulti"
+        (input)="onSearchInput($event)"
+        autocomplete="off"
+        placeholder="Cerca...">
+      @if (hasValue()) {
+        <button matSuffix mat-icon-button class="eaf-select-clear"
+          (click)="onClear($event)"
+          (mousedown)="$event.stopPropagation()"
+          tabindex="-1">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+      <mat-autocomplete #autoMulti="matAutocomplete"
+        (optionSelected)="onAutocompleteMultiSelected($event)">
+        @for (opt of availableOptions(); track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+  } @else {
+    <!-- Single autocomplete -->
+    <mat-form-field appearance="outline" class="eaf-select-field">
+      <mat-label>{{ label() }}</mat-label>
+      <input matInput #autoInput
+        [matAutocomplete]="autoSingle"
+        (input)="onSearchInput($event)"
+        autocomplete="off"
+        placeholder="Cerca...">
+      @if (hasValue()) {
+        <button matSuffix mat-icon-button class="eaf-select-clear"
+          (click)="onClear($event)"
+          (mousedown)="$event.stopPropagation()"
+          tabindex="-1">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+      <mat-autocomplete #autoSingle="matAutocomplete"
+        [displayWith]="displayFn"
+        (optionSelected)="onAutocompleteSingleSelected($event)">
+        @for (opt of filteredOptions(); track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+  }
+} @else {
+  <!-- Non-autocomplete: mat-select -->
+  <mat-form-field appearance="outline" class="eaf-select-field">
+    <mat-label>{{ label() }}</mat-label>
+    @if (multiple()) {
+      <mat-select [multiple]="true"
+        [ngModel]="value() ?? []"
+        (ngModelChange)="onMultiSelectChange($event)">
+        @for (opt of options(); track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    } @else {
+      <mat-select
+        [ngModel]="value()"
+        (ngModelChange)="onSelectChange($event)">
+        @if (showAllOption()) {
+          <mat-option [value]="null">— Tutti —</mat-option>
+        }
+        @for (opt of options(); track opt.value) {
+          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        }
+      </mat-select>
+    }
+    @if (hasValue()) {
+      <button matSuffix mat-icon-button class="eaf-select-clear"
+        (click)="onClear($event)"
+        (mousedown)="$event.stopPropagation()"
+        tabindex="-1">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </mat-form-field>
+}

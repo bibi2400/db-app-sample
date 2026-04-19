@@ -5,9 +5,6 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
-// Import ag-Grid styles
-@import 'ag-grid-community/styles/ag-theme-material.css';
-
 html {
   @include mat.theme((
     color: (
@@ -114,30 +111,6 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .error-snackbar {
   --mdc-snackbar-container-color: #f44336;
   --mdc-snackbar-supporting-text-color: white;
-}
-
-/* AG Grid Custom Styles */
-.ag-theme-material {
-  --ag-wrapper-border-radius: 8px;
-  --ag-row-hover-color: rgba(0, 0, 0, 0.04);
-}
-
-.ag-btn-edit,
-.ag-btn-delete {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
-  transition: transform 0.2s;
-}
-
-.ag-btn-edit:hover {
-  transform: scale(1.2);
-}
-
-.ag-btn-delete:hover {
-  transform: scale(1.2);
 }
 
 .reference-icon {
