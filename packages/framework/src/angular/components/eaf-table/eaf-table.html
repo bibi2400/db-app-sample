@@ -1,130 +1,140 @@
-<div class="eaf-table-wrapper">
-  <table mat-table [dataSource]="tableDataSource" matSort
-    (matSortChange)="onSortChange($event)"
-    cdkDropList cdkDropListOrientation="horizontal"
-    (cdkDropListDropped)="onColumnDrop($event)"
-    [cdkDropListDisabled]="!draggable()">
-
-    <!-- Checkbox column (selection) -->
-    @if (selectionMode() !== 'none') {
-      <ng-container matColumnDef="__select">
-        <th mat-header-cell *matHeaderCellDef class="eaf-col-select">
-          @if (selectionMode() === 'multiple') {
-            <mat-checkbox
-              [checked]="isAllSelected()"
-              [indeterminate]="isSomeSelected()"
-              (change)="toggleAllRows()">
-            </mat-checkbox>
-          }
-        </th>
-        <td mat-cell *matCellDef="let row" class="eaf-col-select">
-          <mat-checkbox
-            [checked]="selection.isSelected(row)"
-            (click)="$event.stopPropagation()"
-            (change)="toggleRow(row)">
-          </mat-checkbox>
-        </td>
-      </ng-container>
+<div class="eaf-table-wrapper" #tableWrapper>
+  <div class="eaf-table-title">
+    @if (title()) {
+      <h2>{{ title() }}</h2>
     }
+    @if (subtitle()) {
+      <p class="subtitle">{{ subtitle() }}</p>
+    }
+  </div>
+  <div class="eaf-inner-table-wrapper">
+    <table mat-table [dataSource]="tableDataSource" matSort
+      (matSortChange)="onSortChange($event)"
+      cdkDropList cdkDropListOrientation="horizontal"
+      (cdkDropListDropped)="onColumnDrop($event)"
+      [cdkDropListDisabled]="!draggable()">
 
-    <!-- Data columns -->
-    @for (col of visibleColumnDefs(); track col.key) {
-      <ng-container [matColumnDef]="col.key">
-        <th mat-header-cell *matHeaderCellDef
-          cdkDrag [cdkDragDisabled]="!draggable() || !!col.sticky"
-          [mat-sort-header]="col.sortable !== false ? col.key : ''"
-          [disabled]="col.sortable === false"
-          [style.flex]="getColumnFlex(col)"
-          [style.min-width]="getColumnMinWidth(col)"
-          [style.max-width]="getColumnMaxWidth(col)"
-        >
-          <div class="eaf-header-content">
-            <span class="eaf-header-label">{{ col.header }}</span>
-
-            @if (hasFilter(col)) {
-              <button mat-icon-button class="eaf-filter-btn"
-                [class.eaf-filter-active]="isFilterActive(col.key)"
-                (click)="toggleFilter($event, col.key)">
-                <mat-icon>filter_list</mat-icon>
-              </button>
+      <!-- Checkbox column (selection) -->
+      @if (selectionMode() !== 'none') {
+        <ng-container matColumnDef="__select">
+          <th mat-header-cell *matHeaderCellDef class="eaf-col-select">
+            @if (selectionMode() === 'multiple') {
+              <mat-checkbox
+                [checked]="isAllSelected()"
+                [indeterminate]="isSomeSelected()"
+                (change)="toggleAllRows()">
+              </mat-checkbox>
             }
-          </div>
+          </th>
+          <td mat-cell *matCellDef="let row" class="eaf-col-select">
+            <mat-checkbox
+              [checked]="selection.isSelected(row)"
+              (click)="$event.stopPropagation()"
+              (change)="toggleRow(row)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+      }
 
-          <!-- Filter dropdown -->
-          @if (openFilterKey() === col.key) {
-            <div class="eaf-filter-dropdown"
-              [style.top.px]="filterPosition().top"
-              [style.left.px]="filterPosition().left"
-              (click)="$event.stopPropagation()">
-              @if (getCustomFilterTemplate(col.key); as tmpl) {
-                <ng-container
-                  [ngTemplateOutlet]="tmpl"
-                  [ngTemplateOutletContext]="{
-                    $implicit: col.key,
-                    value: getFilterValue(col.key),
-                    filterChange: getFilterSubject(col.key)
-                  }">
-                </ng-container>
-              } @else {
-                <eaf-table-filter
-                  [config]="getFilterConfig(col)"
-                  [initialValue]="getFilterValue(col.key)"
-                  [columnData]="getColumnData(col.key)"
-                  (valueChange)="onFilterValueChange(col.key, $event)" />
+      <!-- Data columns -->
+      @for (col of visibleColumnDefs(); track col.key) {
+        <ng-container [matColumnDef]="col.key">
+          <th mat-header-cell *matHeaderCellDef
+            cdkDrag [cdkDragDisabled]="!draggable() || !!col.sticky"
+            [mat-sort-header]="col.sortable !== false ? col.key : ''"
+            [disabled]="col.sortable === false"
+            [style.flex]="getColumnFlex(col)"
+            [style.min-width]="getColumnMinWidth(col)"
+            [style.max-width]="getColumnMaxWidth(col)"
+          >
+            <div class="eaf-header-content">
+              <span class="eaf-header-label">{{ col.header }}</span>
+
+              @if (hasFilter(col)) {
+                <button mat-icon-button class="eaf-filter-btn"
+                  [class.eaf-filter-active]="isFilterActive(col.key)"
+                  (click)="toggleFilter($event, col.key)">
+                  <mat-icon>filter_list</mat-icon>
+                </button>
               }
             </div>
-          }
-        </th>
 
-        <td mat-cell *matCellDef="let row"
-          [style.flex]="getColumnFlex(col)"
-          [style.min-width]="getColumnMinWidth(col)"
-          [style.max-width]="getColumnMaxWidth(col)"
-        >
-          @if (getCellTemplate(col.key); as tmpl) {
+            <!-- Filter dropdown -->
+            @if (openFilterKey() === col.key) {
+              <div class="eaf-filter-dropdown"
+                [style.top.px]="filterPosition().top"
+                [style.left.px]="filterPosition().left"
+                (click)="$event.stopPropagation()">
+                @if (getCustomFilterTemplate(col.key); as tmpl) {
+                  <ng-container
+                    [ngTemplateOutlet]="tmpl"
+                    [ngTemplateOutletContext]="{
+                      $implicit: col.key,
+                      value: getFilterValue(col.key),
+                      filterChange: getFilterSubject(col.key)
+                    }">
+                  </ng-container>
+                } @else {
+                  <eaf-table-filter
+                    [config]="getFilterConfig(col)"
+                    [initialValue]="getFilterValue(col.key)"
+                    [columnData]="getColumnData(col.key)"
+                    (valueChange)="onFilterValueChange(col.key, $event)" />
+                }
+              </div>
+            }
+          </th>
+
+          <td mat-cell *matCellDef="let row"
+            [style.flex]="getColumnFlex(col)"
+            [style.min-width]="getColumnMinWidth(col)"
+            [style.max-width]="getColumnMaxWidth(col)"
+          >
+            @if (getCellTemplate(col.key); as tmpl) {
+              <ng-container
+                [ngTemplateOutlet]="tmpl"
+                [ngTemplateOutletContext]="{
+                  $implicit: row,
+                  value: getCellValue(row, col),
+                  column: col.key
+                }">
+              </ng-container>
+            } @else {
+              {{ getCellValue(row, col) }}
+            }
+          </td>
+        </ng-container>
+      }
+
+      <!-- Actions column -->
+      @if (actionsTemplate(); as actionsTmpl) {
+        <ng-container matColumnDef="__actions" stickyEnd>
+          <th mat-header-cell *matHeaderCellDef class="eaf-col-actions">
+            Azioni
+          </th>
+          <td mat-cell *matCellDef="let row" class="eaf-col-actions">
             <ng-container
-              [ngTemplateOutlet]="tmpl"
-              [ngTemplateOutletContext]="{
-                $implicit: row,
-                value: getCellValue(row, col),
-                column: col.key
-              }">
+              [ngTemplateOutlet]="actionsTmpl.templateRef"
+              [ngTemplateOutletContext]="{ $implicit: row }">
             </ng-container>
-          } @else {
-            {{ getCellValue(row, col) }}
-          }
+          </td>
+        </ng-container>
+      }
+
+      <!-- Header & Row declarations -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: stickyHeader()"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns()"
+        [class.eaf-row-selected]="selection.isSelected(row)"
+        (click)="onRowClick(row)"></tr>
+
+      <!-- Empty state -->
+      <tr class="mat-mdc-row" *matNoDataRow>
+        <td class="mat-mdc-cell eaf-no-data" [attr.colspan]="displayedColumns().length">
+          {{ emptyMessage() }}
         </td>
-      </ng-container>
-    }
-
-    <!-- Actions column -->
-    @if (actionsTemplate(); as actionsTmpl) {
-      <ng-container matColumnDef="__actions" stickyEnd>
-        <th mat-header-cell *matHeaderCellDef class="eaf-col-actions">
-          Azioni
-        </th>
-        <td mat-cell *matCellDef="let row" class="eaf-col-actions">
-          <ng-container
-            [ngTemplateOutlet]="actionsTmpl.templateRef"
-            [ngTemplateOutletContext]="{ $implicit: row }">
-          </ng-container>
-        </td>
-      </ng-container>
-    }
-
-    <!-- Header & Row declarations -->
-    <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: stickyHeader()"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns()"
-      [class.eaf-row-selected]="selection.isSelected(row)"
-      (click)="onRowClick(row)"></tr>
-
-    <!-- Empty state -->
-    <tr class="mat-mdc-row" *matNoDataRow>
-      <td class="mat-mdc-cell eaf-no-data" [attr.colspan]="displayedColumns().length">
-        {{ emptyMessage() }}
-      </td>
-    </tr>
-  </table>
+      </tr>
+    </table>
+  </div>
 
   <!-- Paginator -->
   @if (pagination()?.enabled) {

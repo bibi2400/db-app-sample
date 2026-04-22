@@ -174,6 +174,9 @@ export interface EafTableState {
 
   /** Dimensione pagina */
   pageSize?: number;
+
+  /** Posizione scroll verticale (salvata solo se saveScrollPosition è abilitato) */
+  scrollTop?: number;
 }
 
 // ─── Server-Side Events ──────────────────────────────────────────────────────

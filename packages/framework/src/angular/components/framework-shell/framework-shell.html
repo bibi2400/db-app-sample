@@ -1,13 +1,15 @@
-<div class="row">
+<div class="row framework-shell">
   <mat-sidenav-container class="sidenav">
     <mat-sidenav #sidenav mode="over" [(opened)]="opened">
       <app-sidebar [version]="version" [author]="author()" (closed)="opened.set(false)" />
     </mat-sidenav>
 
-    <mat-sidenav-content>
-      <app-toolbar (menuToggled)="opened.set(true)" />
-      <div class="main-container">
-        <router-outlet />
+    <mat-sidenav-content class="no-scroll">
+      <div class="app-container">
+        <app-toolbar class="app-toolbar" (menuToggled)="opened.set(true)" />
+        <div class="main-container">
+          <router-outlet />
+        </div>
       </div>
     </mat-sidenav-content>
   </mat-sidenav-container>

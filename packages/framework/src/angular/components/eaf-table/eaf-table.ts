@@ -1,10 +1,12 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   contentChildren,
   effect,
+  ElementRef,
   inject,
   input,
   OnDestroy,
@@ -13,6 +15,7 @@ import {
   signal,
   TemplateRef,
   untracked,
+  ViewChild,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -23,7 +26,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Observable, Subject, Subscription, isObservable } from 'rxjs';
+import { Observable, Subject, Subscription, debounceTime, fromEvent, isObservable, tap } from 'rxjs';
 
 import { EafTableFilter } from '../eaf-table-filter/eaf-table-filter';
 import { EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective } from '../../directives/eaf-table.directives';
@@ -58,7 +61,7 @@ import {
   styleUrl: './eaf-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EafTable<T = unknown> implements OnInit, OnDestroy {
+export class EafTable<T = unknown> implements OnInit, AfterViewInit, OnDestroy {
   private readonly storageService = inject(EafTableStorageService);
 
   // ─── Inputs ──────────────────────────────────────────────────────────────
@@ -105,6 +108,15 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
    */
   readonly initialState = input<Partial<EafTableState> | null>(null);
 
+  /**
+   * Abilita il salvataggio e il ripristino della posizione di scroll verticale.
+   * Default: false.
+   */
+  readonly saveScrollElement = input<true | HTMLElement | null>(null);
+
+  readonly title = input<string | null>(null);
+  readonly subtitle = input<string | null>(null);
+
   // ─── Outputs ─────────────────────────────────────────────────────────────
 
   /** Emette quando la selezione cambia */
@@ -120,6 +132,8 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   readonly stateChange = output<EafTableState>();
 
   // ─── Content Children (template directives) ──────────────────────────────
+
+  @ViewChild('tableWrapper') private tableWrapperRef?: ElementRef<HTMLElement>;
 
   private readonly cellDefs = contentChildren(EafCellDefDirective);
   private readonly filterDefs = contentChildren(EafFilterDefDirective);
@@ -161,6 +175,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private allData: T[] = [];
   private dataSub?: Subscription;
   private filterSubs: Subscription[] = [];
+  private scrollSub?: Subscription;
   private initialized = false;
 
   // ─── Computed ────────────────────────────────────────────────────────────
@@ -229,8 +244,39 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     this.initialized = true;
   }
 
+  ngAfterViewInit(): void {
+    if (!this.tableWrapperRef) return;
+    if(!this.saveScrollElement()) return;
+
+    const el = (
+      this.isHtmlElement(this.saveScrollElement()) ?
+      this.saveScrollElement()! : this.tableWrapperRef.nativeElement
+    ) as HTMLElement;
+
+    // Ripristina posizione salvata
+    const savedScrollTop = this.storageService.loadScrollTop(this.tableId());
+    if (savedScrollTop > 0) {
+      el.scrollTop = savedScrollTop;
+    }
+
+    // Salva posizione ad ogni scroll (debounced)
+    this.scrollSub = fromEvent(window, 'scroll', 
+      { capture: true, passive: true }
+    ).pipe(
+      debounceTime(200)
+    ).subscribe(() => {
+      console.info("saving scrollTop", this.tableId(), window.scrollY);
+      this.storageService.saveScrollTop(this.tableId(), window.scrollY);
+    });
+  }
+
+  private isHtmlElement(obj: any): obj is HTMLElement {
+    return obj instanceof HTMLElement;
+  }
+
   ngOnDestroy(): void {
     this.dataSub?.unsubscribe();
+    this.scrollSub?.unsubscribe();
     this.filterSubs.forEach(s => s.unsubscribe());
     this.filterSubjects.forEach(s => s.complete());
   }

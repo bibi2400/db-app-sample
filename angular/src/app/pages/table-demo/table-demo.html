@@ -1,16 +1,16 @@
 <div class="table-demo-page">
-  <h2>Demo Tabella</h2>
-  <p class="subtitle">{{ products().length }} prodotti in catalogo</p>
-
   <eaf-table
     tableId="demo-products"
     [data]="products()"
+    title="Demo Tabella"
+    [subtitle]="products().length + 'prodotti in catalogo'"
     [columns]="columns"
     [pagination]="pagination"
     [draggable]="true"
     selectionMode="multiple"
     [stickyHeader]="true"
     [initialState]="initialState"
+    
     (selectionChange)="onSelectionChange($event)"
     (rowClick)="onRowClick($event)">
 

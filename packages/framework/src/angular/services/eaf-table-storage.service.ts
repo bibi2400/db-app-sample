@@ -31,4 +31,20 @@ export class EafTableStorageService {
   clear(tableId: string): void {
     localStorage.removeItem(STORAGE_PREFIX + tableId);
   }
+
+  /** Salva la posizione di scroll di una tabella nel localStorage */
+  saveScrollTop(tableId: string, scrollTop: number): void {
+    try {
+      const existing = this.load(tableId) ?? {};
+      existing.scrollTop = scrollTop;
+      localStorage.setItem(STORAGE_PREFIX + tableId, JSON.stringify(existing));
+    } catch {
+      // quota exceeded — ignora silenziosamente
+    }
+  }
+
+  /** Carica la posizione di scroll di una tabella dal localStorage */
+  loadScrollTop(tableId: string): number {
+    return this.load(tableId)?.scrollTop ?? 0;
+  }
 }
