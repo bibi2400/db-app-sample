@@ -150,21 +150,32 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
 
   private findScrollableAncestor(start: HTMLElement | null): HTMLElement | null {
     let el: HTMLElement | null = start?.parentElement ?? null;
+    // First pass: look for an ancestor that is currently overflowing.
     while (el && el !== document.body && el !== document.documentElement) {
-      if (this.isScrollable(el)) return el;
+      if (this.isScrollable(el, true)) return el;
       el = el.parentElement;
     }
-    // Body / documentElement scroll → return null and use window fallback.
+    // Second pass: accept any ancestor styled as scrollable, even if content
+    // hasn't overflowed yet (e.g. async content not yet rendered).
+    el = start?.parentElement ?? null;
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (this.isScrollable(el, false)) return el;
+      el = el.parentElement;
+    }
     return null;
   }
 
-  private isScrollable(el: HTMLElement): boolean {
+  private isScrollable(el: HTMLElement, requireOverflowing: boolean): boolean {
     const style = getComputedStyle(el);
     const overflowY = style.overflowY;
     const overflowX = style.overflowX;
-    const canScrollY = (overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
-    const canScrollX = (overflowX === 'auto' || overflowX === 'scroll') && el.scrollWidth > el.clientWidth;
-    return canScrollY || canScrollX;
+    const styledY = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
+    const styledX = overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay';
+    if (!styledY && !styledX) return false;
+    if (!requireOverflowing) return true;
+    const overflowingY = styledY && el.scrollHeight > el.clientHeight;
+    const overflowingX = styledX && el.scrollWidth > el.clientWidth;
+    return overflowingY || overflowingX;
   }
 
   // ─── Persistence ────────────────────────────────────────────────────────
