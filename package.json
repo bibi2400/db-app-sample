@@ -11,8 +11,8 @@
     "prepare": "git config core.hooksPath .githooks",
     "ng": "ng",
     "start": "ng serve --port 4202",
-    "dev": "node scripts/dev.js",
-    "dev:no-splash": "node scripts/dev.js --no-splash",
+    "dev": "npm run prepare && node scripts/dev.js",
+    "dev:no-splash": "npm run prepare && node scripts/dev.js --no-splash",
     "build:all": "npx eaf build",
     "package:win": "npx eaf package",
     "package:win:noUpdateToken": "npx eaf package --no-token"
