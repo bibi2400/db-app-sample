@@ -13,11 +13,12 @@ import {
   signal,
   TemplateRef,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -72,8 +73,13 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   /** Dati: array statico o Observable */
   readonly data = input<T[] | Observable<T[]>>([]);
 
-  /** Configurazione paginazione */
-  readonly pagination = input<EafPaginationConfig | null>(null);
+  /**
+   * Configurazione paginazione.
+   * - `null` / omesso / `false` → nessuna paginazione (mostra tutte le righe)
+   * - `true` → paginazione con default
+   * - oggetto `EafPaginationConfig` → configurazione custom
+   */
+  readonly pagination = input<EafPaginationConfig | boolean | null>(null);
 
   /** Modalità di selezione righe */
   readonly selectionMode = input<EafSelectionMode>('none');
@@ -124,6 +130,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private readonly cellDefs = contentChildren(EafCellDefDirective);
   private readonly filterDefs = contentChildren(EafFilterDefDirective);
   readonly actionsTemplate = contentChild(EafActionsDefDirective);
+
+  // ─── View Children (Material) ────────────────────────────────────────────
+
+  private readonly paginator = viewChild(MatPaginator);
+  private readonly matSort = viewChild(MatSort);
 
   // ─── Internal State ──────────────────────────────────────────────────────
 
@@ -202,6 +213,15 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     return this.tableDataSource.filteredData?.length ?? this.allData.length;
   });
 
+  /** Configurazione paginazione normalizzata: null se disabilitata */
+  protected readonly paginationConfig = computed<EafPaginationConfig | null>(() => {
+    const p = this.pagination();
+    if (p == null || p === false) return null;
+    if (p === true) return { enabled: true };
+    if (p.enabled === false) return null;
+    return p;
+  });
+
   // ─── Persist state on changes ────────────────────────────────────────────
 
   constructor() {
@@ -217,6 +237,25 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
         this.storageService.save(this.tableId(), state);
         this.stateChange.emit(state);
       });
+    });
+
+    // Wire paginator e sort al MatTableDataSource (solo client-side)
+    effect(() => {
+      if (this.serverSide()) {
+        this.tableDataSource.paginator = null;
+        return;
+      }
+      const p = this.paginator() ?? null;
+      this.tableDataSource.paginator = p;
+    });
+
+    effect(() => {
+      if (this.serverSide()) {
+        this.tableDataSource.sort = null;
+        return;
+      }
+      const s = this.matSort() ?? null;
+      this.tableDataSource.sort = s;
     });
   }
 
@@ -297,7 +336,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     this.activeFilters.set(filters);
 
     // Page size
-    const pageSize = ext?.pageSize ?? stored?.pageSize ?? this.pagination()?.pageSize ?? 10;
+    const pageSize = ext?.pageSize ?? stored?.pageSize ?? this.paginationConfig()?.pageSize ?? 10;
     this.currentPageSize.set(pageSize);
   }
 
