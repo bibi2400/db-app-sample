@@ -58,7 +58,6 @@ export class Notifications implements OnInit {
   readonly hasNotifications = computed(() => this.notifications().length > 0);
 
   ngOnInit(): void {
-    this.navigationService.setTitle('Notifiche', 'notifications');
     this.navigationService.clearToolbarActions();
   }
 

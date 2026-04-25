@@ -6,10 +6,12 @@ import { Dashboard } from './pages/dashboard/dashboard';
 const appRoutes: Routes = [
   {
     path: 'dashboard',
+    data: { title: 'Dashboard', icon: 'dashboard' },
     component: Dashboard
   },
   {
     path: 'table-demo',
+    data: { title: 'Demo Tabella', icon: 'table_chart' },
     loadComponent: () => import('./pages/table-demo/table-demo').then(m => m.TableDemo)
   },
 ];

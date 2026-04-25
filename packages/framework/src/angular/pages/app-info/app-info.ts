@@ -30,7 +30,6 @@ export class AppInfo implements OnInit {
   dbPathError = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.navigationService.setTitle('Info Applicazione', 'info');
     this.navigationService.clearToolbarActions();
     this.loadDetails();
   }

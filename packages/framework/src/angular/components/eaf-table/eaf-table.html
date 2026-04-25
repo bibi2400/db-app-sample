@@ -1,4 +1,8 @@
-<div class="eaf-table-wrapper">
+<div
+  class="eaf-table-wrapper"
+  [style.max-height]="height() ? height() : 'auto'"
+  [style.overflow]="height() ? 'auto' : 'visible'"
+>
   <table
     mat-table
     [dataSource]="tableDataSource"
@@ -151,23 +155,22 @@
     </tr>
   </table>
 
-  <!-- Paginator -->
-  @if (paginationConfig(); as pg) {
-  <mat-paginator
-    [length]="totalRows()"
-    [pageSize]="currentPageSize()"
-    [pageSizeOptions]="pg.pageSizeOptions ?? [5, 10, 25, 50, 100]"
-    [showFirstLastButtons]="pg.showFirstLastButtons ?? true"
-    (page)="onPageChange($event)"
-  >
-  </mat-paginator>
-  } 
-  
   @if (saveScroll()) {
-    <eaf-scroll-restorer />
+  <eaf-scroll-restorer />
   }
-
 </div>
+
+<!-- Paginator -->
+@if (paginationConfig(); as pg) {
+<mat-paginator
+  [length]="totalRows()"
+  [pageSize]="currentPageSize()"
+  [pageSizeOptions]="pg.pageSizeOptions ?? [5, 10, 25, 50, 100]"
+  [showFirstLastButtons]="pg.showFirstLastButtons ?? true"
+  (page)="onPageChange($event)"
+>
+</mat-paginator>
+}
 
 <!-- Overlay backdrop per chiudere il filtro -->
 @if (openFilterKey()) {

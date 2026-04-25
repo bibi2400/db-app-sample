@@ -11,22 +11,27 @@ export class FrameworkRoutes {
   static readonly stock: Routes = [
     {
       path: 'backup',
+      data: { title: 'Backup Database', icon: 'backup' },
       loadComponent: () => import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
     },
     {
       path: 'updates',
+      data: { title: 'Aggiornamenti', icon: 'system_update' },
       loadComponent: () => import('./pages/update-management/update-management').then(m => m.UpdateManagement)
     },
     {
       path: 'notifications',
+      data: { title: 'Notifiche', icon: 'notifications' },
       loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
     },
     {
       path: 'shortcuts',
+      data: { title: 'Scorciatoie', icon: 'keyboard' },
       loadComponent: () => import('./pages/shortcut-management/shortcut-management').then(m => m.ShortcutManagement)
     },
     {
       path: 'app-info',
+      data: { title: 'Informazioni App', icon: 'info' },
       loadComponent: () => import('./pages/app-info/app-info').then(m => m.AppInfo)
     }
   ];

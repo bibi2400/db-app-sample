@@ -78,6 +78,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   /** Salvataggio dello scroll */
   readonly saveScroll = input(false);
 
+  /** Altezza della tabella */
+  readonly height = input<string | null>(null);
+
   /**
    * Configurazione paginazione.
    * - `null` / omesso / `false` → nessuna paginazione (mostra tutte le righe)

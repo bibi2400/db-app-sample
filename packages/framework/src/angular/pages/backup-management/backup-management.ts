@@ -42,7 +42,6 @@ export class BackupManagement {
   manualBackups = computed(() => this.backups().filter(b => b.type === 'manual'));
 
   constructor() {
-    this.navigationService.setTitle('Backup Database', 'backup');
     this.loadBackups();
     this.loadStats();
   }

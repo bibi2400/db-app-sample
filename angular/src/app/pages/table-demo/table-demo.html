@@ -3,6 +3,8 @@
   <p class="subtitle">{{ products().length }} prodotti in catalogo</p>
 
   <eaf-table
+    height="calc(100vh - 269px)"
+    [saveScroll]="true"
     tableId="demo-products"
     [data]="products()"
     [columns]="columns"
@@ -67,5 +69,3 @@
     </ng-template>
   </eaf-table>
 </div>
-
-<eaf-scroll-restorer />

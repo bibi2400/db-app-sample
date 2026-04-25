@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs';
 
 export type MenuItem = {
   title: string;
@@ -64,6 +66,26 @@ export class NavigationService {
   onSaveAction = signal<(() => void) | null>(null);
   onResetAction = signal<(() => void) | null>(null);
   extraActions = signal<{ label: string; icon: string; callback: () => void }[]>([]);
+
+  readonly router = inject(Router);
+
+  constructor() {
+    this.router.events
+      .pipe(filter(e => e instanceof NavigationEnd))
+      .subscribe(() => {
+        // Scendi fino alla rotta foglia attiva per leggere i suoi `data`
+        let route = this.router.routerState.root.snapshot;
+        while (route.firstChild) {
+          route = route.firstChild;
+        }
+        const data = route.data;
+        const title = data['title'] as string | undefined;
+        const icon = data['icon'] as string | undefined;
+        if (title) {
+          this.setTitle(title, icon);
+        }
+      });
+  }
 
   /** Imposta la voce "home" del menu (prima voce, default: Dashboard) */
   setHomeItem(item: MenuItem): void {

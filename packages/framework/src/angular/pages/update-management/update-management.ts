@@ -79,9 +79,7 @@ export class UpdateManagement implements OnInit, OnDestroy {
     }
   });
 
-  constructor() {
-    this.navigationService.setTitle('Aggiornamenti', 'system_update');
-  }
+  constructor() { }
 
   ngOnInit(): void {
     this.subscriptions.push(

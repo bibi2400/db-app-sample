@@ -46,9 +46,7 @@ export class ShortcutManagement implements AfterViewInit {
     return Array.from(cats.entries());
   });
 
-  constructor() {
-    this.navigationService.setTitle('Scorciatoie da Tastiera', 'keyboard');
-  }
+  constructor() { }
 
   ngAfterViewInit(): void {
     const highlightId = this.route.snapshot.queryParamMap.get('highlight');
