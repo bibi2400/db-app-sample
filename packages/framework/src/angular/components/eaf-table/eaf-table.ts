@@ -41,6 +41,7 @@ import {
   EafTableServerEvent,
   EafTableState,
 } from '../../types/eaf-table.types';
+import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
 
 @Component({
   selector: 'eaf-table',
@@ -54,7 +55,8 @@ import {
     MatButtonModule,
     DragDropModule,
     EafTableFilter,
-  ],
+    ScrollRestorer
+],
   templateUrl: './eaf-table.html',
   styleUrl: './eaf-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,6 +74,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   /** Dati: array statico o Observable */
   readonly data = input<T[] | Observable<T[]>>([]);
+
+  /** Salvataggio dello scroll */
+  readonly saveScroll = input(false);
 
   /**
    * Configurazione paginazione.
