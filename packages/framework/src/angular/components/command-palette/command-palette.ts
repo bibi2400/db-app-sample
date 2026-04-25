@@ -16,7 +16,7 @@ import { CommandPaletteItem } from '../../types/command-palette';
 import { CommandPaletteService } from '../../services/command-palette.service';
 
 @Component({
-  selector: 'app-command-palette',
+  selector: 'eaf-command-palette',
   standalone: true,
   imports: [FormsModule, MatIconModule],
   templateUrl: './command-palette.html',

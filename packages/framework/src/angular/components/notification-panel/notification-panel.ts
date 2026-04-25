@@ -27,7 +27,7 @@ const AUTO_DISMISS_MS: Record<NotificationLevel, number> = {
 };
 
 @Component({
-  selector: 'app-notification-panel',
+  selector: 'eaf-notification-panel',
   imports: [MatIconModule, MatButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notification-panel.html',

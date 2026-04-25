@@ -1,11 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {
-  EafTable,
-  EafCellDefDirective,
-  EafFilterDefDirective,
-  EafActionsDefDirective,
-} from '@bibi2400/electron-angular-framework/angular';
+import { EafTable, EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective, ScrollRestorer } from '@bibi2400/electron-angular-framework/angular';
 import type {
   EafColumnDef,
   EafPaginationConfig,
@@ -106,7 +101,8 @@ function generateProducts(count: number): Product[] {
     MatButtonModule,
     MatChipsModule,
     MatCheckboxModule,
-  ],
+    ScrollRestorer
+],
   templateUrl: './table-demo.html',
   styleUrl: './table-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

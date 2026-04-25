@@ -13,4 +13,11 @@
 
 .main-container {
   padding: 20px;
+  margin-top: var(--mat-toolbar-standard-height, 64);
+}
+
+.fixed-toolbar {
+  position: fixed;
+  z-index: 1000;
+  width: 100%;
 }

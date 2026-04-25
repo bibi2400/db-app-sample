@@ -10,7 +10,7 @@ import { NavigationService } from '../../services/navigation.service';
 import { NotificationService } from '../../services/notification.service';
 
 @Component({
-  selector: 'app-toolbar',
+  selector: 'eaf-toolbar',
   imports: [
     MatButtonModule,
     MatIcon,

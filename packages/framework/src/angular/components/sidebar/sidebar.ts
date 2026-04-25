@@ -8,7 +8,7 @@ import { ElectronAppService } from '../../services/electron-api/electron-app.ser
 import { MenuItem, NavigationService } from '../../services/navigation.service';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'eaf-sidebar',
   imports: [
     MatButtonModule,
     MatIcon,

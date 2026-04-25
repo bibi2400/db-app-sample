@@ -16,6 +16,7 @@ export { CommandPalette } from './components/command-palette/command-palette';
 export { ConfirmDialogComponent } from './components/dialogs/confirm-dialog/confirm-dialog';
 export { ShortcutRecordDialog } from './components/dialogs/shortcut-record-dialog/shortcut-record-dialog';
 export { FullscreenLoaderComponent } from './components/fullscreen-loader/fullscreen-loader';
+export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
 
 // ─── Form Elements ───────────────────────────────────────────────────────────
 export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
