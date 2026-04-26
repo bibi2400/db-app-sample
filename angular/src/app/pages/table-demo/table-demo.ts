@@ -101,7 +101,6 @@ function generateProducts(count: number): Product[] {
     MatButtonModule,
     MatChipsModule,
     MatCheckboxModule,
-    ScrollRestorer
 ],
   templateUrl: './table-demo.html',
   styleUrl: './table-demo.scss',
