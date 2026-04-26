@@ -415,11 +415,33 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Data ────────────────────────────────────────────────────────────────
 
   private applyClientData(): void {
+    const wasLoaded = this.dataLoaded;
     this.tableDataSource.data = this.allData;
     // Trigger filter
     this.tableDataSource.filter = JSON.stringify(this.activeFilters());
     if (this.allData.length > 0) {
       this.dataLoaded = true;
+      // Primo caricamento dati: ripristina il pageIndex sul paginator,
+      // perché MatTableDataSource manipola direttamente paginator.pageIndex
+      // bypassando il binding Angular [pageIndex]="currentPageIndex()".
+      if (!wasLoaded) {
+        const target = this.currentPageIndex();
+        if (target > 0) {
+          queueMicrotask(() => {
+            const p = this.paginator();
+            if (p && p.pageIndex !== target) {
+              const previousPageIndex = p.pageIndex;
+              p.pageIndex = target;
+              p.page.emit({
+                pageIndex: target,
+                previousPageIndex,
+                pageSize: p.pageSize,
+                length: p.length,
+              });
+            }
+          });
+        }
+      }
     }
   }
 
