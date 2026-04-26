@@ -158,19 +158,20 @@
   @if (saveScroll()) {
   <eaf-scroll-restorer />
   }
-</div>
 
-<!-- Paginator -->
-@if (paginationConfig(); as pg) {
-<mat-paginator
-  [length]="totalRows()"
-  [pageSize]="currentPageSize()"
-  [pageSizeOptions]="pg.pageSizeOptions ?? [5, 10, 25, 50, 100]"
-  [showFirstLastButtons]="pg.showFirstLastButtons ?? true"
-  (page)="onPageChange($event)"
->
-</mat-paginator>
-}
+  <!-- Paginator -->
+  @if (paginationConfig(); as pg) {
+  <mat-paginator
+    [length]="totalRows()"
+    [pageSize]="currentPageSize()"
+    [pageIndex]="currentPageIndex()"
+    [pageSizeOptions]="pg.pageSizeOptions ?? [5, 10, 25, 50, 100]"
+    [showFirstLastButtons]="pg.showFirstLastButtons ?? true"
+    (page)="onPageChange($event)"
+  >
+  </mat-paginator>
+  }
+</div>
 
 <!-- Overlay backdrop per chiudere il filtro -->
 @if (openFilterKey()) {
