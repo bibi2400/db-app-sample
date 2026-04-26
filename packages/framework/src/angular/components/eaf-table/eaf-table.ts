@@ -181,6 +181,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private dataSub?: Subscription;
   private filterSubs: Subscription[] = [];
   private initialized = false;
+  private dataLoaded = false;
 
   // ─── Computed ────────────────────────────────────────────────────────────
 
@@ -417,6 +418,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     this.tableDataSource.data = this.allData;
     // Trigger filter
     this.tableDataSource.filter = JSON.stringify(this.activeFilters());
+    if (this.allData.length > 0) {
+      this.dataLoaded = true;
+    }
   }
 
   /** Aggiorna i dati (utile per server-side o aggiornamento manuale) */
@@ -567,6 +571,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Pagination ──────────────────────────────────────────────────────────
 
   onPageChange(event: PageEvent): void {
+    // Ignora eventi del paginator emessi prima che i dati siano caricati
+    // (es. clamp automatico a pageIndex 0 quando length=0 con dati async)
+    if (!this.dataLoaded && !this.serverSide()) {
+      return;
+    }
     this.currentPageSize.set(event.pageSize);
     this.currentPageIndex.set(event.pageIndex);
 
