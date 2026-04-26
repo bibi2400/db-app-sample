@@ -240,6 +240,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
         sort: this.activeSort() ?? undefined,
         filters: this.activeFilters(),
         pageSize: this.currentPageSize(),
+        pageIndex: this.currentPageIndex(),
       };
       untracked(() => {
         this.storageService.save(this.tableId(), state);
@@ -346,6 +347,10 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     // Page size
     const pageSize = ext?.pageSize ?? stored?.pageSize ?? this.paginationConfig()?.pageSize ?? 10;
     this.currentPageSize.set(pageSize);
+
+    // Page index
+    const pageIndex = ext?.pageIndex ?? stored?.pageIndex ?? 0;
+    this.currentPageIndex.set(pageIndex >= 0 ? pageIndex : 0);
   }
 
   private setupDataSource(): void {
@@ -496,6 +501,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       this.currentPageIndex.set(0);
       this.emitServerEvent();
     } else {
+      this.currentPageIndex.set(0);
       this.tableDataSource.filter = JSON.stringify(filters);
     }
   }

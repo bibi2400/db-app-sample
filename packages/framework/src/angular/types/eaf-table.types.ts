@@ -174,6 +174,9 @@ export interface EafTableState {
 
   /** Dimensione pagina */
   pageSize?: number;
+
+  /** Indice pagina corrente */
+  pageIndex?: number;
 }
 
 // ─── Server-Side Events ──────────────────────────────────────────────────────
