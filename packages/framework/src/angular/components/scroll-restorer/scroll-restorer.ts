@@ -56,6 +56,8 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
   /** Delay between restore attempts (ms). */
   restoreRetryDelayMs = input<number>(50);
 
+  isPersistant = input<boolean>(true); // For compatibility with non-Angular usage patterns.
+
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router, { optional: true });
   private readonly zone = inject(NgZone);
@@ -95,13 +97,13 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
           this.restoreWithRetry();
         });
 
-        this.routerSub.add(
-          this.router.events
-            .pipe(filter((e) => e instanceof NavigationStart))
-            .subscribe(() => {
-              this.isNavigatingAway = true;
-            })
-        );
+      this.routerSub.add(
+        this.router.events
+          .pipe(filter((e) => e instanceof NavigationStart))
+          .subscribe(() => {
+            this.isNavigatingAway = true;
+          }),
+      );
     }
   }
 
@@ -118,7 +120,9 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
     if (!this.target) return;
 
     this.zone.runOutsideAngular(() => {
-      this.scrollSub = fromEvent(this.target as EventTarget, 'scroll', { passive: true } as AddEventListenerOptions)
+      this.scrollSub = fromEvent(this.target as EventTarget, 'scroll', {
+        passive: true,
+      } as AddEventListenerOptions)
         .pipe(auditTime(this.saveDebounceMs()))
         .subscribe(() => {
           this.save();
@@ -148,7 +152,9 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
     return typeof window !== 'undefined' ? window : null;
   }
 
-  private findScrollableAncestor(start: HTMLElement | null): HTMLElement | null {
+  private findScrollableAncestor(
+    start: HTMLElement | null,
+  ): HTMLElement | null {
     let el: HTMLElement | null = start?.parentElement ?? null;
     // First pass: look for an ancestor that is currently overflowing.
     while (el && el !== document.body && el !== document.documentElement) {
@@ -169,8 +175,10 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
     const style = getComputedStyle(el);
     const overflowY = style.overflowY;
     const overflowX = style.overflowX;
-    const styledY = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
-    const styledX = overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay';
+    const styledY =
+      overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
+    const styledX =
+      overflowX === 'auto' || overflowX === 'scroll' || overflowX === 'overlay';
     if (!styledY && !styledX) return false;
     if (!requireOverflowing) return true;
     const overflowingY = styledY && el.scrollHeight > el.clientHeight;
@@ -191,7 +199,7 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
 
   private getOffsets(): { top: number; left: number } {
     const t = this.target;
-    console.log("getting scroll offsets for target", {
+    console.log('getting scroll offsets for target', {
       t,
       scrollY: (t as Window)?.scrollY,
       scrollTop: (t as HTMLElement)?.scrollTop,
@@ -223,7 +231,11 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
     if (this.isNavigatingAway) return; // Don't save if we're navigating away, to avoid body height collapsing.
     const { top, left } = this.getOffsets();
     try {
-      localStorage.setItem(this.currentKey, JSON.stringify({ top, left }));
+      if (this.isPersistant()) {
+        localStorage.setItem(this.currentKey, JSON.stringify({ top, left }));
+      } else {
+        sessionStorage.setItem(this.currentKey, JSON.stringify({ top, left }));
+      }
     } catch {
       /* storage may be full or unavailable */
     }
@@ -234,11 +246,24 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
 
     let raw: string | null = null;
     try {
-      raw = localStorage.getItem(this.currentKey);
+      if (this.isPersistant()) {
+        raw = localStorage.getItem(this.currentKey);
+      } else {
+        raw = sessionStorage.getItem(this.currentKey);
+      }
     } catch {
       return;
     }
-    if (!raw) return;
+    if (!raw) {
+      // Reset scroll del contenitore principale
+      if (this.target instanceof Window) {
+        this.target.scrollTo({ top:0, left: 0, behavior: 'auto' });
+      } else {
+        this.target.scrollTop = 0;
+        this.target.scrollLeft = 0;
+      }
+      return;
+    }
 
     let saved: { top: number; left: number };
     try {
@@ -256,7 +281,8 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
       this.setOffsets(saved.top, saved.left);
       const current = this.getOffsets();
       const reached =
-        Math.abs(current.top - saved.top) <= 1 && Math.abs(current.left - saved.left) <= 1;
+        Math.abs(current.top - saved.top) <= 1 &&
+        Math.abs(current.left - saved.left) <= 1;
       attempt++;
       if (!reached && attempt < maxAttempts) {
         this.zone.runOutsideAngular(() => setTimeout(tryRestore, delay));

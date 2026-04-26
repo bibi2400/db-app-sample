@@ -156,7 +156,10 @@
   </table>
 
   @if (saveScroll()) {
-  <eaf-scroll-restorer />
+  <eaf-scroll-restorer 
+    [key]="tableId()"
+    [isPersistant]="isScrollPersistant()"
+  />
   }
 
   <!-- Paginator -->

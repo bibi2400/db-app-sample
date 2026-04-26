@@ -1,3 +1,6 @@
+import { SelectionModel } from '@angular/cdk/collections';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,19 +18,15 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { SelectionModel } from '@angular/cdk/collections';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Observable, Subject, Subscription, isObservable } from 'rxjs';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { isObservable, Observable, Subject, Subscription } from 'rxjs';
 
-import { EafTableFilter } from '../eaf-table-filter/eaf-table-filter';
-import { EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective } from '../../directives/eaf-table.directives';
+import { EafActionsDefDirective, EafCellDefDirective, EafFilterDefDirective } from '../../directives/eaf-table.directives';
 import { EafTableStorageService } from '../../services/eaf-table-storage.service';
 import {
   EafColumnDef,
@@ -35,12 +34,12 @@ import {
   EafFilterConfig,
   EafFilterType,
   EafPaginationConfig,
-  EafPageEvent,
   EafSelectionMode,
   EafSortState,
   EafTableServerEvent,
   EafTableState,
 } from '../../types/eaf-table.types';
+import { EafTableFilter } from '../eaf-table-filter/eaf-table-filter';
 import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
 
 @Component({
@@ -80,6 +79,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   /** Altezza della tabella */
   readonly height = input<string | null>(null);
+
+  /** Persistenza dello scroll */
+  readonly isScrollPersistant = input(false);
 
   /**
    * Configurazione paginazione.
