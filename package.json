@@ -48,10 +48,6 @@
         "to": "splash.html"
       },
       {
-        "from": "angular/src/assets/splash.png",
-        "to": "splash.png"
-      },
-      {
         "from": "changelog.txt",
         "to": "changelog.txt"
       }
