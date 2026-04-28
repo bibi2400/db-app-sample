@@ -16,5 +16,12 @@ export type { IpcResponse } from './types/ipc';
 export type { AppNotification, NotificationLevel } from './types/notification';
 export type { UpdateStatusType, UpdateStatus, DownloadProgress, ChangelogEntry } from './types/update';
 export type { BackupInfo, BackupOptions, RestoreResult, BackupStats } from './types/backup';
+export type {
+  AttachmentInfo,
+  UploadFileRequest,
+  UploadOptions,
+  UploadProgress,
+  UploadResult,
+} from './types/upload';
 export type { KeyBinding, ShortcutEntry, ShortcutDefinition } from './types/shortcut';
 export type { CommandPaletteItem } from './types/command-palette';

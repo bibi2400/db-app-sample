@@ -1,15 +1,34 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { ChronoService, Chronomancer } from '@bibi2400/electron-angular-framework/angular';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { ChronoService, Chronomancer, ConfirmDialogComponent, EafFileUpload } from '@bibi2400/electron-angular-framework/angular';
+import { AttachmentInfo } from 'packages/framework/dist/shared';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [EafFileUpload, MatButtonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard implements OnInit {
   private readonly chrono = inject(ChronoService);
+  private readonly dialog = inject(MatDialog);
+
+  protected readonly lastConfirm = signal<string | null>(null);
+
+  openConfirmDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Eliminare l\'elemento?',
+        message: 'Questa azione non può essere annullata.\nVuoi davvero procedere?',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      this.lastConfirm.set(confirmed ? 'Confermato ✅' : 'Annullato ❌');
+    });
+  }
   
   protected readonly chronoDemo = signal<{
     basicMeasurement?: string;
@@ -20,6 +39,14 @@ export class Dashboard implements OnInit {
   ngOnInit(): void {
     // Run Chronomancer demo on component init
     this.runChronoDemo();
+  }
+
+  logUpload(event: AttachmentInfo[]): void {
+    console.log('Files uploaded:', event);
+  }
+
+  uploadError(error: any): void {
+    console.error('Upload error:', error);
   }
 
   /**

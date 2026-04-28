@@ -1,1 +1,16 @@
 <p>dashboard works!</p>
+<eaf-file-upload
+  (uploaded)="logUpload($event)"
+  [multiple]="true"
+  relativePath="puppa/pippo"
+  (errored)="uploadError($event)"
+/>
+
+<section style="margin-top: 24px; display: flex; align-items: center; gap: 12px;">
+  <button mat-raised-button color="primary" (click)="openConfirmDialog()">
+    Apri Confirm Dialog
+  </button>
+  @if (lastConfirm(); as result) {
+    <span>Ultimo esito: {{ result }}</span>
+  }
+</section>

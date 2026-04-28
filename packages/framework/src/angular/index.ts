@@ -20,6 +20,7 @@ export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
 
 // ─── Form Elements ───────────────────────────────────────────────────────────
 export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
+export { EafFileUpload } from './components/form-elements/eaf-file-upload/eaf-file-upload';
 
 // ─── EAF Table ───────────────────────────────────────────────────────────────
 export { EafTable } from './components/eaf-table/eaf-table';
@@ -53,6 +54,7 @@ export { ElectronPushService } from './services/electron-api/electron-push.servi
 export { ElectronAppService } from './services/electron-api/electron-app.service';
 export { ElectronBackupService } from './services/electron-api/electron-backup.service';
 export { ElectronUpdateService } from './services/electron-api/electron-update.service';
+export { ElectronUploadService } from './services/electron-api/electron-upload.service';
 export { NavigationService } from './services/navigation.service';
 export { NotificationService as AngularNotificationService } from './services/notification.service';
 export { ShortcutService } from './services/shortcut.service';
@@ -66,5 +68,12 @@ export type { CommandPaletteItem } from './types/command-palette';
 export type { AppNotification, NotificationLevel } from './types/notification';
 export type { UpdateStatus, UpdateStatusType, DownloadProgress, ChangelogEntry } from './types/update';
 export type { BackupInfo, BackupOptions, RestoreResult, BackupStats } from './types/backup';
+export type {
+  AttachmentInfo,
+  UploadFileRequest,
+  UploadOptions,
+  UploadProgress,
+  UploadResult,
+} from './types/upload';
 export type { KeyBinding, ShortcutEntry, ShortcutDefinition } from './types/shortcut';
 export type { IpcResponse } from './types/global';

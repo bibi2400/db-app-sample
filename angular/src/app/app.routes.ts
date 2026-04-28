@@ -14,6 +14,11 @@ const appRoutes: Routes = [
     data: { title: 'Demo Tabella', icon: 'table_chart' },
     loadComponent: () => import('./pages/table-demo/table-demo').then(m => m.TableDemo)
   },
+  {
+    path: 'form-upload-demo',
+    data: { title: 'Demo Form Upload', icon: 'upload_file' },
+    loadComponent: () => import('./pages/form-upload-demo/form-upload-demo').then(m => m.FormUploadDemo)
+  },
 ];
 
 // Merge with framework stock routes (backup, updates, notifications, shortcuts, app-info)

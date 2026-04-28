@@ -3,14 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import "reflect-metadata";
 import { RuntimeConfig, RuntimeConfigHolder } from './config/runtime-config';
+import { FRAMEWORK_ENTITIES } from './entities';
 import { Logger } from './helpers/logger';
 import { Injector } from './helpers/mini-pie/injector';
 import { Constructor } from './helpers/mini-pie/types';
 import { SERVICES } from './services';
 import { AppBootstrapService } from './services/system-services/app-bootstrap.service';
 import { DataSourceService } from './services/system-services/data-source.service';
-import { ControllerService } from './services/system-services/controller.service';
-import { ContextMenuService } from './services/system-services/context-menu.service';
 
 /**
  * Hooks that the consumer can provide to customize the bootstrap flow.
@@ -108,10 +107,13 @@ export class AppBootstrap {
       await Injector.load(allServices);
 
       // 2. Configure entities on DataSourceService before bootstrap
-      if (this.config.entities?.length) {
-        const dataSourceService = Injector.inject(DataSourceService);
-        dataSourceService.setEntities(this.config.entities);
-      }
+      //    Always merges framework built-in entities (e.g. Attachment) with consumer entities.
+      const allEntities = [
+        ...FRAMEWORK_ENTITIES,
+        ...(this.config.entities ?? []),
+      ];
+      const dataSourceService = Injector.inject(DataSourceService);
+      dataSourceService.setEntities(allEntities);
 
       // 3. Run the framework bootstrap sequence
       const bootstrapService = Injector.inject(AppBootstrapService);

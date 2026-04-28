@@ -18,6 +18,7 @@ import { AppConfigService } from "./app-config.service";
 import { NotificationService } from "./notification.service";
 import { ErrorNotificationService } from "./error-notification.service";
 import { DataSourceService } from "./data-source.service";
+import { UploadService } from "./upload.service";
 
 export const SYSTEM_SERVICES = [
   DevModeService,
@@ -35,6 +36,7 @@ export const SYSTEM_SERVICES = [
   BackupService,
   TestService,
   UpdaterService,
+  UploadService,
   ControllerService,
   ContextMenuService,
   LifecycleService,

@@ -7,6 +7,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 import { NavigationService } from '../../services/navigation.service';
 import { AppDetails, ElectronAppService } from '../../services/electron-api/electron-app.service';
+import { ElectronUploadService } from '../../services/electron-api/electron-upload.service';
 
 @Component({
   selector: 'app-info',
@@ -24,20 +25,31 @@ import { AppDetails, ElectronAppService } from '../../services/electron-api/elec
 export class AppInfo implements OnInit {
   private navigationService = inject(NavigationService);
   private appService = inject(ElectronAppService);
+  private uploadService = inject(ElectronUploadService);
   private dialog = inject(MatDialog);
 
   details = signal<AppDetails | null>(null);
   dbPathError = signal<string | null>(null);
+  uploadRepoPath = signal<string | null>(null);
+  uploadRepoError = signal<string | null>(null);
 
   ngOnInit(): void {
     this.navigationService.clearToolbarActions();
     this.loadDetails();
+    this.loadUploadRepoPath();
   }
 
   private async loadDetails(): Promise<void> {
     const data = await this.appService.getDetails();
     if (data) {
       this.details.set(data);
+    }
+  }
+
+  private async loadUploadRepoPath(): Promise<void> {
+    const result = await this.uploadService.getRepositoryPath();
+    if (result.success && result.data) {
+      this.uploadRepoPath.set(result.data);
     }
   }
 
@@ -77,5 +89,21 @@ export class AppInfo implements OnInit {
     } catch (err) {
       this.dbPathError.set(err instanceof Error ? err.message : 'Errore sconosciuto');
     }
+  }
+
+  async changeUploadRepoPath(): Promise<void> {
+    this.uploadRepoError.set(null);
+    const result = await this.uploadService.selectRepositoryPath();
+    if (!result.success) {
+      this.uploadRepoError.set(result.error ?? 'Errore sconosciuto');
+      return;
+    }
+    if (result.data) {
+      this.uploadRepoPath.set(result.data);
+    }
+  }
+
+  openUploadRepo(): void {
+    void this.uploadService.openRepository();
   }
 }

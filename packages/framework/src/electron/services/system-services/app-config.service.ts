@@ -21,6 +21,9 @@ export interface AppInfo {
 
 export interface AppSettings {
   // Configurazioni inter-sessione dell'applicazione
+
+  /** Percorso assoluto della cartella usata come repository per gli upload. */
+  uploadRepositoryPath?: string;
 }
 
 const APP_CONFIG_FILE = 'app-config.json';

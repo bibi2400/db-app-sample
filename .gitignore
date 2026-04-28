@@ -53,6 +53,7 @@ packages/framework/dist
 
 # Programmino
 db-config.json
+.appdata
 
 # Environment files
 .env

@@ -1,0 +1,41 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 720px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .upload-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  .upload-error {
+    color: var(--mat-sys-error, #b3261e);
+    font-size: 0.8rem;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.result-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

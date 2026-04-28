@@ -11,6 +11,7 @@ export class App {
   constructor() {
     inject(NavigationService).addMenuItems([
       { title: 'Demo Tabella', icon: 'table_chart', route: '/table-demo' },
+      { title: 'Demo Form Upload', icon: 'upload_file', route: '/form-upload-demo' },
       { title: 'Top 5 Stelle', icon: 'star', route: '/table-demo', queryParams: { rating: '{"mode":"equal","equal":5}' } },
       {
         title: 'Test Sottomenu',

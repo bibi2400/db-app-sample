@@ -1,0 +1,75 @@
+<div
+  class="dropzone"
+  [class.dragging]="isDragging()"
+  [class.disabled]="isDisabled()"
+  (click)="!isDisabled() && !uploading() && picker.click()"
+>
+  <mat-icon class="dropzone-icon">cloud_upload</mat-icon>
+  <div class="dropzone-label">{{ label() }}</div>
+
+  @if (accept()) {
+    <div class="dropzone-hint">Tipi accettati: {{ accept() }}</div>
+  }
+  @if (relativePath()) {
+    <div class="dropzone-hint">Cartella: {{ relativePath() }}</div>
+  }
+
+  <input
+    #picker
+    type="file"
+    hidden
+    [accept]="accept()"
+    [multiple]="multiple()"
+    [disabled]="isDisabled()"
+    (change)="onPickerChange($event)"
+  />
+</div>
+
+@if (uploading() && currentProgress(); as p) {
+  <div class="progress">
+    <div class="progress-meta">
+      <span class="progress-name">{{ p.fileName }}</span>
+      <span class="progress-counter">
+        {{ p.fileIndex + 1 }} / {{ p.fileCount }} — {{ p.overallPercent }}%
+      </span>
+    </div>
+    <mat-progress-bar mode="determinate" [value]="p.overallPercent"></mat-progress-bar>
+  </div>
+}
+
+@if (value().length) {
+  <ul class="attachment-list">
+    @for (att of value(); track att.id) {
+      <li class="attachment">
+        <mat-icon class="attachment-icon">insert_drive_file</mat-icon>
+        <button
+          type="button"
+          class="attachment-name"
+          mat-button
+          (click)="openAttachment(att)"
+          [matTooltip]="att.fullPath"
+        >
+          {{ att.originalName }}
+        </button>
+        @if (att.deduplicated) {
+          <mat-icon
+            class="attachment-dedup"
+            color="primary"
+            matTooltip="File già presente nel repository: collegato senza ricaricare"
+          >content_copy</mat-icon>
+        }
+        <span class="attachment-size">{{ formatSize(att.size) }}</span>
+        <button
+          type="button"
+          mat-icon-button
+          color="warn"
+          [disabled]="isDisabled()"
+          (click)="removeAttachment(att)"
+          matTooltip="Rimuovi"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </li>
+    }
+  </ul>
+}
