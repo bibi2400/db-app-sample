@@ -35,6 +35,23 @@ export class Attachment {
   @Column({ type: "varchar", length: 64 })
   checksum!: string;
 
+  /**
+   * Polymorphic owner: name of the table/entity that owns this attachment.
+   * The referenced entity lives outside the framework (consumer-defined).
+   * Nullable to allow orphan/temporary uploads before being attached to an owner.
+   */
+  @Index("IDX_attachment_owner")
+  @Column({ type: "varchar", nullable: true })
+  ownerType!: string | null;
+
+  /**
+   * Polymorphic owner: primary key of the owning record in `ownerType`.
+   * No FK constraint is declared because the target table is not known at framework level.
+   */
+  @Index("IDX_attachment_owner")
+  @Column({ type: "integer", nullable: true })
+  ownerId!: number | null;
+
   /** Upload timestamp. */
   @CreateDateColumn()
   uploadDate!: Date;

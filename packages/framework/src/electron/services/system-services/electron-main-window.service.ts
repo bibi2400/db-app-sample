@@ -28,7 +28,7 @@ const DEFAULT_MAIN_WINDOW_CONFIG: Required<MainWindowConfig> = {
   icon: 'src/assets/icon.png',
   devServerUrl: 'http://localhost:4202',
   prodAppUrl: 'app://-',
-  devServerMaxAttempts: 30,
+  devServerMaxAttempts: 120,
 };
 
 const MAIN_WINDOW_ID = 'main';
