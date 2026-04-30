@@ -71,6 +71,16 @@ export class EafFileUpload implements ControlValueAccessor {
   /** Relative folder inside the upload repository (e.g. 'images/avatars'). */
   readonly relativePath = input<string>('');
 
+  /**
+   * Polymorphic owner type for uploaded attachments (e.g. 'journal', 'tools').
+   * When provided together with `ownerId`, every uploaded attachment is
+   * associated to the owner.
+   */
+  readonly ownerType = input<string | null>(null);
+
+  /** Polymorphic owner primary key. Required if `ownerType` is provided. */
+  readonly ownerId = input<number | null>(null);
+
   /** When false, completely disables interaction. */
   readonly disabled = input(false);
 
@@ -222,6 +232,8 @@ export class EafFileUpload implements ControlValueAccessor {
       const result = await this.uploadService.uploadFiles(files, {
         uploadId,
         relativePath: this.relativePath(),
+        ownerType: this.ownerType(),
+        ownerId: this.ownerId(),
       });
 
       if (result.success && result.data) {

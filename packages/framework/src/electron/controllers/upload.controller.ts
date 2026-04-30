@@ -58,6 +58,46 @@ export class UploadController extends BaseController {
     }
   }
 
+  @IpcHandler("list-by-owner")
+  async listByOwner(ownerType: string, ownerId: number) {
+    try {
+      const items = await this.uploadService.listByOwner(ownerType, ownerId);
+      return this.success(items);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler("attach-to-owner")
+  async attachToOwner(id: number, ownerType: string, ownerId: number) {
+    try {
+      const item = await this.uploadService.attachToOwner(id, ownerType, ownerId);
+      return this.success(item);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler("detach-from-owner")
+  async detachFromOwner(id: number) {
+    try {
+      const item = await this.uploadService.detachFromOwner(id);
+      return this.success(item);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler("delete-by-owner")
+  async deleteByOwner(ownerType: string, ownerId: number) {
+    try {
+      const count = await this.uploadService.deleteByOwner(ownerType, ownerId);
+      return this.success(count);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
   @IpcHandler("get-repository-path")
   async getRepositoryPath() {
     try {

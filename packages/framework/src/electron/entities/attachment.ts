@@ -5,6 +5,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
  * Created automatically by the framework's UploadService.
  */
 @Entity()
+@Index("IDX_attachment_owner", ["ownerType", "ownerId"])
 export class Attachment {
   @PrimaryGeneratedColumn()
   id!: number;
@@ -40,7 +41,6 @@ export class Attachment {
    * The referenced entity lives outside the framework (consumer-defined).
    * Nullable to allow orphan/temporary uploads before being attached to an owner.
    */
-  @Index("IDX_attachment_owner")
   @Column({ type: "varchar", nullable: true })
   ownerType!: string | null;
 
@@ -48,7 +48,6 @@ export class Attachment {
    * Polymorphic owner: primary key of the owning record in `ownerType`.
    * No FK constraint is declared because the target table is not known at framework level.
    */
-  @Index("IDX_attachment_owner")
   @Column({ type: "integer", nullable: true })
   ownerId!: number | null;
 

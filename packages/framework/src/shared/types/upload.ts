@@ -18,6 +18,13 @@ export interface AttachmentInfo {
   mimeType: string | null;
   /** SHA-256 checksum (hex, lowercase) of the file content */
   checksum: string;
+  /**
+   * Polymorphic owner type (e.g. table/entity name like 'journal', 'tools').
+   * Null when the attachment is orphan/temporary.
+   */
+  ownerType: string | null;
+  /** Polymorphic owner primary key. Null when orphan. */
+  ownerId: number | null;
   /** ISO date string of upload */
   uploadDate: string;
   /** Transient: true if this attachment was reused via checksum dedup (set only in uploadFiles response) */
@@ -45,6 +52,13 @@ export interface UploadOptions {
   uploadId?: string;
   /** Relative folder inside the repository (e.g. 'images/avatars') */
   relativePath?: string;
+  /**
+   * Polymorphic owner type to associate to all uploaded attachments
+   * (e.g. table/entity name like 'journal', 'tools'). Optional.
+   */
+  ownerType?: string | null;
+  /** Polymorphic owner primary key. Required if ownerType is provided. */
+  ownerId?: number | null;
 }
 
 /**

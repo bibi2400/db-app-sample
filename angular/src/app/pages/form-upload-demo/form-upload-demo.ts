@@ -20,6 +20,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AttachmentInfo,
   EafFileUpload,
+  ElectronUploadService,
   IpcResponse,
   NavigationService,
 } from '@bibi2400/electron-angular-framework/angular';
@@ -36,6 +37,10 @@ interface SaveResult {
 }
 
 const DRAFT_KEY = 'form-upload-demo:draft';
+
+/** Owner statico per testare la relazione polimorfica del framework. */
+const DEMO_OWNER_TYPE = 'contact-form';
+const DEMO_OWNER_ID = 1;
 
 interface DraftState {
   name: string;
@@ -62,6 +67,10 @@ export class FormUploadDemo implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly snackBar = inject(MatSnackBar);
   private readonly navigationService = inject(NavigationService);
+  private readonly uploadService = inject(ElectronUploadService);
+
+  protected readonly demoOwnerType = DEMO_OWNER_TYPE;
+  protected readonly demoOwnerId = DEMO_OWNER_ID;
 
   /** Riferimento al componente di upload per chiamare discardUnsaved/adoptIds. */
   protected readonly fileUpload = viewChild.required(EafFileUpload);
@@ -132,6 +141,43 @@ export class FormUploadDemo implements OnInit {
 
   protected onUploadError(message: string): void {
     this.snackBar.open(message, 'Chiudi', { duration: 4000 });
+  }
+
+  /** Test: elenca tutti gli allegati associati all'owner statico. */
+  protected async testListByOwner(): Promise<void> {
+    const result = await this.uploadService.listByOwner(DEMO_OWNER_TYPE, DEMO_OWNER_ID);
+    if (result.success && result.data) {
+      const list = result.data;
+      console.log(`[testListByOwner] ${DEMO_OWNER_TYPE}/${DEMO_OWNER_ID} →`, list);
+      const summary = list.length
+        ? list.map((a) => `#${a.id} ${a.originalName}`).join(', ')
+        : '(nessuno)';
+      this.snackBar.open(
+        `Allegati owner ${DEMO_OWNER_TYPE}/${DEMO_OWNER_ID}: ${list.length} — ${summary}`,
+        'Chiudi',
+        { duration: 6000 },
+      );
+    } else {
+      this.snackBar.open(`Errore list-by-owner: ${result.error ?? 'sconosciuto'}`, 'Chiudi', {
+        duration: 4000,
+      });
+    }
+  }
+
+  /** Test: cancella tutti gli allegati associati all'owner statico. */
+  protected async testDeleteByOwner(): Promise<void> {
+    const result = await this.uploadService.deleteByOwner(DEMO_OWNER_TYPE, DEMO_OWNER_ID);
+    if (result.success) {
+      this.snackBar.open(
+        `Cancellati ${result.data ?? 0} allegati per ${DEMO_OWNER_TYPE}/${DEMO_OWNER_ID}.`,
+        'Chiudi',
+        { duration: 4000 },
+      );
+    } else {
+      this.snackBar.open(`Errore delete-by-owner: ${result.error ?? 'sconosciuto'}`, 'Chiudi', {
+        duration: 4000,
+      });
+    }
   }
 
   /**

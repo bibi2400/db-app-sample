@@ -86,6 +86,11 @@ export class UploadService {
 
     const uploadId = options.uploadId ?? randomUUID();
     const relativePath = this.sanitizeRelativePath(options.relativePath ?? "");
+    const ownerType = options.ownerType ?? null;
+    const ownerId = options.ownerId ?? null;
+    if ((ownerType === null) !== (ownerId === null)) {
+      throw new Error("ownerType e ownerId devono essere entrambi valorizzati o entrambi assenti.");
+    }
     const repoPath = this.getRepositoryPath();
     const targetDir = path.join(repoPath, relativePath);
     if (!fs.existsSync(targetDir)) {
@@ -107,14 +112,43 @@ export class UploadService {
 
       try {
         // Deduplication: if a file with the same checksum already exists,
-        // reuse its Attachment row and skip writing to disk.
+        // either reuse its Attachment row (when owner matches or no owner is
+        // requested) or create a new Attachment row pointing at the same
+        // physical file but with the new owner.
         const precomputedChecksum = this.computeChecksum(file.data);
         const existing = await repo.findOne({ where: { checksum: precomputedChecksum } });
         if (existing) {
           bytesDoneGlobal += fileSize;
-          const info = { ...this.toInfo(existing, repoPath), deduplicated: true };
+          let target = existing;
+          if (ownerType !== null) {
+            const sameOwner =
+              existing.ownerType === ownerType && existing.ownerId === ownerId;
+            if (!sameOwner) {
+              if (existing.ownerType === null && existing.ownerId === null) {
+                // Orphan attachment: claim it for the requested owner.
+                existing.ownerType = ownerType;
+                existing.ownerId = ownerId;
+                target = await repo.save(existing);
+              } else {
+                // File already owned by someone else: create a new row that
+                // reuses the same physical file (same fileName/relativePath/checksum).
+                const dup = repo.create({
+                  fileName: existing.fileName,
+                  originalName: file.name,
+                  relativePath: existing.relativePath,
+                  size: existing.size,
+                  mimeType: existing.mimeType,
+                  checksum: existing.checksum,
+                  ownerType,
+                  ownerId,
+                });
+                target = await repo.save(dup);
+              }
+            }
+          }
+          const info = { ...this.toInfo(target, repoPath), deduplicated: true };
           attachments.push(info);
-          Logger.info(`[Upload] Deduplicated ${file.name} → reusing attachment id=${existing.id} (checksum match).`);
+          Logger.info(`[Upload] Deduplicated ${file.name} → attachment id=${target.id} (checksum match).`);
           this.progress.emit({
             uploadId,
             fileIndex: i,
@@ -156,6 +190,8 @@ export class UploadService {
           size: fileSize,
           mimeType: file.mimeType ?? null,
           checksum,
+          ownerType,
+          ownerId,
         });
         const saved = await repo.save(entity);
 
@@ -219,19 +255,74 @@ export class UploadService {
     return this.toInfo(row, this.getRepositoryPath());
   }
 
-  /** Deletes an attachment record AND the file on disk. */
+  /** Deletes an attachment record AND the file on disk (only if no other Attachment shares the same checksum). */
   async deleteAttachment(id: number): Promise<boolean> {
     const repo = this.dataSourceService.model(Attachment);
     const row = await repo.findOne({ where: { id } });
     if (!row) return false;
     const fullPath = path.join(this.getRepositoryPath(), row.relativePath, row.fileName);
-    try {
-      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
-    } catch (err) {
-      Logger.warn(`[Upload] Could not delete file on disk for attachment ${id}:`, err);
-    }
     await repo.remove(row);
+    // Only delete the physical file if no remaining attachment references it.
+    const stillReferenced = await repo.count({ where: { checksum: row.checksum } });
+    if (stillReferenced === 0) {
+      try {
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      } catch (err) {
+        Logger.warn(`[Upload] Could not delete file on disk for attachment ${id}:`, err);
+      }
+    }
     return true;
+  }
+
+  // ── Owner operations ────────────────────────────────────
+
+  /** Lists all attachments belonging to the given polymorphic owner. */
+  async listByOwner(ownerType: string, ownerId: number): Promise<AttachmentInfo[]> {
+    const repo = this.dataSourceService.model(Attachment);
+    const rows = await repo.find({
+      where: { ownerType, ownerId },
+      order: { uploadDate: "DESC" },
+    });
+    const repoPath = this.getRepositoryPath();
+    return rows.map((r) => this.toInfo(r, repoPath));
+  }
+
+  /** Associates an existing attachment to an owner (typically used to claim an orphan). */
+  async attachToOwner(
+    id: number,
+    ownerType: string,
+    ownerId: number,
+  ): Promise<AttachmentInfo | null> {
+    const repo = this.dataSourceService.model(Attachment);
+    const row = await repo.findOne({ where: { id } });
+    if (!row) return null;
+    row.ownerType = ownerType;
+    row.ownerId = ownerId;
+    const saved = await repo.save(row);
+    return this.toInfo(saved, this.getRepositoryPath());
+  }
+
+  /** Removes the owner association from an attachment, leaving it orphan. */
+  async detachFromOwner(id: number): Promise<AttachmentInfo | null> {
+    const repo = this.dataSourceService.model(Attachment);
+    const row = await repo.findOne({ where: { id } });
+    if (!row) return null;
+    row.ownerType = null;
+    row.ownerId = null;
+    const saved = await repo.save(row);
+    return this.toInfo(saved, this.getRepositoryPath());
+  }
+
+  /** Deletes all attachments belonging to the given owner. Returns the count deleted. */
+  async deleteByOwner(ownerType: string, ownerId: number): Promise<number> {
+    const repo = this.dataSourceService.model(Attachment);
+    const rows = await repo.find({ where: { ownerType, ownerId } });
+    let count = 0;
+    for (const row of rows) {
+      const ok = await this.deleteAttachment(row.id);
+      if (ok) count++;
+    }
+    return count;
   }
 
   // ── Internals ───────────────────────────────────────────────────
@@ -311,6 +402,8 @@ export class UploadService {
       size: entity.size,
       mimeType: entity.mimeType ?? null,
       checksum: entity.checksum,
+      ownerType: entity.ownerType ?? null,
+      ownerId: entity.ownerId ?? null,
       uploadDate: (entity.uploadDate instanceof Date
         ? entity.uploadDate
         : new Date(entity.uploadDate)

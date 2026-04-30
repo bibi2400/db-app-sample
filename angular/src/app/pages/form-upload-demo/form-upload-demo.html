@@ -26,6 +26,8 @@
             formControlName="attachments"
             accept="image/*,.pdf,.txt,.doc,.docx"
             relativePath="contact-form"
+            [ownerType]="demoOwnerType"
+            [ownerId]="demoOwnerId"
             label="Trascina qui i file o clicca per selezionarli"
             (errored)="onUploadError($event)"
           />
@@ -76,6 +78,23 @@
           </button>
         </div>
       </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="result-card">
+    <mat-card-content>
+      <strong>Test relazione polimorfica owner</strong>
+      ({{ demoOwnerType }}/{{ demoOwnerId }})
+      <div class="actions" style="margin-top: 8px">
+        <button type="button" mat-stroked-button (click)="testListByOwner()">
+          <mat-icon>list</mat-icon>
+          Test list-by-owner
+        </button>
+        <button type="button" mat-stroked-button color="warn" (click)="testDeleteByOwner()">
+          <mat-icon>delete_forever</mat-icon>
+          Test delete-by-owner
+        </button>
+      </div>
     </mat-card-content>
   </mat-card>
 
