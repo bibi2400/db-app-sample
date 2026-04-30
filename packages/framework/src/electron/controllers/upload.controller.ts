@@ -68,6 +68,16 @@ export class UploadController extends BaseController {
     }
   }
 
+  @IpcHandler("owner-ids-with-attachments")
+  async ownerIdsWithAttachments(ownerType: string) {
+    try {
+      const ids = await this.uploadService.getOwnerIdsWithAttachments(ownerType);
+      return this.success(ids);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
   @IpcHandler("attach-to-owner")
   async attachToOwner(id: number, ownerType: string, ownerId: number, options?: AttachToOwnerOptions) {
     try {

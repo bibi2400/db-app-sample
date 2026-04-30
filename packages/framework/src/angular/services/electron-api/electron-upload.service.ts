@@ -110,6 +110,27 @@ export class ElectronUploadService {
   }
 
   /**
+   * Returns the set of ownerIds (of the given ownerType) that currently have
+   * at least one attachment. Use in list pages to flag rows with attachments
+   * without one IPC call per row.
+   */
+  async getOwnerIdsWithAttachments(
+    ownerType: string,
+  ): Promise<{ success: boolean; data?: number[]; error?: string }> {
+    try {
+      const response = await window.electronAPI.invoke<IpcResponse<number[]>>(
+        'upload:owner-ids-with-attachments',
+        ownerType,
+      );
+      return response.success && response.data
+        ? { success: true, data: response.data }
+        : { success: false, error: response.error ?? 'Unknown error' };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+  }
+
+  /**
    * Associates an existing attachment to an owner (typically used to claim an
    * orphan or to commit a draft upload). Defaults to safe mode: refuses to
    * reassign rows already owned by someone else.

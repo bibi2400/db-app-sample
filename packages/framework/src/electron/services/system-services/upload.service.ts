@@ -310,6 +310,22 @@ export class UploadService {
   }
 
   /**
+   * Returns the distinct ownerIds of the given ownerType that currently have
+   * at least one attachment. Useful for batch UI hints (e.g. paperclip icon
+   * in list rows) without N+1 queries.
+   */
+  async getOwnerIdsWithAttachments(ownerType: string): Promise<number[]> {
+    const repo = this.dataSourceService.model(Attachment);
+    const rows = await repo
+      .createQueryBuilder("a")
+      .select("DISTINCT a.ownerId", "ownerId")
+      .where("a.ownerType = :ownerType", { ownerType })
+      .andWhere("a.ownerId IS NOT NULL")
+      .getRawMany<{ ownerId: number }>();
+    return rows.map((r) => Number(r.ownerId)).filter((n) => Number.isFinite(n));
+  }
+
+  /**
    * Associates an existing attachment to an owner (typically used to claim an
    * orphan, or to transfer a draft attachment to its newly-created owner).
    *
