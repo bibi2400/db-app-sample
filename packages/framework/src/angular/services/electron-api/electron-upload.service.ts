@@ -4,6 +4,7 @@ import { ElectronPushService } from './electron-push.service';
 import { IpcResponse } from '../../types/global';
 import {
   AttachmentInfo,
+  AttachToOwnerOptions,
   UploadFileRequest,
   UploadOptions,
   UploadProgress,
@@ -108,11 +109,16 @@ export class ElectronUploadService {
     }
   }
 
-  /** Associates an existing attachment to an owner (typically used to claim an orphan). */
+  /**
+   * Associates an existing attachment to an owner (typically used to claim an
+   * orphan or to commit a draft upload). Defaults to safe mode: refuses to
+   * reassign rows already owned by someone else.
+   */
   async attachToOwner(
     id: number,
     ownerType: string,
     ownerId: number,
+    options?: AttachToOwnerOptions,
   ): Promise<{ success: boolean; data?: AttachmentInfo | null; error?: string }> {
     try {
       const response = await window.electronAPI.invoke<IpcResponse<AttachmentInfo | null>>(
@@ -120,8 +126,34 @@ export class ElectronUploadService {
         id,
         ownerType,
         ownerId,
+        options,
       );
       if (response.success) return { success: true, data: response.data ?? null };
+      return { success: false, error: response.error ?? 'Unknown error' };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+  }
+
+  /**
+   * Atomically associates many attachments to the same owner (transactional).
+   * Use this to commit a batch of draft uploads to a newly-created entity.
+   */
+  async attachManyToOwner(
+    ids: number[],
+    ownerType: string,
+    ownerId: number,
+    options?: AttachToOwnerOptions,
+  ): Promise<{ success: boolean; data?: AttachmentInfo[]; error?: string }> {
+    try {
+      const response = await window.electronAPI.invoke<IpcResponse<AttachmentInfo[]>>(
+        'upload:attach-many-to-owner',
+        ids,
+        ownerType,
+        ownerId,
+        options,
+      );
+      if (response.success) return { success: true, data: response.data ?? [] };
       return { success: false, error: response.error ?? 'Unknown error' };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };

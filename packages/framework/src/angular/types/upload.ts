@@ -1,5 +1,7 @@
 export type {
   AttachmentInfo,
+  AttachToOwnerMode,
+  AttachToOwnerOptions,
   UploadFileRequest,
   UploadOptions,
   UploadProgress,

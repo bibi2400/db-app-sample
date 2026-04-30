@@ -9,6 +9,7 @@ import { Logger } from "../../helpers/logger";
 import { Attachment } from "../../entities/attachment";
 import {
   AttachmentInfo,
+  AttachToOwnerOptions,
   UploadFileRequest,
   UploadOptions,
   UploadProgress,
@@ -112,14 +113,14 @@ export class UploadService {
 
       try {
         // Deduplication: if a file with the same checksum already exists,
-        // either reuse its Attachment row (when owner matches or no owner is
-        // requested) or create a new Attachment row pointing at the same
-        // physical file but with the new owner.
+        // either reuse its Attachment row (when it has no owner conflict) or
+        // create a new Attachment row pointing at the same physical file.
         const precomputedChecksum = this.computeChecksum(file.data);
         const existing = await repo.findOne({ where: { checksum: precomputedChecksum } });
         if (existing) {
           bytesDoneGlobal += fileSize;
           let target = existing;
+          let isNewRow = false;
           if (ownerType !== null) {
             const sameOwner =
               existing.ownerType === ownerType && existing.ownerId === ownerId;
@@ -143,12 +144,33 @@ export class UploadService {
                   ownerId,
                 });
                 target = await repo.save(dup);
+                isNewRow = true;
               }
             }
+          } else {
+            // Draft / orphan upload (no owner requested). Never return a row
+            // that already belongs to someone else: that would let the caller
+            // accidentally re-assign another owner's attachment via
+            // attachToOwner. Instead, create a new orphan row pointing at the
+            // same physical file.
+            if (existing.ownerType !== null || existing.ownerId !== null) {
+              const dup = repo.create({
+                fileName: existing.fileName,
+                originalName: file.name,
+                relativePath: existing.relativePath,
+                size: existing.size,
+                mimeType: existing.mimeType,
+                checksum: existing.checksum,
+                ownerType: null,
+                ownerId: null,
+              });
+              target = await repo.save(dup);
+              isNewRow = true;
+            }
           }
-          const info = { ...this.toInfo(target, repoPath), deduplicated: true };
+          const info = { ...this.toInfo(target, repoPath), deduplicated: true, isNewRow };
           attachments.push(info);
-          Logger.info(`[Upload] Deduplicated ${file.name} → attachment id=${target.id} (checksum match).`);
+          Logger.info(`[Upload] Deduplicated ${file.name} → attachment id=${target.id} (checksum match, isNewRow=${isNewRow}).`);
           this.progress.emit({
             uploadId,
             fileIndex: i,
@@ -195,7 +217,7 @@ export class UploadService {
         });
         const saved = await repo.save(entity);
 
-        const info = this.toInfo(saved, repoPath);
+        const info = { ...this.toInfo(saved, repoPath), isNewRow: true };
         attachments.push(info);
 
         this.progress.emit({
@@ -287,19 +309,83 @@ export class UploadService {
     return rows.map((r) => this.toInfo(r, repoPath));
   }
 
-  /** Associates an existing attachment to an owner (typically used to claim an orphan). */
+  /**
+   * Associates an existing attachment to an owner (typically used to claim an
+   * orphan, or to transfer a draft attachment to its newly-created owner).
+   *
+   * @param options.mode
+   *  - 'safe' (default): refuses to reassign a row that already belongs to a
+   *    different owner — throws an Error. Same-owner is a no-op. This protects
+   *    against accidentally stealing another entity's attachment when a draft
+   *    upload returned a deduplicated row.
+   *  - 'claim': force-reassigns regardless of current ownership (legacy).
+   */
   async attachToOwner(
     id: number,
     ownerType: string,
     ownerId: number,
+    options: AttachToOwnerOptions = {},
   ): Promise<AttachmentInfo | null> {
+    const mode = options.mode ?? 'safe';
     const repo = this.dataSourceService.model(Attachment);
     const row = await repo.findOne({ where: { id } });
     if (!row) return null;
+    if (row.ownerType !== null || row.ownerId !== null) {
+      const sameOwner = row.ownerType === ownerType && row.ownerId === ownerId;
+      if (!sameOwner && mode === 'safe') {
+        throw new Error(
+          `attachToOwner: l'allegato id=${id} appartiene già a ` +
+          `${row.ownerType}:${row.ownerId} (richiesto ${ownerType}:${ownerId}). ` +
+          `Usa mode:'claim' per forzare la riassegnazione.`,
+        );
+      }
+    }
     row.ownerType = ownerType;
     row.ownerId = ownerId;
     const saved = await repo.save(row);
     return this.toInfo(saved, this.getRepositoryPath());
+  }
+
+  /**
+   * Atomically associates many attachments to the same owner. Useful to
+   * "commit" all draft uploads of a form to a newly-created entity. Either all
+   * rows are reassigned, or none. See {@link attachToOwner} for `options.mode`.
+   */
+  async attachManyToOwner(
+    ids: number[],
+    ownerType: string,
+    ownerId: number,
+    options: AttachToOwnerOptions = {},
+  ): Promise<AttachmentInfo[]> {
+    if (!ids.length) return [];
+    const mode = options.mode ?? 'safe';
+    const dataSource = this.dataSourceService.dataSource;
+    const repoPath = this.getRepositoryPath();
+    return await dataSource.transaction(async (manager) => {
+      const repo = manager.getRepository(Attachment);
+      const result: AttachmentInfo[] = [];
+      for (const id of ids) {
+        const row = await repo.findOne({ where: { id } });
+        if (!row) {
+          throw new Error(`attachManyToOwner: allegato id=${id} non trovato.`);
+        }
+        if (row.ownerType !== null || row.ownerId !== null) {
+          const sameOwner = row.ownerType === ownerType && row.ownerId === ownerId;
+          if (!sameOwner && mode === 'safe') {
+            throw new Error(
+              `attachManyToOwner: l'allegato id=${id} appartiene già a ` +
+              `${row.ownerType}:${row.ownerId} (richiesto ${ownerType}:${ownerId}). ` +
+              `Usa mode:'claim' per forzare.`,
+            );
+          }
+        }
+        row.ownerType = ownerType;
+        row.ownerId = ownerId;
+        const saved = await repo.save(row);
+        result.push(this.toInfo(saved, repoPath));
+      }
+      return result;
+    });
   }
 
   /** Removes the owner association from an attachment, leaving it orphan. */

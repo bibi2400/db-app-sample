@@ -4,7 +4,7 @@ import { BaseController } from "./base.controller";
 import { Controller } from "../decorators/controller.decorator";
 import { IpcHandler } from "../decorators/ipc-handler.decorator";
 import { UploadService } from "../services/system-services/upload.service";
-import { UploadFileRequest, UploadOptions } from "../../shared/types/upload";
+import { UploadFileRequest, UploadOptions, AttachToOwnerOptions } from "../../shared/types/upload";
 
 @Controller({ prefix: "upload" })
 export class UploadController extends BaseController {
@@ -69,10 +69,20 @@ export class UploadController extends BaseController {
   }
 
   @IpcHandler("attach-to-owner")
-  async attachToOwner(id: number, ownerType: string, ownerId: number) {
+  async attachToOwner(id: number, ownerType: string, ownerId: number, options?: AttachToOwnerOptions) {
     try {
-      const item = await this.uploadService.attachToOwner(id, ownerType, ownerId);
+      const item = await this.uploadService.attachToOwner(id, ownerType, ownerId, options);
       return this.success(item);
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler("attach-many-to-owner")
+  async attachManyToOwner(ids: number[], ownerType: string, ownerId: number, options?: AttachToOwnerOptions) {
+    try {
+      const items = await this.uploadService.attachManyToOwner(ids ?? [], ownerType, ownerId, options);
+      return this.success(items);
     } catch (error) {
       return this.error(error);
     }

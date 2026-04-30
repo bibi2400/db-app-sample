@@ -29,6 +29,28 @@ export interface AttachmentInfo {
   uploadDate: string;
   /** Transient: true if this attachment was reused via checksum dedup (set only in uploadFiles response) */
   deduplicated?: boolean;
+  /**
+   * Transient: true if `uploadFiles` created a brand-new Attachment row for
+   * this entry (either a fresh upload or a duplicate row pointing at an
+   * existing physical file). False/undefined when an existing row was reused
+   * as-is. Useful for the caller to know which rows are safe to delete on
+   * "discard unsaved" without affecting other owners.
+   */
+  isNewRow?: boolean;
+}
+
+/**
+ * Behavior of {@link UploadService.attachToOwner} when the target attachment
+ * already belongs to a different owner.
+ *
+ * - 'safe' (default): refuse to reassign — throws an Error. Same-owner is a no-op.
+ * - 'claim': force-reassign to the requested owner (legacy behavior).
+ */
+export type AttachToOwnerMode = 'safe' | 'claim';
+
+/** Options for {@link UploadService.attachToOwner} / `attachManyToOwner`. */
+export interface AttachToOwnerOptions {
+  mode?: AttachToOwnerMode;
 }
 
 /**

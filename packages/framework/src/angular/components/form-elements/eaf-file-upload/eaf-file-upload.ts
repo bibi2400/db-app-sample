@@ -111,14 +111,27 @@ export class EafFileUpload implements ControlValueAccessor {
   protected readonly cvaDisabled = signal(false);
   protected readonly isDisabled = computed(() => this.disabled() || this.cvaDisabled());
   /**
-   * Ids of files uploaded through THIS instance during the current session
+   * Ids of files added through THIS instance during the current session
    * (i.e. not coming from `writeValue` / form initialization). Used by
    * `discardUnsaved()` so the consumer can intentionally clean up files when
-   * the user abandons a form without saving. Deduplicated attachments (files
-   * already present in the repository before this session) are NOT tracked,
-   * because deleting them would remove the original.
+   * the user abandons a form without saving, and by `commitToOwner()` to
+   * transfer draft uploads to a freshly-created entity.
+   *
+   * Includes both freshly-uploaded files AND deduplicated files that resulted
+   * in a brand-new Attachment row (i.e. `isNewRow === true`). Reused existing
+   * rows are NOT tracked, because deleting them would affect other owners.
    */
   private readonly sessionUploadedIds = new Set<number>();
+
+  /**
+   * Ids of files added in this session that were served from an EXISTING
+   * Attachment row (dedup hit, no new row created). The consumer can read
+   * them via {@link getSessionAttachmentIds} for tracking purposes; they are
+   * intentionally NOT deleted by `discardUnsaved()` and NOT reassigned by
+   * `commitToOwner()` (they already belong to their original owner, or are
+   * pre-existing orphans).
+   */
+  private readonly sessionReusedIds = new Set<number>();
   // ── Deps ───────────────────────────────────────────────────────
 
   private readonly uploadService = inject(ElectronUploadService);
@@ -135,6 +148,7 @@ export class EafFileUpload implements ControlValueAccessor {
     // persisted, so it's NOT part of the discardable session set.
     this.value.set(Array.isArray(value) ? value : []);
     this.sessionUploadedIds.clear();
+    this.sessionReusedIds.clear();
   }
   registerOnChange(fn: (value: AttachmentInfo[]) => void): void {
     this.onChange = fn;
@@ -237,10 +251,13 @@ export class EafFileUpload implements ControlValueAccessor {
       });
 
       if (result.success && result.data) {
-        // Track only freshly uploaded files (skip dedup hits) so they can be
-        // deleted on intentional discard.
+        // Track every newly-created Attachment row from this session (fresh
+        // upload OR dedup that produced a new row): these are safe to delete
+        // on intentional discard and to reassign via commitToOwner. Reused
+        // existing rows go into a separate set for visibility only.
         for (const a of result.data.attachments) {
-          if (!a.deduplicated) this.sessionUploadedIds.add(a.id);
+          if (a.isNewRow) this.sessionUploadedIds.add(a.id);
+          else if (a.deduplicated) this.sessionReusedIds.add(a.id);
         }
         const next = this.multiple()
           ? [...this.value(), ...result.data.attachments]
@@ -272,6 +289,7 @@ export class EafFileUpload implements ControlValueAccessor {
       const next = this.value().filter(a => a.id !== att.id);
       this.value.set(next);
       this.sessionUploadedIds.delete(att.id);
+      this.sessionReusedIds.delete(att.id);
       this.onChange(next);
       this.onTouched();
       this.removed.emit(att);
@@ -292,11 +310,63 @@ export class EafFileUpload implements ControlValueAccessor {
   }
 
   /**
+   * Returns the full session breakdown:
+   *  - `uploaded`: ids of new Attachment rows created in this session (safe to
+   *    delete on discard and to reassign via {@link commitToOwner}). Same as
+   *    {@link getUnsavedAttachmentIds}.
+   *  - `reused`: ids of pre-existing Attachment rows returned via dedup
+   *    without creating a new row (NOT touched by discard/commit).
+   */
+  getSessionAttachmentIds(): { uploaded: number[]; reused: number[] } {
+    return {
+      uploaded: Array.from(this.sessionUploadedIds),
+      reused: Array.from(this.sessionReusedIds),
+    };
+  }
+
+  /**
    * Marks the currently uploaded files as committed (e.g. after a successful
    * form save). They will no longer be deleted by `discardUnsaved()`.
    */
   commit(): void {
     this.sessionUploadedIds.clear();
+    this.sessionReusedIds.clear();
+  }
+
+  /**
+   * Create-mode helper: associates every file uploaded in this session to the
+   * given owner (typically the id of an entity that has just been created),
+   * atomically. After a successful call the session is considered committed.
+   *
+   * Equivalent to calling `attachManyToOwner(getUnsavedAttachmentIds(), ...)`
+   * followed by `commit()`, but in a single transactional IPC roundtrip.
+   *
+   * Defaults to safe mode: throws if any session row is already owned by a
+   * different entity (which should not happen in normal create-mode usage,
+   * but protects against double-commit and similar bugs).
+   */
+  async commitToOwner(
+    ownerType: string,
+    ownerId: number,
+    options?: { mode?: 'safe' | 'claim' },
+  ): Promise<AttachmentInfo[]> {
+    const ids = Array.from(this.sessionUploadedIds);
+    if (ids.length === 0) {
+      this.sessionReusedIds.clear();
+      return [];
+    }
+    const result = await this.uploadService.attachManyToOwner(ids, ownerType, ownerId, options);
+    if (!result.success) {
+      throw new Error(result.error ?? 'commitToOwner: errore sconosciuto.');
+    }
+    const updated = result.data ?? [];
+    const map = new Map(updated.map(a => [a.id, a]));
+    const next = this.value().map(a => map.get(a.id) ?? a);
+    this.value.set(next);
+    this.onChange(next);
+    this.sessionUploadedIds.clear();
+    this.sessionReusedIds.clear();
+    return updated;
   }
 
   /**
@@ -312,10 +382,21 @@ export class EafFileUpload implements ControlValueAccessor {
       if (result.success) deleted.push(id);
     }
     this.sessionUploadedIds.clear();
-    const next = this.value().filter(a => !ids.includes(a.id));
+    // Reused rows are NOT deleted (they belong to other owners or are
+    // pre-existing orphans), but we drop them from the value() too: the
+    // caller is discarding the whole session.
+    const reused = Array.from(this.sessionReusedIds);
+    this.sessionReusedIds.clear();
+    const dropped = new Set([...ids, ...reused]);
+    const next = this.value().filter(a => !dropped.has(a.id));
     this.value.set(next);
     this.onChange(next);
     return deleted;
+  }
+
+  /** Alias of {@link discardUnsaved} for create-mode readability. */
+  discardDraft(): Promise<number[]> {
+    return this.discardUnsaved();
   }
 
   /**
@@ -331,6 +412,7 @@ export class EafFileUpload implements ControlValueAccessor {
     }
     this.value.set(restored);
     this.sessionUploadedIds.clear();
+    this.sessionReusedIds.clear();
     for (const a of restored) this.sessionUploadedIds.add(a.id);
     this.onChange(restored);
     return restored;
