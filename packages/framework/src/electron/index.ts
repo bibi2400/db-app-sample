@@ -17,6 +17,7 @@ export type { Constructor } from './helpers/mini-pie/types';
 export { Controller, getControllerMetadata, getRegisteredControllers, isController } from './decorators/controller.decorator';
 export { IpcHandler, getIpcHandlerMetadata } from './decorators/ipc-handler.decorator';
 export { PushChannel, PushEvent } from './decorators/push-channel.decorator';
+export { OwnsAttachments, getOwnsAttachmentsType } from './decorators/owns-attachments.decorator';
 
 // ─── Base Controller ─────────────────────────────────────────────────────────
 export { BaseController } from './controllers/base.controller';
