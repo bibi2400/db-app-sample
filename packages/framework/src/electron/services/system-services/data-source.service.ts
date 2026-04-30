@@ -60,7 +60,7 @@ export class DataSourceService {
 			type: "sqlite",
 			database: this.dbConfigService.dbPath,
 			synchronize: true,
-			logging: true,
+			logging: false,
 			entities: this.entityList,
 			migrations: [],
 			subscribers: [AttachmentCleanupSubscriber],

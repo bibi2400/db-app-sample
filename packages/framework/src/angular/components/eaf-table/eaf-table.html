@@ -141,6 +141,7 @@
       mat-row
       *matRowDef="let row; columns: displayedColumns()"
       [class.eaf-row-selected]="selection.isSelected(row)"
+      [ngClass]="rowClass() ? rowClass()!(row) : null"
       (click)="onRowClick(row)"
     ></tr>
 

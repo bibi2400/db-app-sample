@@ -1,6 +1,6 @@
 import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-import { NgTemplateOutlet } from '@angular/common';
+import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -45,6 +45,7 @@ import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
 @Component({
   selector: 'eaf-table',
   imports: [
+    NgClass,
     NgTemplateOutlet,
     MatTableModule,
     MatSortModule,
@@ -120,6 +121,16 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
    * Usalo per impostare filtri/sort/paginazione dall'esterno.
    */
   readonly initialState = input<Partial<EafTableState> | null>(null);
+
+  /**
+   * Funzione opzionale per aggiungere classi CSS dinamiche alle righe.
+   * Accetta la stessa sintassi di ngClass:
+   *   - stringa: 'my-class'
+   *   - array:   ['class-a', 'class-b']
+   *   - oggetto: { 'class-a': true, 'class-b': false }
+   * Ritorna null/undefined per non aggiungere classi.
+   */
+  readonly rowClass = input<((row: T) => string | string[] | Record<string, boolean> | null | undefined) | null>(null);
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
 
