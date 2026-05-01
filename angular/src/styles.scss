@@ -24,16 +24,26 @@ html {
   $info:    mat.$azure-palette,
 );
 
+// Sfondo globale dell'applicazione. Sostituire i parametri per personalizzarlo.
+// Per usare un'immagine con overlay chiaro (simula opacity ~0.3):
+//   @include eaf.eaf-background(
+//     $color: #f5f7fa,
+//     $image: url('/assets/form-background.png'),
+//     $overlay: rgba(245, 247, 250, 0.7),
+//     $size: 451px,
+//     $repeat: repeat,
+//   );
+@include eaf.eaf-background($color: #f5f7fa);
+
 body {
   // Default the application to a light color theme. This can be changed to
   // `dark` to enable the dark color theme, or to `light dark` to defer to the
   // user's system settings.
   color-scheme: light;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
+  // Set a default font and text color for the application using Angular
+  // Material's system-level CSS variables. Learn more about these variables
+  // at https://material.angular.dev/guide/system-variables
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
 
@@ -54,7 +64,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #1a1d29;
-  background: #f5f7fa;
 }
 
 html, body {

@@ -25,6 +25,8 @@
 //   );
 
 @use 'sass:meta';
+@use 'sass:list';
+@use 'sass:string';
 @use '@angular/material' as mat;
 
 /// Tema principale dell'applicazione.
@@ -81,6 +83,76 @@
   @if $info != null {
     .theme-info {
       @include mat.theme((color: (primary: $info)));
+    }
+  }
+}
+
+/// Imposta lo sfondo globale dell'applicazione.
+///
+/// Va incluso fuori da qualsiasi selettore — applica le regole al `body`.
+/// Permette di impostare un colore di sfondo, un'immagine (con overlay opzionale
+/// per regolare il contrasto/opacità percepita), e i parametri standard CSS.
+///
+/// Esempi:
+///   // Solo colore di sfondo
+///   @include eaf.eaf-background($color: #f5f7fa);
+///
+///   // Solo immagine ripetuta a pattern
+///   @include eaf.eaf-background(
+///     $image: url('/assets/form-background.png'),
+///     $size: 451px,
+///     $repeat: repeat,
+///   );
+///
+///   // Immagine con overlay chiaro (simula opacity ~0.3 sull'immagine)
+///   @include eaf.eaf-background(
+///     $color: #f5f7fa,
+///     $image: url('/assets/form-background.png'),
+///     $overlay: rgba(245, 247, 250, 0.7),
+///     $size: 451px,
+///     $repeat: repeat,
+///     $attachment: fixed,
+///   );
+///
+/// @param {Color}  $color       Colore di sfondo                       (default: null)
+/// @param {String} $image       Url immagine di sfondo, es. `url(...)` (default: null)
+/// @param {Color}  $overlay     Colore overlay sopra l'immagine        (default: null)
+/// @param {*}      $size        background-size                        (default: auto)
+/// @param {*}      $repeat      background-repeat                      (default: no-repeat)
+/// @param {*}      $attachment  background-attachment                  (default: fixed)
+/// @param {*}      $position    background-position                    (default: center center)
+@mixin eaf-background(
+  $color: null,
+  $image: null,
+  $overlay: null,
+  $size: auto,
+  $repeat: no-repeat,
+  $attachment: fixed,
+  $position: center center,
+) {
+  body {
+    @if $color != null {
+      background-color: $color;
+    }
+
+    @if $image != null {
+      @if $overlay != null {
+        // Overlay implementato come gradient solido sopra l'immagine, in modo
+        // da poter regolare opacità/tinta percepita senza wrapper aggiuntivi.
+        background-image:
+          linear-gradient(#{$overlay}, #{$overlay}),
+          #{$image};
+        background-size: $size, $size;
+        background-repeat: $repeat, $repeat;
+        background-attachment: $attachment, $attachment;
+        background-position: $position, $position;
+      } @else {
+        background-image: #{$image};
+        background-size: $size;
+        background-repeat: $repeat;
+        background-attachment: $attachment;
+        background-position: $position;
+      }
     }
   }
 }

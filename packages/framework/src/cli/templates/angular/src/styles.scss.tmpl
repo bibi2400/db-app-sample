@@ -15,9 +15,19 @@ html {
   $info:    mat.$azure-palette,
 );
 
+// Sfondo globale dell'app. Personalizza colore/immagine/overlay qui.
+// Esempio con immagine + overlay:
+//   @include eaf.eaf-background(
+//     $color: #f5f7fa,
+//     $image: url('/assets/form-background.png'),
+//     $overlay: rgba(245, 247, 250, 0.7),
+//     $size: 451px,
+//     $repeat: repeat,
+//   );
+@include eaf.eaf-background($color: #f5f7fa);
+
 body {
   color-scheme: light;
-  background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
   margin: 0;
@@ -35,7 +45,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #1a1d29;
-  background: #f5f7fa;
 }
 
 html, body {
