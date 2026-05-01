@@ -3,6 +3,8 @@ import {
   Component,
   ElementRef,
   HostListener,
+  OnDestroy,
+  OnInit,
   inject,
   input,
   output,
@@ -32,7 +34,7 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './eaf-side-tab.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EafSideTab {
+export class EafSideTab implements OnInit, OnDestroy {
   /** Etichetta mostrata sulla linguetta (testo verticale). */
   readonly label = input<string>('Azioni');
 
@@ -66,6 +68,23 @@ export class EafSideTab {
   protected readonly isOpen = signal(false);
 
   private readonly host = inject(ElementRef<HTMLElement>);
+
+  ngOnInit(): void {
+    // Sposta l'elemento host in <body> in modo che `position: fixed` venga
+    // posizionato rispetto al viewport e non rispetto al contenitore scrollabile
+    // (es. mat-sidenav-content che applica una transform e crea un nuovo
+    // containing block). Così la linguetta finisce sopra la scrollbar.
+    if (typeof document !== 'undefined') {
+      document.body.appendChild(this.host.nativeElement);
+    }
+  }
+
+  ngOnDestroy(): void {
+    const el = this.host.nativeElement;
+    if (el.parentNode) {
+      el.parentNode.removeChild(el);
+    }
+  }
 
   open(): void {
     if (this.isOpen()) return;
