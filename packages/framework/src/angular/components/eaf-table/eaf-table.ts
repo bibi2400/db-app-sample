@@ -762,6 +762,25 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     }));
   }
 
+  /**
+   * Imposta il valore di un singolo filtro dall'esterno.
+   * Passare `null` o `undefined` rimuove il filtro per quella colonna.
+   */
+  setFilter(key: string, value: unknown): void {
+    this.onFilterValueChange(key, value);
+  }
+
+  /**
+   * Imposta più filtri contemporaneamente dall'esterno.
+   * I filtri non presenti nell'oggetto passato restano invariati;
+   * usa `clearFilters()` per azzerare tutto prima se necessario.
+   */
+  setFilters(filters: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(filters)) {
+      this.onFilterValueChange(key, value);
+    }
+  }
+
   /** Restituisce le righe selezionate */
   getSelection(): T[] {
     return this.selection.selected;
