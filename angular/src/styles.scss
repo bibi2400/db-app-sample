@@ -4,17 +4,25 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use '@bibi2400/electron-angular-framework/styles/theme' as eaf;
 
+// Tema principale dell'applicazione.
+// Sovrascrivi le palette qui per personalizzare il tema (cfr. mat.$*-palette).
 html {
-  @include mat.theme((
-    color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include eaf.eaf-base(
+    $primary: mat.$cyan-palette,
+    $tertiary: mat.$orange-palette,
+  );
 }
+
+// Temi alternativi per livelli di severità (rosso/arancione/verde/azzurro).
+// Uso: <button matButton="filled" color="primary" class="theme-danger">…</button>
+@include eaf.eaf-severity-themes(
+  $danger:  mat.$red-palette,
+  $warning: mat.$orange-palette,
+  $success: mat.$green-palette,
+  $info:    mat.$azure-palette,
+);
 
 body {
   // Default the application to a light color theme. This can be changed to

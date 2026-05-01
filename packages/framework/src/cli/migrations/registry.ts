@@ -2,6 +2,7 @@ import { Migration } from './types';
 
 // Importa le definizioni delle migrazioni qui
 import { migration as m001 } from './definitions/001-runtime-config-to-consumer';
+import { migration as m002 } from './definitions/002-styles-theme-mixin';
 
 /**
  * Registry di tutte le migrazioni disponibili.
@@ -9,4 +10,5 @@ import { migration as m001 } from './definitions/001-runtime-config-to-consumer'
  */
 export const MIGRATIONS: Migration[] = [
   m001,
+  m002,
 ];

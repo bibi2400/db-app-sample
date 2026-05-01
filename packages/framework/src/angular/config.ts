@@ -1,6 +1,8 @@
 import { ApplicationConfig, LOCALE_ID, Provider, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, Routes } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import localeIt from '@angular/common/locales/it';
 
 export interface FrameworkConfigOptions {
@@ -30,6 +32,8 @@ export class FrameworkConfig {
       providers: [
         provideBrowserGlobalErrorListeners(),
         provideRouter(this.options.routes),
+        provideAnimationsAsync(),
+        provideHttpClient(withInterceptorsFromDi()),
         { provide: LOCALE_ID, useValue: 'it' },
         ...(this.options.providers ?? []),
       ]

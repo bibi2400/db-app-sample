@@ -30,6 +30,7 @@
       "types": "./dist/shared/index.d.ts",
       "default": "./dist/shared/index.js"
     },
+    "./styles/theme": "./src/angular/styles/_theme.scss",
     "./scripts/electron-dev": "./src/cli/scripts/electron-dev.js",
     "./scripts/dev": "./src/cli/scripts/dev.js"
   },
@@ -71,6 +72,8 @@
     "@angular/common": ">=21.0.0",
     "@angular/material": ">=21.0.0",
     "@angular/cdk": ">=21.0.0",
+    "@angular/animations": ">=21.0.0",
+    "@angular/platform-browser": ">=21.0.0",
     "electron": ">=39.0.0",
     "rxjs": ">=7.0.0"
   },

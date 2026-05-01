@@ -1,15 +1,19 @@
 @use '@angular/material' as mat;
+@use '{{PKG}}/styles/theme' as eaf;
 
 html {
-  @include mat.theme((
-    color: (
-      primary: mat.$cyan-palette,
-      tertiary: mat.$orange-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include eaf.eaf-base(
+    $primary: mat.$cyan-palette,
+    $tertiary: mat.$orange-palette,
+  );
 }
+
+@include eaf.eaf-severity-themes(
+  $danger:  mat.$red-palette,
+  $warning: mat.$orange-palette,
+  $success: mat.$green-palette,
+  $info:    mat.$azure-palette,
+);
 
 body {
   color-scheme: light;

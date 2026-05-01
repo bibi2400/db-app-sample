@@ -1,0 +1,86 @@
+// Mixin di theming del framework EAF.
+//
+// Espone due mixin riutilizzabili dai progetti consumer:
+//   - `eaf-base(...)`             → tema principale Angular Material (M3)
+//   - `eaf-severity-themes(...)`  → temi alternativi per livelli di severità
+//
+// Tutti i parametri sono opzionali e hanno default sensati. Il consumer può
+// sovrascriverli passando palette diverse:
+//
+//   @use '@angular/material' as mat;
+//   @use '@bibi2400/electron-angular-framework/styles/theme' as eaf;
+//
+//   html {
+//     @include eaf.eaf-base(
+//       $primary: mat.$violet-palette,
+//       $tertiary: mat.$rose-palette,
+//     );
+//   }
+//
+//   @include eaf.eaf-severity-themes(
+//     $danger:  mat.$red-palette,
+//     $warning: mat.$orange-palette,
+//     $success: mat.$green-palette,
+//     $info:    mat.$azure-palette,
+//   );
+
+@use 'sass:meta';
+@use '@angular/material' as mat;
+
+/// Tema principale dell'applicazione.
+/// Va incluso dentro un selettore (tipicamente `html`).
+///
+/// @param {Map} $primary    Palette primaria   (default: cyan)
+/// @param {Map} $tertiary   Palette terziaria  (default: orange)
+/// @param {String} $typography  Famiglia tipografica (default: Roboto)
+/// @param {Number} $density Densità Material   (default: 0)
+@mixin eaf-base(
+  $primary: mat.$cyan-palette,
+  $tertiary: mat.$orange-palette,
+  $typography: Roboto,
+  $density: 0,
+) {
+  @include mat.theme((
+    color: (
+      primary: $primary,
+      tertiary: $tertiary,
+    ),
+    typography: $typography,
+    density: $density,
+  ));
+}
+
+/// Genera classi `.theme-danger`, `.theme-warning`, `.theme-success`,
+/// `.theme-info` che ridefiniscono la palette `primary` localmente.
+///
+/// Uso lato HTML:
+///   <button matButton="filled" color="primary" class="theme-danger">…</button>
+///
+/// Passare `null` per disabilitare un tema specifico.
+@mixin eaf-severity-themes(
+  $danger:  mat.$red-palette,
+  $warning: mat.$orange-palette,
+  $success: mat.$green-palette,
+  $info:    mat.$azure-palette,
+) {
+  @if $danger != null {
+    .theme-danger {
+      @include mat.theme((color: (primary: $danger)));
+    }
+  }
+  @if $warning != null {
+    .theme-warning {
+      @include mat.theme((color: (primary: $warning)));
+    }
+  }
+  @if $success != null {
+    .theme-success {
+      @include mat.theme((color: (primary: $success)));
+    }
+  }
+  @if $info != null {
+    .theme-info {
+      @include mat.theme((color: (primary: $info)));
+    }
+  }
+}
