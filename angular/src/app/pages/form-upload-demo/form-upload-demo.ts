@@ -13,14 +13,17 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AttachmentInfo,
   EafFileUpload,
   ElectronUploadService,
+  EafSideTab,
   IpcResponse,
   NavigationService,
 } from '@bibi2400/electron-angular-framework/angular';
@@ -57,7 +60,10 @@ interface DraftState {
     MatInputModule,
     MatButtonModule,
     MatIcon,
+    MatDividerModule,
+    MatSlideToggleModule,
     EafFileUpload,
+    EafSideTab,
   ],
   templateUrl: './form-upload-demo.html',
   styleUrl: './form-upload-demo.scss',
@@ -78,6 +84,11 @@ export class FormUploadDemo implements OnInit {
   protected readonly saving = signal(false);
   protected readonly lastSaved = signal<SaveResult | null>(null);
   protected readonly hasDraft = signal(false);
+
+  // ─── Preferenze mostrate nella linguetta laterale (esempio) ──────────────
+  protected readonly autoSave = signal(false);
+  protected readonly notifyOnSave = signal(true);
+  protected readonly verboseLogging = signal(false);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -178,6 +189,48 @@ export class FormUploadDemo implements OnInit {
         duration: 4000,
       });
     }
+  }
+  // ─── Hooks della linguetta laterale (esempi) ────────────────────────────
+
+  protected onSideTabOpened(): void {
+    this.snackBar.open('Pannello azioni aperto', 'Chiudi', { duration: 1500 });
+  }
+
+  protected onSideTabToggled(open: boolean): void {
+    // Hook generico: utile per loggare/telemetria.
+    console.debug('[form-upload-demo] side tab toggled =', open);
+  }
+
+  protected fillSampleData(): void {
+    this.form.patchValue({
+      name: 'Mario Rossi',
+      email: 'mario.rossi@example.com',
+    });
+    this.snackBar.open('Dati di esempio inseriti.', 'Chiudi', { duration: 2000 });
+  }
+
+  protected resetForm(): void {
+    this.form.reset({ name: '', email: '', attachments: [] });
+    this.snackBar.open('Form ripulito.', 'Chiudi', { duration: 2000 });
+  }
+
+  protected logCurrentValue(): void {
+    console.log('[form-upload-demo] valore corrente:', this.form.getRawValue());
+    this.snackBar.open('Valore corrente loggato in console.', 'Chiudi', { duration: 2000 });
+  }
+
+  protected savePreferences(): void {
+    const prefs = {
+      autoSave: this.autoSave(),
+      notifyOnSave: this.notifyOnSave(),
+      verboseLogging: this.verboseLogging(),
+    };
+    console.log('[form-upload-demo] preferenze salvate:', prefs);
+    this.snackBar.open(
+      `Preferenze salvate (autoSave=${prefs.autoSave}, notify=${prefs.notifyOnSave}, verbose=${prefs.verboseLogging}).`,
+      'Chiudi',
+      { duration: 2500 },
+    );
   }
 
   /**

@@ -22,6 +22,9 @@ export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
 export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
 export { EafFileUpload } from './components/form-elements/eaf-file-upload/eaf-file-upload';
 
+// ─── Side Tab (linguetta laterale con pannello azioni) ───────────────────────
+export { EafSideTab } from './components/eaf-side-tab/eaf-side-tab';
+
 // ─── EAF Table ───────────────────────────────────────────────────────────────
 export { EafTable } from './components/eaf-table/eaf-table';
 export { EafTableFilter } from './components/eaf-table-filter/eaf-table-filter';

@@ -1,0 +1,116 @@
+:host {
+  display: contents;
+}
+
+.eaf-side-tab-root {
+  --eaf-side-tab-width: 320px;
+  --eaf-side-tab-top: 30%;
+
+  position: fixed;
+  top: var(--eaf-side-tab-top);
+  right: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: stretch;
+  pointer-events: none;
+}
+
+.eaf-side-tab-handle {
+  pointer-events: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 6px;
+  min-height: 96px;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  background-color: var(--mat-sys-primary, #1976d2);
+  color: var(--mat-sys-on-primary, #ffffff);
+  cursor: pointer;
+  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateX(0);
+  transition: transform 0.25s ease, background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--mat-sys-primary-container, #1565c0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-on-primary, #ffffff);
+    outline-offset: -4px;
+  }
+}
+
+.handle-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.handle-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.eaf-side-tab-panel {
+  pointer-events: auto;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--eaf-side-tab-width);
+  max-width: 90vw;
+  height: 100vh;
+  background-color: var(--mat-sys-surface, #ffffff);
+  color: var(--mat-sys-on-surface, #1a1a1a);
+  border-radius: 0;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.18);
+  transform: translateX(calc(100% + 8px));
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.25s ease, opacity 0.2s ease, visibility 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+
+.eaf-side-tab-root.is-open {
+  .eaf-side-tab-panel {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Sposta la linguetta a sinistra del pannello quando aperto. */
+  .eaf-side-tab-handle {
+    transform: translateX(calc(-1 * var(--eaf-side-tab-width)));
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.panel-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.panel-content {
+  padding: 12px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

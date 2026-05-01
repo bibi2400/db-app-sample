@@ -1,0 +1,37 @@
+@let open = isOpen();
+
+<div
+  class="eaf-side-tab-root"
+  [class.is-open]="open"
+  [style.--eaf-side-tab-width.px]="width()"
+  [style.--eaf-side-tab-top]="top()"
+>
+  <button
+    type="button"
+    class="eaf-side-tab-handle"
+    [attr.aria-expanded]="open"
+    [attr.aria-label]="label()"
+    (click)="toggle()"
+  >
+    <mat-icon class="handle-icon">{{ open ? 'chevron_right' : icon() }}</mat-icon>
+    <span class="handle-label">{{ label() }}</span>
+  </button>
+
+  <aside class="eaf-side-tab-panel" role="dialog" [attr.aria-hidden]="!open">
+    <header class="panel-header">
+      <span class="panel-title">{{ panelTitle() ?? label() }}</span>
+      <button
+        mat-icon-button
+        type="button"
+        class="panel-close"
+        aria-label="Chiudi"
+        (click)="close()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+    <div class="panel-content">
+      <ng-content></ng-content>
+    </div>
+  </aside>
+</div>

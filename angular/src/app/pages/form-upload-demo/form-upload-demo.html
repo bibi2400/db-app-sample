@@ -106,4 +106,69 @@
       </mat-card-content>
     </mat-card>
   }
+
+  <!-- Linguetta laterale con azioni decise dall'app consumer -->
+  <eaf-side-tab
+    label="Azioni"
+    icon="bolt"
+    panelTitle="Azioni rapide"
+    (opened)="onSideTabOpened()"
+    (toggled)="onSideTabToggled($event)"
+  >
+    <button mat-stroked-button type="button" (click)="fillSampleData()">
+      <mat-icon>auto_fix_high</mat-icon>
+      Compila con dati esempio
+    </button>
+    <button mat-stroked-button type="button" (click)="logCurrentValue()">
+      <mat-icon>terminal</mat-icon>
+      Log valore corrente
+    </button>
+    <button mat-stroked-button type="button" (click)="saveDraft()">
+      <mat-icon>bookmark_add</mat-icon>
+      Salva bozza
+    </button>
+    @if (hasDraft()) {
+      <button mat-stroked-button type="button" (click)="restoreDraft()">
+        <mat-icon>history</mat-icon>
+        Ripristina bozza
+      </button>
+    }
+    <button mat-stroked-button color="warn" type="button" (click)="resetForm()">
+      <mat-icon>restart_alt</mat-icon>
+      Reset form
+    </button>
+
+    <mat-divider class="side-tab-divider"></mat-divider>
+
+    <h4 class="side-tab-section-title">Preferenze</h4>
+    <mat-slide-toggle
+      [checked]="autoSave()"
+      (change)="autoSave.set($event.checked)"
+    >
+      Salvataggio automatico
+    </mat-slide-toggle>
+    <mat-slide-toggle
+      [checked]="notifyOnSave()"
+      (change)="notifyOnSave.set($event.checked)"
+    >
+      Notifica al salvataggio
+    </mat-slide-toggle>
+    <mat-slide-toggle
+      [checked]="verboseLogging()"
+      (change)="verboseLogging.set($event.checked)"
+    >
+      Log verboso
+    </mat-slide-toggle>
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      class="side-tab-save"
+      (click)="savePreferences()"
+    >
+      <mat-icon>save</mat-icon>
+      Salva preferenze
+    </button>
+  </eaf-side-tab>
 </div>
