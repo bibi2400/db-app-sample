@@ -1,7 +1,7 @@
 {
   "name": "db-app-sample",
   "productName": "Db App Sample",
-  "version": "2.5.13",
+  "version": "2.5.14",
   "main": "electron/dist-electron/electron/main.js",
   "author": "bibi",
   "workspaces": [
