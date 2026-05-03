@@ -21,6 +21,7 @@ export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
 // ─── Form Elements ───────────────────────────────────────────────────────────
 export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
 export { EafFileUpload } from './components/form-elements/eaf-file-upload/eaf-file-upload';
+export { EafUnitInput } from './components/form-elements/eaf-unit-input/eaf-unit-input';
 
 // ─── Side Tab (linguetta laterale con pannello azioni) ───────────────────────
 export { EafSideTab } from './components/eaf-side-tab/eaf-side-tab';

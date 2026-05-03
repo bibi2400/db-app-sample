@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import {
   FormBuilder,
+  FormControl,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -23,6 +24,7 @@ import {
   AttachmentInfo,
   EafFileUpload,
   EafSelect,
+  EafUnitInput,
   ElectronUploadService,
   EafSideTab,
   IpcResponse,
@@ -66,6 +68,7 @@ interface DraftState {
     MatSlideToggleModule,
     EafFileUpload,
     EafSelect,
+    EafUnitInput,
     EafSideTab,
   ],
   templateUrl: './form-upload-demo.html',
@@ -98,6 +101,11 @@ export class FormUploadDemo implements OnInit {
   protected readonly selectFillValue = signal<unknown>(null);
   protected readonly selectAutocompleteValue = signal<unknown>(null);
   protected readonly selectMultiValue = signal<unknown[]>([]);
+
+  // ─── Esempio eaf-unit-input ─────────────────────────────────────────
+  protected readonly mmControl = new FormControl<number | null>(null);
+  protected readonly kgControl = new FormControl<number | null>(null);
+  protected readonly tempControl = new FormControl<number | null>(null);
   protected readonly hasDraft = signal(false);
 
   // ─── Preferenze mostrate nella linguetta laterale (esempio) ──────────────

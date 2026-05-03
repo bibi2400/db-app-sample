@@ -43,6 +43,47 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- Demo: eaf-unit-input -->
+  <mat-card style="margin-bottom: 16px;">
+    <mat-card-content>
+      <strong>EafUnitInput — unità di misura suffisso</strong>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; align-items: flex-start;">
+        <eaf-unit-input
+          label="Lunghezza"
+          unit="mm"
+          [formControl]="mmControl"
+          hint="Inserisci in millimetri"
+        />
+        <eaf-unit-input
+          label="Peso"
+          unit="kg"
+          appearance="fill"
+          [formControl]="kgControl"
+        />
+        <eaf-unit-input
+          label="Temperatura"
+          unit="°C"
+          appearance="fill"
+          [unitStyle]="{ color: 'var(--mat-primary-color, #1976d2)', fontWeight: '600' }"
+          [formControl]="tempControl"
+          hint="Valore in gradi Celsius"
+        />
+        <eaf-unit-input
+          label="Senza unità"
+          [unit]="null"
+          type="text"
+          placeholder="Testo libero"
+          [formControl]="mmControl"
+        />
+      </div>
+      <p style="margin-top: 8px; font-size: 0.85em; color: gray;">
+        mm: {{ mmControl.value ?? '—' }} &nbsp;|&nbsp;
+        kg: {{ kgControl.value ?? '—' }} &nbsp;|&nbsp;
+        °C: {{ tempControl.value ?? '—' }}
+      </p>
+    </mat-card-content>
+  </mat-card>
+
   <mat-card>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">

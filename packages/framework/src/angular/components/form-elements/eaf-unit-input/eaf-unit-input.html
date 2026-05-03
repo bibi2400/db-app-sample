@@ -1,0 +1,25 @@
+<mat-form-field [appearance]="appearance()" class="eaf-unit-input-field">
+  <mat-label>{{ label() }}</mat-label>
+  <input
+    matInput
+    [formControl]="internalControl"
+    [type]="type()"
+    [placeholder]="placeholder()"
+    [required]="required()"
+    (blur)="onBlur()"
+  />
+  @if (unit()) {
+    <span
+      matSuffix
+      class="eaf-unit-suffix"
+      [ngClass]="unitClass()"
+      [ngStyle]="unitStyle() ?? {}"
+    >{{ unit() }}</span>
+  }
+  @if (hint()) {
+    <mat-hint>{{ hint() }}</mat-hint>
+  }
+  @if (internalControl.touched && internalControl.hasError('required')) {
+    <mat-error>Campo obbligatorio</mat-error>
+  }
+</mat-form-field>
