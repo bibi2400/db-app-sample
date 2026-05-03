@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   forwardRef,
   inject,
   input,
@@ -64,6 +65,9 @@ export class EafUnitInput implements ControlValueAccessor {
   /** Appearance del mat-form-field */
   readonly appearance = input<MatFormFieldAppearance>('outline');
 
+  /** Disabilita il componente */
+  readonly disabled = input(false);
+
   // ─── ControlValueAccessor ────────────────────────────────────────────────
 
   /** FormControl interno usato dal template */
@@ -77,6 +81,9 @@ export class EafUnitInput implements ControlValueAccessor {
   constructor() {
     this.internalControl.valueChanges.subscribe((v) => {
       this.onChange(v);
+    });
+    effect(() => {
+      this.setDisabledState(this.disabled());
     });
   }
 

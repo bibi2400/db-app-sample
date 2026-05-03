@@ -42,6 +42,9 @@ export class EafSelect {
   /** Appearance del mat-form-field interno */
   readonly appearance = input<MatFormFieldAppearance>('outline');
 
+  /** Disabilita il componente */
+  readonly disabled = input(false);
+
   /** Opzioni disponibili */
   readonly options = input<EafSelectOption[]>([]);
 
