@@ -7,7 +7,7 @@
         @for (chip of selectedOptions(); track chip.value) {
           <mat-chip-row (removed)="removeChip(chip)">
             {{ chip.label }}
-            <button matChipRemove>
+            <button matChipRemove type="button">
               <mat-icon>cancel</mat-icon>
             </button>
           </mat-chip-row>
@@ -22,7 +22,7 @@
         [disabled]="disabled()"
         placeholder="Cerca...">
       @if (hasValue() && !disabled()) {
-        <button matSuffix mat-icon-button class="eaf-select-clear"
+        <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
           (mousedown)="$event.stopPropagation()"
           tabindex="-1">
@@ -51,7 +51,7 @@
         [disabled]="disabled()"
         placeholder="Cerca...">
       @if (hasValue() && !disabled()) {
-        <button matSuffix mat-icon-button class="eaf-select-clear"
+        <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
           (mousedown)="$event.stopPropagation()"
           tabindex="-1">
@@ -109,7 +109,7 @@
       </mat-select>
     }
     @if (hasValue() && !disabled()) {
-      <button matSuffix mat-icon-button class="eaf-select-clear"
+      <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
         (click)="onClear($event)"
         (mousedown)="$event.stopPropagation()"
         tabindex="-1">
