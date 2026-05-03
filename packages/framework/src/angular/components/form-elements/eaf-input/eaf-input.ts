@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { NgClass, NgStyle } from '@angular/common';
 
 @Component({
-  selector: 'eaf-unit-input',
+  selector: 'eaf-input',
   imports: [
     ReactiveFormsModule,
     MatFormFieldModule,
@@ -26,18 +26,18 @@ import { NgClass, NgStyle } from '@angular/common';
     NgClass,
     NgStyle,
   ],
-  templateUrl: './eaf-unit-input.html',
-  styleUrl: './eaf-unit-input.scss',
+  templateUrl: './eaf-input.html',
+  styleUrl: './eaf-input.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => EafUnitInput),
+      useExisting: forwardRef(() => EafInput),
       multi: true,
     },
   ],
 })
-export class EafUnitInput implements ControlValueAccessor {
+export class EafInput implements ControlValueAccessor {
   /** Label del form field */
   readonly label = input('');
 

@@ -24,7 +24,7 @@ import {
   AttachmentInfo,
   EafFileUpload,
   EafSelect,
-  EafUnitInput,
+  EafInput,
   ElectronUploadService,
   EafSideTab,
   IpcResponse,
@@ -68,7 +68,7 @@ interface DraftState {
     MatSlideToggleModule,
     EafFileUpload,
     EafSelect,
-    EafUnitInput,
+    EafInput,
     EafSideTab,
   ],
   templateUrl: './form-upload-demo.html',
@@ -102,7 +102,7 @@ export class FormUploadDemo implements OnInit {
   protected readonly selectAutocompleteValue = signal<unknown>(null);
   protected readonly selectMultiValue = signal<unknown[]>([]);
 
-  // ─── Esempio eaf-unit-input ─────────────────────────────────────────
+  // ─── Esempio eaf-input ──────────────────────────────────────────────────
   protected readonly mmControl = new FormControl<number | null>(null);
   protected readonly kgControl = new FormControl<number | null>(null);
   protected readonly tempControl = new FormControl<number | null>(null);
