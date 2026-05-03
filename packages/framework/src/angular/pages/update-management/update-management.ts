@@ -4,14 +4,13 @@ import { MatIcon } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ChangelogEntry, DownloadProgress, UpdateStatus, UpdateStatusType } from '../../types/update';
-import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 import { FullscreenLoaderComponent } from '../../components/fullscreen-loader/fullscreen-loader';
 import { ElectronUpdateService } from '../../services/electron-api/electron-update.service';
 import { NavigationService } from '../../services/navigation.service';
+import { DialogService } from '../../services/dialog.service';
 
 @Component({
   selector: 'app-update-management',
@@ -21,7 +20,6 @@ import { NavigationService } from '../../services/navigation.service';
     MatCardModule,
     MatProgressBarModule,
     MatProgressSpinnerModule,
-    MatDialogModule,
     DatePipe,
     FullscreenLoaderComponent,
   ],
@@ -32,7 +30,7 @@ import { NavigationService } from '../../services/navigation.service';
 export class UpdateManagement implements OnInit, OnDestroy {
   private updateService = inject(ElectronUpdateService);
   private navigationService = inject(NavigationService);
-  private dialog = inject(MatDialog);
+  private dialogService = inject(DialogService);
   private subscriptions: Subscription[] = [];
 
   status = signal<UpdateStatusType>('idle');
@@ -129,34 +127,24 @@ export class UpdateManagement implements OnInit, OnDestroy {
     await this.updateService.downloadUpdate();
   }
 
-  installUpdate(): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Aggiornamento applicazione',
-        message: "L'applicazione verrà riavviata per effettuare l'aggiornamento.\nDurante l'aggiornamento, l'applicazione rimarrà chiusa per diversi minuti e si riaprirà da sola al termine.\nNon tentare di riaprire l'app manualmente! Continuare?",
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.updateService.installUpdate();
-      }
-    });
+  async installUpdate(): Promise<void> {
+    const confirmed = await this.dialogService.confirm(
+      'Aggiornamento applicazione',
+      "L'applicazione verrà riavviata per effettuare l'aggiornamento.\nDurante l'aggiornamento, l'applicazione rimarrà chiusa per diversi minuti e si riaprirà da sola al termine.\nNon tentare di riaprire l'app manualmente! Continuare?",
+    );
+    if (confirmed) {
+      this.updateService.installUpdate();
+    }
   }
 
-  repairInstallation(): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Ripara installazione',
-        message: "Verrà scaricato e avviato l'installer della versione attuale in modalità interattiva.\nL'applicazione verrà chiusa durante la procedura.\nContinuare?",
-      },
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.repairing.set(true);
-        this.updateService.repairInstallation();
-      }
-    });
+  async repairInstallation(): Promise<void> {
+    const confirmed = await this.dialogService.confirm(
+      'Ripara installazione',
+      "Verrà scaricato e avviato l'installer della versione attuale in modalità interattiva.\nL'applicazione verrà chiusa durante la procedura.\nContinuare?",
+    );
+    if (confirmed) {
+      this.repairing.set(true);
+      this.updateService.repairInstallation();
+    }
   }
 }

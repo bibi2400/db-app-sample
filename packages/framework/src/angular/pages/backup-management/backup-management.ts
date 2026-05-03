@@ -4,12 +4,12 @@ import { MatIcon } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
 import { BackupInfo, BackupStats } from '../../types/backup';
 import { NavigationService } from '../../services/navigation.service';
 import { ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { ElectronBackupService } from '../../services/electron-api/electron-backup.service';
+import { DialogService } from '../../services/dialog.service';
 
 @Component({
   selector: 'app-backup-management',
@@ -19,7 +19,6 @@ import { ElectronBackupService } from '../../services/electron-api/electron-back
     MatSnackBarModule,
     MatCardModule,
     MatProgressSpinnerModule,
-    MatDialogModule,
     DatePipe
   ],
   templateUrl: './backup-management.html',
@@ -30,7 +29,7 @@ export class BackupManagement {
   private backupService = inject(ElectronBackupService);
   private appService = inject(ElectronAppService);
   private snackBar = inject(MatSnackBar);
-  private dialog = inject(MatDialog);
+  private dialogService = inject(DialogService);
   private navigationService = inject(NavigationService);
 
   backups = signal<BackupInfo[]>([]);
@@ -97,11 +96,9 @@ export class BackupManagement {
   }
 
   async restoreBackup(backup: BackupInfo): Promise<void> {
-    const confirmed = confirm(
-      `Sei sicuro di voler ripristinare il backup "${backup.filename}"?\n\n` +
-      `Data: ${backup.date.toLocaleString()}\n` +
-      `Dimensione: ${this.formatSize(backup.size)}\n\n` +
-      `Il database corrente verrà sostituito (ma sarà creato un backup di sicurezza).`
+    const confirmed = await this.dialogService.confirm(
+      'Ripristinare il backup?',
+      `Sei sicuro di voler ripristinare il backup "${backup.filename}"?\n\nData: ${backup.date.toLocaleString()}\nDimensione: ${this.formatSize(backup.size)}\n\nIl database corrente verrà sostituito (ma sarà creato un backup di sicurezza).`,
     );
 
     if (!confirmed) return;
@@ -137,9 +134,9 @@ export class BackupManagement {
   }
 
   async deleteBackup(backup: BackupInfo): Promise<void> {
-    const confirmed = confirm(
-      `Sei sicuro di voler eliminare il backup "${backup.filename}"?\n\n` +
-      `Questa operazione non può essere annullata.`
+    const confirmed = await this.dialogService.confirm(
+      'Eliminare il backup?',
+      `Sei sicuro di voler eliminare il backup "${backup.filename}"?\n\nQuesta operazione non può essere annullata.`,
     );
 
     if (!confirmed) return;

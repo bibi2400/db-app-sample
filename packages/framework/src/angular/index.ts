@@ -13,7 +13,8 @@ export { Sidebar } from './components/sidebar/sidebar';
 export { Toolbar } from './components/toolbar/toolbar';
 export { NotificationPanel } from './components/notification-panel/notification-panel';
 export { CommandPalette } from './components/command-palette/command-palette';
-export { ConfirmDialogComponent } from './components/dialogs/confirm-dialog/confirm-dialog';
+export { EafDialog } from './components/dialogs/eaf-dialog/eaf-dialog';
+export type { EafDialogData, EafDialogButton } from './components/dialogs/eaf-dialog/eaf-dialog';
 export { ShortcutRecordDialog } from './components/dialogs/shortcut-record-dialog/shortcut-record-dialog';
 export { FullscreenLoaderComponent } from './components/fullscreen-loader/fullscreen-loader';
 export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
@@ -65,6 +66,8 @@ export { ShortcutService } from './services/shortcut.service';
 export { SHORTCUT_REGISTRY } from './services/shortcut-registry';
 export { CommandPaletteService } from './services/command-palette.service';
 export { ChronoService, Chronomancer } from './services/chrono.service';
+export { DialogService } from './services/dialog.service';
+export type { UnsavedChangesChoice, UnsavedChangesMode } from './services/dialog.service';
 
 // ─── Types (re-exported from shared for convenience) ─────────────────────────
 export type { MenuItem, MenuInsertPosition } from './services/navigation.service';

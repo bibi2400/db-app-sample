@@ -3,11 +3,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from '../../components/dialogs/confirm-dialog/confirm-dialog';
 import { NavigationService } from '../../services/navigation.service';
 import { AppDetails, ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { ElectronUploadService } from '../../services/electron-api/electron-upload.service';
+import { DialogService } from '../../services/dialog.service';
 
 @Component({
   selector: 'app-info',
@@ -16,7 +15,6 @@ import { ElectronUploadService } from '../../services/electron-api/electron-uplo
     MatIcon,
     MatButtonModule,
     MatTooltipModule,
-    MatDialogModule,
   ],
   templateUrl: './app-info.html',
   styleUrl: './app-info.scss',
@@ -26,7 +24,7 @@ export class AppInfo implements OnInit {
   private navigationService = inject(NavigationService);
   private appService = inject(ElectronAppService);
   private uploadService = inject(ElectronUploadService);
-  private dialog = inject(MatDialog);
+  private dialogService = inject(DialogService);
 
   details = signal<AppDetails | null>(null);
   dbPathError = signal<string | null>(null);
@@ -74,17 +72,13 @@ export class AppInfo implements OnInit {
       this.details.update(d => d ? { ...d, dbPath: result.dbPath } : d);
 
       if (result.restartRequired) {
-        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-          data: {
-            title: 'Riavvio necessario',
-            message: 'Il percorso del database è stato aggiornato.\nÈ necessario riavviare l\'applicazione per applicare la modifica.\n\nRiavviare ora?',
-          },
-        });
-        dialogRef.afterClosed().subscribe(confirmed => {
-          if (confirmed) {
-            this.appService.reload();
-          }
-        });
+        const confirmed = await this.dialogService.confirm(
+          'Riavvio necessario',
+          'Il percorso del database è stato aggiornato.\nÈ necessario riavviare l\'applicazione per applicare la modifica.\n\nRiavviare ora?',
+        );
+        if (confirmed) {
+          this.appService.reload();
+        }
       }
     } catch (err) {
       this.dbPathError.set(err instanceof Error ? err.message : 'Errore sconosciuto');

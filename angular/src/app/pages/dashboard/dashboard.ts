@@ -1,7 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { ChronoService, Chronomancer, ConfirmDialogComponent, EafFileUpload } from '@bibi2400/electron-angular-framework/angular';
+import { ChronoService, Chronomancer, DialogService, EafFileUpload } from '@bibi2400/electron-angular-framework/angular';
 import { AttachmentInfo } from 'packages/framework/dist/shared';
 
 @Component({
@@ -13,21 +12,16 @@ import { AttachmentInfo } from 'packages/framework/dist/shared';
 })
 export class Dashboard implements OnInit {
   private readonly chrono = inject(ChronoService);
-  private readonly dialog = inject(MatDialog);
+  private readonly dialogService = inject(DialogService);
 
   protected readonly lastConfirm = signal<string | null>(null);
 
-  openConfirmDialog(): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Eliminare l\'elemento?',
-        message: 'Questa azione non può essere annullata.\nVuoi davvero procedere?',
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      this.lastConfirm.set(confirmed ? 'Confermato ✅' : 'Annullato ❌');
-    });
+  async openConfirmDialog(): Promise<void> {
+    const confirmed = await this.dialogService.confirm(
+      'Eliminare l\'elemento?',
+      'Questa azione non può essere annullata.\nVuoi davvero procedere?',
+    );
+    this.lastConfirm.set(confirmed ? 'Confermato ✅' : 'Annullato ❌');
   }
   
   protected readonly chronoDemo = signal<{
