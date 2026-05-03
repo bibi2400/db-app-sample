@@ -7,6 +7,7 @@ import {
   forwardRef,
   input,
   model,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -85,6 +86,15 @@ export class EafSelect implements ControlValueAccessor {
 
   /** Mostra opzione "— Tutti —" per single non-autocomplete */
   readonly showAllOption = input(true);
+
+  /** Label dell'opzione speciale "Crea / Modifica" (null = nascosta) */
+  readonly createOptionLabel = input<string | null>(null);
+
+  /** Icona dell'opzione speciale (default: add) */
+  readonly createOptionIcon = input('add');
+
+  /** Emesso quando l'utente seleziona l'opzione speciale */
+  readonly createOptionSelected = output<void>();
 
   // ViewChild refs per input autocomplete
   private readonly autoInputRef =
@@ -227,6 +237,16 @@ export class EafSelect implements ControlValueAccessor {
   protected onSelectChange(val: unknown): void {
     this.value.set(val);
     this._onChange(val);
+  }
+
+  protected onCreateOption(): void {
+    // Ripristina il valore precedente (non aggiornare il form)
+    const prev = this.value();
+    // Forza il mat-select a tornare al valore precedente al prossimo ciclo
+    Promise.resolve().then(() => {
+      this.value.set(prev);
+    });
+    this.createOptionSelected.emit();
   }
 
   protected onMultiSelectChange(vals: unknown[]): void {

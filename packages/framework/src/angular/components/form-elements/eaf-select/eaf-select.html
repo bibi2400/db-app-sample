@@ -80,6 +80,11 @@
         (blur)="onTouched()"
         [ngModel]="value() ?? []"
         (ngModelChange)="onMultiSelectChange($event)">
+        @if (createOptionLabel()) {
+          <mat-option class="create-edit-option" (click)="onCreateOption()">
+            <mat-icon>{{ createOptionIcon() }}</mat-icon> {{ createOptionLabel() }}
+          </mat-option>
+        }
         @for (opt of options(); track opt.value) {
           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
         }
@@ -90,6 +95,11 @@
         (blur)="onTouched()"
         [ngModel]="value()"
         (ngModelChange)="onSelectChange($event)">
+        @if (createOptionLabel()) {
+          <mat-option class="create-edit-option" (click)="onCreateOption()">
+            <mat-icon>{{ createOptionIcon() }}</mat-icon> {{ createOptionLabel() }}
+          </mat-option>
+        }
         @if (showAllOption()) {
           <mat-option [value]="null">— Tutti —</mat-option>
         }

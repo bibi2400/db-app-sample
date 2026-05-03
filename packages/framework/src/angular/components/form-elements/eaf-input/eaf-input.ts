@@ -56,6 +56,9 @@ export class EafInput implements ControlValueAccessor {
   /** Tipo input HTML (default: number) */
   readonly type = input('number');
 
+  /** Se impostato, renderizza un textarea con il numero di righe specificato */
+  readonly rows = input<number | null>(null);
+
   /** Campo obbligatorio */
   readonly required = input(false);
 

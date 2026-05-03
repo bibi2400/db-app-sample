@@ -1,13 +1,24 @@
 <mat-form-field [appearance]="appearance()" class="eaf-input-field">
   <mat-label>{{ label() }}</mat-label>
-  <input
-    matInput
-    [formControl]="internalControl"
-    [type]="type()"
-    [placeholder]="placeholder()"
-    [required]="required()"
-    (blur)="onBlur()"
-  />
+  @if (rows()) {
+    <textarea
+      matInput
+      [formControl]="internalControl"
+      [rows]="rows()!"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      (blur)="onBlur()"
+    ></textarea>
+  } @else {
+    <input
+      matInput
+      [formControl]="internalControl"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [required]="required()"
+      (blur)="onBlur()"
+    />
+  }
   @if (unit()) {
     <span
       matSuffix
@@ -16,6 +27,7 @@
       [ngStyle]="unitStyle() ?? {}"
     >{{ unit() }}</span>
   }
+  <span matSuffix><ng-content select="[eafSuffix]" /></span>
   @if (hint()) {
     <mat-hint>{{ hint() }}</mat-hint>
   }
