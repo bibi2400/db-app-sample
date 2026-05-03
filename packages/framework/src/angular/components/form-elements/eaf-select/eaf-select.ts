@@ -80,6 +80,9 @@ export class EafSelect implements ControlValueAccessor {
   /** Label del form field */
   readonly label = input('Seleziona...');
 
+  /** Testo hint sotto il campo */
+  readonly hint = input('');
+
   /** Mostra opzione "— Tutti —" per single non-autocomplete */
   readonly showAllOption = input(true);
 

@@ -35,6 +35,9 @@
           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
         }
       </mat-autocomplete>
+      @if (hint()) {
+        <mat-hint>{{ hint() }}</mat-hint>
+      }
     </mat-form-field>
   } @else {
     <!-- Single autocomplete -->
@@ -62,6 +65,9 @@
           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
         }
       </mat-autocomplete>
+      @if (hint()) {
+        <mat-hint>{{ hint() }}</mat-hint>
+      }
     </mat-form-field>
   }
 } @else {
@@ -99,6 +105,9 @@
         tabindex="-1">
         <mat-icon>close</mat-icon>
       </button>
+    }
+    @if (hint()) {
+      <mat-hint>{{ hint() }}</mat-hint>
     }
   </mat-form-field>
 }
