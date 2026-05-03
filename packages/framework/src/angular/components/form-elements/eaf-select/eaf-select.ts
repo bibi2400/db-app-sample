@@ -4,12 +4,17 @@ import {
   computed,
   effect,
   ElementRef,
+  forwardRef,
   input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+} from '@angular/forms';
 import {
   MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
@@ -37,13 +42,28 @@ import { EafSelectOption } from '../../../types/eaf-table.types';
   templateUrl: './eaf-select.html',
   styleUrl: './eaf-select.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => EafSelect),
+      multi: true,
+    },
+  ],
 })
-export class EafSelect {
+export class EafSelect implements ControlValueAccessor {
   /** Appearance del mat-form-field interno */
   readonly appearance = input<MatFormFieldAppearance>('outline');
 
-  /** Disabilita il componente */
-  readonly disabled = input(false);
+  /** Disabilita il componente (input diretto) */
+  readonly disabledInput = input(false, { alias: 'disabled' });
+
+  /** Stato disabled propagato da ControlValueAccessor (setDisabledState) */
+  private readonly _disabledState = signal(false);
+
+  /** Disabled effettivo: combina input diretto e CVA */
+  protected readonly disabled = computed(
+    () => this.disabledInput() || this._disabledState()
+  );
 
   /** Opzioni disponibili */
   readonly options = input<EafSelectOption[]>([]);
@@ -136,6 +156,31 @@ export class EafSelect {
     });
   }
 
+  // ─── ControlValueAccessor ────────────────────────────────────────────────
+
+  private _onChange: (value: unknown) => void = () => {};
+  private _onTouched: () => void = () => {};
+
+  writeValue(value: unknown): void {
+    this.value.set(value ?? null);
+  }
+
+  registerOnChange(fn: (value: unknown) => void): void {
+    this._onChange = fn;
+  }
+
+  registerOnTouched(fn: () => void): void {
+    this._onTouched = fn;
+  }
+
+  setDisabledState(isDisabled: boolean): void {
+    this._disabledState.set(isDisabled);
+  }
+
+  protected onTouched(): void {
+    this._onTouched();
+  }
+
   // ─── Search / Filter ──────────────────────────
 
   protected onSearchInput(event: Event): void {
@@ -148,6 +193,7 @@ export class EafSelect {
     event: MatAutocompleteSelectedEvent
   ): void {
     this.value.set(event.option.value);
+    this._onChange(event.option.value);
     this.searchText.set('');
   }
 
@@ -158,7 +204,9 @@ export class EafSelect {
   ): void {
     const selectedValue = event.option.value;
     const current = this.selectedValues();
-    this.value.set([...current, selectedValue]);
+    const next = [...current, selectedValue];
+    this.value.set(next);
+    this._onChange(next);
     this.searchText.set('');
     const inputEl = this.chipInputRef();
     if (inputEl) inputEl.nativeElement.value = '';
@@ -166,17 +214,22 @@ export class EafSelect {
 
   protected removeChip(option: EafSelectOption): void {
     const current = this.selectedValues().filter((v) => v !== option.value);
-    this.value.set(current.length ? current : null);
+    const next = current.length ? current : null;
+    this.value.set(next);
+    this._onChange(next);
   }
 
   // ─── Mat-select (non autocomplete) ───────────
 
   protected onSelectChange(val: unknown): void {
     this.value.set(val);
+    this._onChange(val);
   }
 
   protected onMultiSelectChange(vals: unknown[]): void {
-    this.value.set(vals?.length ? vals : null);
+    const next = vals?.length ? vals : null;
+    this.value.set(next);
+    this._onChange(next);
   }
 
   // ─── Clear ───────────────────────────────────
@@ -184,6 +237,7 @@ export class EafSelect {
   protected onClear(event?: Event): void {
     event?.stopPropagation();
     this.value.set(null);
+    this._onChange(null);
     this.searchText.set('');
   }
 }

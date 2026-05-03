@@ -17,6 +17,7 @@
         [matChipInputFor]="chipGrid"
         [matAutocomplete]="autoMulti"
         (input)="onSearchInput($event)"
+        (blur)="onTouched()"
         autocomplete="off"
         [disabled]="disabled()"
         placeholder="Cerca...">
@@ -42,6 +43,7 @@
       <input matInput #autoInput
         [matAutocomplete]="autoSingle"
         (input)="onSearchInput($event)"
+        (blur)="onTouched()"
         autocomplete="off"
         [disabled]="disabled()"
         placeholder="Cerca...">
@@ -69,6 +71,7 @@
     @if (multiple()) {
       <mat-select [multiple]="true"
         [disabled]="disabled()"
+        (blur)="onTouched()"
         [ngModel]="value() ?? []"
         (ngModelChange)="onMultiSelectChange($event)">
         @for (opt of options(); track opt.value) {
@@ -78,6 +81,7 @@
     } @else {
       <mat-select
         [disabled]="disabled()"
+        (blur)="onTouched()"
         [ngModel]="value()"
         (ngModelChange)="onSelectChange($event)">
         @if (showAllOption()) {
