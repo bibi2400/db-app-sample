@@ -16,7 +16,7 @@ import {
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -39,6 +39,9 @@ import { EafSelectOption } from '../../../types/eaf-table.types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EafSelect {
+  /** Appearance del mat-form-field interno */
+  readonly appearance = input<MatFormFieldAppearance>('outline');
+
   /** Opzioni disponibili */
   readonly options = input<EafSelectOption[]>([]);
 

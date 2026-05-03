@@ -1,6 +1,48 @@
 <div class="page">
   <h2>Demo Form con Upload</h2>
 
+  <!-- Demo: eaf-select appearance input -->
+  <mat-card style="margin-bottom: 16px;">
+    <mat-card-content>
+      <strong>EafSelect — appearance input</strong>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; align-items: flex-start;">
+        <eaf-select
+          label="Frutto (outline)"
+          appearance="outline"
+          [options]="selectOptions"
+          [(value)]="selectOutlineValue"
+        />
+        <eaf-select
+          label="Frutto (fill)"
+          appearance="fill"
+          [options]="selectOptions"
+          [(value)]="selectFillValue"
+        />
+        <eaf-select
+          label="Frutto autocomplete (fill)"
+          appearance="fill"
+          [autocomplete]="true"
+          [options]="selectOptions"
+          [(value)]="selectAutocompleteValue"
+        />
+        <eaf-select
+          label="Frutto multi (fill)"
+          appearance="fill"
+          [multiple]="true"
+          [autocomplete]="true"
+          [options]="selectOptions"
+          [(value)]="selectMultiValue"
+        />
+      </div>
+      <p style="margin-top: 8px; font-size: 0.85em; color: gray;">
+        outline: {{ selectOutlineValue() ?? '—' }} &nbsp;|&nbsp;
+        fill: {{ selectFillValue() ?? '—' }} &nbsp;|&nbsp;
+        autocomplete: {{ selectAutocompleteValue() ?? '—' }} &nbsp;|&nbsp;
+        multi: {{ $any(selectMultiValue()).join(', ') || '—' }}
+      </p>
+    </mat-card-content>
+  </mat-card>
+
   <mat-card>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">

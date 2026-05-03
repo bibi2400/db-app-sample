@@ -22,11 +22,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   AttachmentInfo,
   EafFileUpload,
+  EafSelect,
   ElectronUploadService,
   EafSideTab,
   IpcResponse,
   NavigationService,
 } from '@bibi2400/electron-angular-framework/angular';
+import type { EafSelectOption } from '@bibi2400/electron-angular-framework/angular';
 
 interface ContactFormPayload {
   name: string;
@@ -63,6 +65,7 @@ interface DraftState {
     MatDividerModule,
     MatSlideToggleModule,
     EafFileUpload,
+    EafSelect,
     EafSideTab,
   ],
   templateUrl: './form-upload-demo.html',
@@ -83,6 +86,18 @@ export class FormUploadDemo implements OnInit {
 
   protected readonly saving = signal(false);
   protected readonly lastSaved = signal<SaveResult | null>(null);
+
+  // ─── Esempio eaf-select appearance ──────────────────────────────────────
+  protected readonly selectOptions: EafSelectOption[] = [
+    { value: 'mela', label: 'Mela' },
+    { value: 'banana', label: 'Banana' },
+    { value: 'ciliegia', label: 'Ciliegia' },
+    { value: 'kiwi', label: 'Kiwi' },
+  ];
+  protected readonly selectOutlineValue = signal<unknown>(null);
+  protected readonly selectFillValue = signal<unknown>(null);
+  protected readonly selectAutocompleteValue = signal<unknown>(null);
+  protected readonly selectMultiValue = signal<unknown[]>([]);
   protected readonly hasDraft = signal(false);
 
   // ─── Preferenze mostrate nella linguetta laterale (esempio) ──────────────

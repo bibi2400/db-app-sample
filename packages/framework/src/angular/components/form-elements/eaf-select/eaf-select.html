@@ -1,7 +1,7 @@
 @if (autocomplete()) {
   @if (multiple()) {
     <!-- Multi autocomplete con chip grid -->
-    <mat-form-field appearance="outline" class="eaf-select-field">
+    <mat-form-field [appearance]="appearance()" class="eaf-select-field">
       <mat-label>{{ label() }}</mat-label>
       <mat-chip-grid #chipGrid>
         @for (chip of selectedOptions(); track chip.value) {
@@ -36,7 +36,7 @@
     </mat-form-field>
   } @else {
     <!-- Single autocomplete -->
-    <mat-form-field appearance="outline" class="eaf-select-field">
+    <mat-form-field [appearance]="appearance()" class="eaf-select-field">
       <mat-label>{{ label() }}</mat-label>
       <input matInput #autoInput
         [matAutocomplete]="autoSingle"
@@ -62,7 +62,7 @@
   }
 } @else {
   <!-- Non-autocomplete: mat-select -->
-  <mat-form-field appearance="outline" class="eaf-select-field">
+  <mat-form-field [appearance]="appearance()" class="eaf-select-field">
     <mat-label>{{ label() }}</mat-label>
     @if (multiple()) {
       <mat-select [multiple]="true"
