@@ -13,8 +13,10 @@ import {
 } from '@angular/core';
 import {
   ControlValueAccessor,
+  FormControl,
   FormsModule,
   NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -32,6 +34,7 @@ import { EafSelectOption } from '../../../types/eaf-table.types';
   selector: 'eaf-select',
   imports: [
     FormsModule,
+    ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -97,13 +100,14 @@ export class EafSelect implements ControlValueAccessor {
   readonly createOptionSelected = output<void>();
 
   // ViewChild refs per input autocomplete
-  private readonly autoInputRef =
-    viewChild<ElementRef<HTMLInputElement>>('autoInput');
   private readonly chipInputRef =
     viewChild<ElementRef<HTMLInputElement>>('chipInput');
 
   // Testo di ricerca per autocomplete
   protected readonly searchText = signal('');
+
+  // FormControl interno per l'input autocomplete singolo
+  protected readonly _autoDisplayControl = new FormControl('');
 
   // Opzioni filtrate per autocomplete
   protected readonly filteredOptions = computed(() => {
@@ -153,20 +157,26 @@ export class EafSelect implements ControlValueAccessor {
   };
 
   constructor() {
-    // Sincronizza l'input single autocomplete con il valore corrente
+    // Sincronizza il FormControl del display con valore + opzioni
     effect(() => {
       if (!this.autocomplete() || this.multiple()) return;
       const val = this.value();
-      const inputEl = this.autoInputRef();
-      if (!inputEl) return;
       const opts = this.options();
-      if (val != null) {
+      if (val == null) {
+        this._autoDisplayControl.setValue('', { emitEvent: false });
+      } else if (opts.length > 0) {
         const opt = opts.find((o) => o.value === val);
-        // If options not yet loaded (empty array) and we have a value, don't overwrite with empty string
-        if (opts.length === 0) return;
-        inputEl.nativeElement.value = opt?.label ?? '';
+        this._autoDisplayControl.setValue(opt?.label ?? '', { emitEvent: false });
+      }
+      // Se opts è vuoto e val è impostato, non fare nulla (aspetta il caricamento)
+    });
+
+    // Sincronizza lo stato disabled del FormControl
+    effect(() => {
+      if (this.disabled()) {
+        this._autoDisplayControl.disable({ emitEvent: false });
       } else {
-        inputEl.nativeElement.value = '';
+        this._autoDisplayControl.enable({ emitEvent: false });
       }
     });
   }
@@ -264,5 +274,6 @@ export class EafSelect implements ControlValueAccessor {
     this.value.set(null);
     this._onChange(null);
     this.searchText.set('');
+    this._autoDisplayControl.setValue('', { emitEvent: false });
   }
 }

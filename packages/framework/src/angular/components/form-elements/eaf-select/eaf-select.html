@@ -43,12 +43,12 @@
     <!-- Single autocomplete -->
     <mat-form-field [appearance]="appearance()" class="eaf-select-field">
       <mat-label>{{ label() }}</mat-label>
-      <input matInput #autoInput
+      <input matInput
+        [formControl]="_autoDisplayControl"
         [matAutocomplete]="autoSingle"
         (input)="onSearchInput($event)"
         (blur)="onTouched()"
         autocomplete="off"
-        [disabled]="disabled()"
         placeholder="Cerca...">
       @if (hasValue() && !disabled()) {
         <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
