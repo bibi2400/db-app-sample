@@ -30,6 +30,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { EafSelectOption } from '../../../types/eaf-table.types';
 
+export interface EafSelectActionOption {
+  label: string;
+  icon?: string;
+  action: () => void;
+}
+
 @Component({
   selector: 'eaf-select',
   imports: [
@@ -90,14 +96,28 @@ export class EafSelect implements ControlValueAccessor {
   /** Mostra opzione "— Tutti —" per single non-autocomplete */
   readonly showAllOption = input(true);
 
-  /** Label dell'opzione speciale "Crea / Modifica" (null = nascosta) */
+  /** @deprecated Usare actionOptions. Label dell'opzione speciale "Crea / Modifica" (null = nascosta) */
   readonly createOptionLabel = input<string | null>(null);
 
-  /** Icona dell'opzione speciale (default: add) */
+  /** @deprecated Usare actionOptions. Icona dell'opzione speciale (default: add) */
   readonly createOptionIcon = input('add');
 
-  /** Emesso quando l'utente seleziona l'opzione speciale */
+  /** @deprecated Usare actionOptions. Emesso quando l'utente seleziona l'opzione speciale */
   readonly createOptionSelected = output<void>();
+
+  /** Array di opzioni azione personalizzate */
+  readonly actionOptions = input<EafSelectActionOption[]>([]);
+
+  /** Lista unificata di action options (legacy + nuove) */
+  protected readonly _allActionOptions = computed<EafSelectActionOption[]>(() => {
+    const custom = this.actionOptions();
+    const legacyLabel = this.createOptionLabel();
+    if (!legacyLabel) return custom;
+    return [
+      { label: legacyLabel, icon: this.createOptionIcon(), action: () => this.createOptionSelected.emit() },
+      ...custom,
+    ];
+  });
 
   // ViewChild refs per input autocomplete
   private readonly chipInputRef =
@@ -251,14 +271,10 @@ export class EafSelect implements ControlValueAccessor {
     this._onChange(val);
   }
 
-  protected onCreateOption(): void {
-    // Ripristina il valore precedente (non aggiornare il form)
+  protected onCreateOption(action: EafSelectActionOption): void {
     const prev = this.value();
-    // Forza il mat-select a tornare al valore precedente al prossimo ciclo
-    Promise.resolve().then(() => {
-      this.value.set(prev);
-    });
-    this.createOptionSelected.emit();
+    Promise.resolve().then(() => { this.value.set(prev); });
+    action.action();
   }
 
   protected onMultiSelectChange(vals: unknown[]): void {

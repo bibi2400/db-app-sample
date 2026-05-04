@@ -31,6 +31,11 @@
       }
       <mat-autocomplete #autoMulti="matAutocomplete"
         (optionSelected)="onAutocompleteMultiSelected($event)">
+        @for (action of _allActionOptions(); track action.label) {
+          <mat-option class="create-edit-option" (click)="onCreateOption(action)">
+            <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
+          </mat-option>
+        }
         @for (opt of availableOptions(); track opt.value) {
           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
         }
@@ -61,6 +66,11 @@
       <mat-autocomplete #autoSingle="matAutocomplete"
         [displayWith]="displayFn"
         (optionSelected)="onAutocompleteSingleSelected($event)">
+        @for (action of _allActionOptions(); track action.label) {
+          <mat-option class="create-edit-option" (click)="onCreateOption(action)">
+            <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
+          </mat-option>
+        }
         @for (opt of filteredOptions(); track opt.value) {
           <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
         }
@@ -80,9 +90,9 @@
         (blur)="onTouched()"
         [ngModel]="value() ?? []"
         (ngModelChange)="onMultiSelectChange($event)">
-        @if (createOptionLabel()) {
-          <mat-option class="create-edit-option" (click)="onCreateOption()">
-            <mat-icon>{{ createOptionIcon() }}</mat-icon> {{ createOptionLabel() }}
+        @for (action of _allActionOptions(); track action.label) {
+          <mat-option class="create-edit-option" (click)="onCreateOption(action)">
+            <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
           </mat-option>
         }
         @for (opt of options(); track opt.value) {
@@ -95,9 +105,9 @@
         (blur)="onTouched()"
         [ngModel]="value()"
         (ngModelChange)="onSelectChange($event)">
-        @if (createOptionLabel()) {
-          <mat-option class="create-edit-option" (click)="onCreateOption()">
-            <mat-icon>{{ createOptionIcon() }}</mat-icon> {{ createOptionLabel() }}
+        @for (action of _allActionOptions(); track action.label) {
+          <mat-option class="create-edit-option" (click)="onCreateOption(action)">
+            <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
           </mat-option>
         }
         @if (showAllOption()) {
