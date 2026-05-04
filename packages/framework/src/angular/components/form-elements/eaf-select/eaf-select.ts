@@ -162,6 +162,8 @@ export class EafSelect implements ControlValueAccessor {
       const opts = this.options();
       if (val != null) {
         const opt = opts.find((o) => o.value === val);
+        // If options not yet loaded (empty array) and we have a value, don't overwrite with empty string
+        if (opts.length === 0) return;
         inputEl.nativeElement.value = opt?.label ?? '';
       } else {
         inputEl.nativeElement.value = '';
