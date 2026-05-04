@@ -129,6 +129,9 @@ export class EafSelect implements ControlValueAccessor {
   // FormControl interno per l'input autocomplete singolo
   protected readonly _autoDisplayControl = new FormControl('');
 
+  // FormControl interno per mat-select (non-autocomplete)
+  protected readonly _selectControl = new FormControl<unknown>(null);
+
   // Opzioni filtrate per autocomplete
   protected readonly filteredOptions = computed(() => {
     const text = this.searchText().toLowerCase().trim();
@@ -191,12 +194,32 @@ export class EafSelect implements ControlValueAccessor {
       // Se opts è vuoto e val è impostato, non fare nulla (aspetta il caricamento)
     });
 
-    // Sincronizza lo stato disabled del FormControl
+    // Sincronizza lo stato disabled del FormControl autocomplete
     effect(() => {
       if (this.disabled()) {
         this._autoDisplayControl.disable({ emitEvent: false });
       } else {
         this._autoDisplayControl.enable({ emitEvent: false });
+      }
+    });
+
+    // Sync _selectControl value with value() signal
+    effect(() => {
+      if (this.autocomplete()) return;
+      const val = this.value();
+      const current = this._selectControl.value;
+      if (current !== val) {
+        this._selectControl.setValue(val, { emitEvent: false });
+      }
+    });
+
+    // Sync _selectControl disabled state
+    effect(() => {
+      if (this.autocomplete()) return;
+      if (this.disabled()) {
+        this._selectControl.disable({ emitEvent: false });
+      } else {
+        this._selectControl.enable({ emitEvent: false });
       }
     });
   }
@@ -291,5 +314,6 @@ export class EafSelect implements ControlValueAccessor {
     this._onChange(null);
     this.searchText.set('');
     this._autoDisplayControl.setValue('', { emitEvent: false });
+    this._selectControl.setValue(null, { emitEvent: false });
   }
 }

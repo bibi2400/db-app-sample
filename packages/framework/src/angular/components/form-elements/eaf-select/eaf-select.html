@@ -86,10 +86,9 @@
     <mat-label>{{ label() }}</mat-label>
     @if (multiple()) {
       <mat-select [multiple]="true"
-        [disabled]="disabled()"
+        [formControl]="_selectControl"
         (blur)="onTouched()"
-        [ngModel]="value() ?? []"
-        (ngModelChange)="onMultiSelectChange($event)">
+        (selectionChange)="onMultiSelectChange($event.value)">
         @for (action of _allActionOptions(); track action.label) {
           <mat-option class="create-edit-option" (click)="onCreateOption(action)">
             <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
@@ -101,10 +100,9 @@
       </mat-select>
     } @else {
       <mat-select
-        [disabled]="disabled()"
-        (blur)="onTouched()"
-        [ngModel]="value()"
-        (ngModelChange)="onSelectChange($event)">
+          [formControl]="_selectControl"
+          (blur)="onTouched()"
+          (selectionChange)="onSelectChange($event.value)">
         @for (action of _allActionOptions(); track action.label) {
           <mat-option class="create-edit-option" (click)="onCreateOption(action)">
             <mat-icon>{{ action.icon ?? 'add' }}</mat-icon> {{ action.label }}
