@@ -1,4 +1,5 @@
 import { Routes, Route } from '@angular/router';
+import { Type } from '@angular/core';
 
 /**
  * Gestisce le route stock del framework e il merge con quelle del consumer.
@@ -41,8 +42,16 @@ export class FrameworkRoutes {
    *
    * @param consumerRoutes Route definite dal consumer
    * @param homePath Path della home page (default: 'dashboard'). Deve corrispondere a una route del consumer.
+   * @param notFoundRoute Componente o `Route` completa da usare come catch-all `**`.
+   *   - Se è un `Type<unknown>` (classe Angular), viene usato come `component` per `path: '**'`.
+   *   - Se è una `Route` completa, viene usata direttamente (supporta `loadComponent`, `data`, ecc.).
+   *   - Se omesso (default), il catch-all esegue `redirectTo: homePath`.
    */
-  static build(consumerRoutes: Routes, homePath: string = 'dashboard'): Routes {
+  static build(consumerRoutes: Routes, homePath: string = 'dashboard', notFoundRoute?: Type<unknown> | Route): Routes {
+    const catchAll: Route = notFoundRoute
+      ? (typeof notFoundRoute === 'function' ? { path: '**', component: notFoundRoute } : notFoundRoute)
+      : { path: '**', redirectTo: homePath };
+
     return [
       {
         path: '',
@@ -51,10 +60,7 @@ export class FrameworkRoutes {
       },
       ...consumerRoutes,
       ...FrameworkRoutes.stock,
-      {
-        path: '**',
-        redirectTo: homePath
-      }
+      catchAll
     ];
   }
 }
