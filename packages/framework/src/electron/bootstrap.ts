@@ -10,6 +10,8 @@ import { Constructor } from './helpers/mini-pie/types';
 import { SERVICES } from './services';
 import { AppBootstrapService } from './services/system-services/app-bootstrap.service';
 import { DataSourceService } from './services/system-services/data-source.service';
+import { DbMigrationService } from './services/system-services/db-migration.service';
+import { DbMigrationDefinition } from '../shared/types/db-migration';
 
 /**
  * Hooks that the consumer can provide to customize the bootstrap flow.
@@ -50,6 +52,8 @@ export interface BootstrapConfig {
   contextMenu?: ContextMenuConfig;
   /** Runtime config (GH_TOKEN for auto-update). Injected at build time by `eaf inject-token`. */
   runtimeConfig?: RuntimeConfig;
+  /** Runtime DB migrations to run at startup via the Angular-triggered IPC call */
+  dbMigrations?: DbMigrationDefinition[];
 }
 
 /**
@@ -114,6 +118,10 @@ export class AppBootstrap {
       ];
       const dataSourceService = Injector.inject(DataSourceService);
       dataSourceService.setEntities(allEntities);
+
+      // 2b. Register runtime DB migration definitions
+      const dbMigrationService = Injector.inject(DbMigrationService);
+      dbMigrationService.setMigrations(this.config.dbMigrations ?? []);
 
       // 3. Run the framework bootstrap sequence
       const bootstrapService = Injector.inject(AppBootstrapService);

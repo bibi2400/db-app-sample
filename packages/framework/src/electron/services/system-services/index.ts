@@ -19,6 +19,7 @@ import { NotificationService } from "./notification.service";
 import { ErrorNotificationService } from "./error-notification.service";
 import { DataSourceService } from "./data-source.service";
 import { UploadService } from "./upload.service";
+import { DbMigrationService } from "./db-migration.service";
 
 export const SYSTEM_SERVICES = [
   DevModeService,
@@ -37,6 +38,7 @@ export const SYSTEM_SERVICES = [
   TestService,
   UpdaterService,
   UploadService,
+  DbMigrationService,
   ControllerService,
   ContextMenuService,
   LifecycleService,

@@ -1,6 +1,7 @@
 // Import controllers to trigger @Controller decorator registration
 import './app.controller';
 import './backup.controller';
+import './db-migration.controller';
 import './notification.controller';
 import './test.controller';
 import './update.controller';

@@ -25,3 +25,4 @@ export type {
 } from './types/upload';
 export type { KeyBinding, ShortcutEntry, ShortcutDefinition } from './types/shortcut';
 export type { CommandPaletteItem } from './types/command-palette';
+export type { DbMigrationDefinition } from './types/db-migration';

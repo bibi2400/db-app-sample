@@ -21,3 +21,41 @@
   z-index: 1000;
   width: 100%;
 }
+
+.migration-error-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.97);
+  text-align: center;
+  padding: 32px;
+
+  .migration-error-icon {
+    font-size: 64px;
+    color: var(--mat-sys-error, #b00020);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--mat-sys-error, #b00020);
+  }
+
+  p {
+    margin: 0;
+    max-width: 480px;
+    font-size: 0.95rem;
+    color: #444;
+  }
+
+  .migration-error-hint {
+    font-size: 0.85rem;
+    color: #888;
+    font-style: italic;
+  }
+}

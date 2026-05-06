@@ -1,3 +1,13 @@
+@if (migrating()) {
+  <app-fullscreen-loader message="Aggiornamento database in corso..." />
+} @else if (migrationError()) {
+  <div class="migration-error-overlay">
+    <span class="material-symbols-outlined migration-error-icon">error</span>
+    <h2>Errore durante la migrazione del database</h2>
+    <p>{{ migrationError() }}</p>
+    <p class="migration-error-hint">Chiudi l'applicazione e contatta il supporto tecnico.</p>
+  </div>
+} @else {
 <div class="row">
   <mat-sidenav-container class="sidenav">
     <mat-sidenav #sidenav mode="over" [(opened)]="opened">
@@ -14,3 +24,4 @@
 </div>
 <eaf-notification-panel />
 <eaf-command-palette />
+}

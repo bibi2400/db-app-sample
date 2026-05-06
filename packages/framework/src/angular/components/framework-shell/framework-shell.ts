@@ -7,11 +7,13 @@ import { NotificationPanel } from '../notification-panel/notification-panel';
 import { CommandPalette } from '../command-palette/command-palette';
 import { Sidebar } from '../sidebar/sidebar';
 import { Toolbar } from '../toolbar/toolbar';
+import { FullscreenLoaderComponent } from '../fullscreen-loader/fullscreen-loader';
 import '../../types/global';
 import { NavigationService } from '../../services/navigation.service';
 import { CommandPaletteService } from '../../services/command-palette.service';
 import { ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { ElectronUpdateService } from '../../services/electron-api/electron-update.service';
+import { ElectronDbMigrationService } from '../../services/electron-api/electron-db-migration.service';
 import { NotificationService } from '../../services/notification.service';
 import { ShortcutService } from '../../services/shortcut.service';
 import { CommandPaletteItem } from '../../types/command-palette';
@@ -27,6 +29,7 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
     CommandPalette,
     Sidebar,
     Toolbar,
+    FullscreenLoaderComponent,
   ],
   templateUrl: './framework-shell.html',
   styleUrl: './framework-shell.scss',
@@ -39,8 +42,14 @@ export class FrameworkShell implements OnInit, OnDestroy {
   opened = signal(false);
   version = '';
 
+  /** True while the db-migration:run IPC call is in flight */
+  migrating = signal(true);
+  /** Set to an error message if a migration fails; null otherwise */
+  migrationError = signal<string | null>(null);
+
   private readonly updateService = inject(ElectronUpdateService);
   private readonly appService = inject(ElectronAppService);
+  private readonly dbMigrationService = inject(ElectronDbMigrationService);
   private readonly navigationService = inject(NavigationService);
   private readonly notificationService = inject(NotificationService);
   private readonly shortcutService = inject(ShortcutService);
@@ -50,6 +59,20 @@ export class FrameworkShell implements OnInit, OnDestroy {
   private shortcutSubs: Subscription[] = [];
 
   ngOnInit(): void {
+    // Run pending DB migrations before letting the user interact with the app.
+    // The fullscreen overlay is shown until the IPC call resolves.
+    this.dbMigrationService.run().then(result => {
+      if (result.success) {
+        this.migrating.set(false);
+      } else {
+        this.migrationError.set(result.error ?? 'Errore sconosciuto durante la migrazione del database.');
+        this.migrating.set(false);
+      }
+    }).catch(err => {
+      this.migrationError.set(err instanceof Error ? err.message : String(err));
+      this.migrating.set(false);
+    });
+
     this.statusSub = this.updateService.statusChanged$.subscribe(status => {
       this.navigationService.updateAvailable.set(
         UPDATE_BADGE_STATUSES.includes(status.status)
