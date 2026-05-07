@@ -59,7 +59,7 @@ export class DataSourceService {
 		this.ds = new DataSource({
 			type: "sqlite",
 			database: this.dbConfigService.dbPath,
-			synchronize: true,
+			synchronize: false,
 			logging: false,
 			entities: this.entityList,
 			migrations: [],

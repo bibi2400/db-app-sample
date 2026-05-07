@@ -47,7 +47,18 @@ try {
   ngBin = path.join(process.cwd(), 'node_modules', '@angular', 'cli', 'bin', 'ng.js');
 }
 
-const extraArgs = process.argv.slice(2);
+const rawArgs = process.argv.slice(2);
+
+// Parse --port <number> from args; remaining args are forwarded to Electron
+let devPort = 4202;
+const extraArgs = [];
+for (let i = 0; i < rawArgs.length; i++) {
+  if (rawArgs[i] === '--port' && rawArgs[i + 1]) {
+    devPort = parseInt(rawArgs[++i], 10);
+  } else {
+    extraArgs.push(rawArgs[i]);
+  }
+}
 
 // Pipe child stdio through Node instead of inheriting the terminal directly.
 // This prevents Electron/Chromium from altering the Windows console code page,
@@ -59,7 +70,7 @@ function pipeOutput(child, label) {
 }
 
 // Start Angular dev server
-ngProcess = spawn(process.execPath, [ngBin, 'serve', '--port', '4202'], {
+ngProcess = spawn(process.execPath, [ngBin, 'serve', '--port', String(devPort)], {
   stdio: ['inherit', 'pipe', 'pipe'],
 });
 pipeOutput(ngProcess, 'ng');
@@ -77,6 +88,7 @@ ngProcess.on('close', (code) => {
 const electronDevScript = path.join(__dirname, 'electron-dev.js');
 electronDevProcess = spawn(process.execPath, [electronDevScript, ...extraArgs], {
   stdio: ['inherit', 'pipe', 'pipe'],
+  env: { ...process.env, DEV_PORT: String(devPort) },
 });
 pipeOutput(electronDevProcess, 'electron');
 

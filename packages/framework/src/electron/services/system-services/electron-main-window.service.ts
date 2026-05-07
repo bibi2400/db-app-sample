@@ -26,7 +26,7 @@ const DEFAULT_MAIN_WINDOW_CONFIG: Required<MainWindowConfig> = {
   height: 800,
   title: 'App',
   icon: 'src/assets/icon.png',
-  devServerUrl: 'http://localhost:4202',
+  devServerUrl: `http://localhost:${process.env['DEV_PORT'] ?? 4202}`,
   prodAppUrl: 'app://-',
   devServerMaxAttempts: 120,
 };

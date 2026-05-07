@@ -104,6 +104,7 @@ function startElectron() {
   const extraArgs = process.argv.slice(2);
   electronProcess = spawn(electronPath, ['--inspect=9229', '.', '--serve', ...extraArgs], {
     stdio: ['inherit', 'pipe', 'pipe'],
+    env: { ...process.env },
   });
 
   // Pipe Electron output through Node so Chromium can't alter the console code page

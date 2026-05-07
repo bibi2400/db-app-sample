@@ -16,7 +16,7 @@ export class Dashboard implements OnInit {
 
   protected readonly lastConfirm = signal<string | null>(null);
 
-  async openConfirmDialog(): Promise<void> {
+  async openConfirmDialog() {
     const confirmed = await this.dialogService.confirm(
       'Eliminare l\'elemento?',
       'Questa azione non può essere annullata.\nVuoi davvero procedere?',
