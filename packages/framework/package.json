@@ -1,6 +1,6 @@
 {
   "name": "@bibi2400/electron-angular-framework",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Angular + Electron + SQLite desktop application framework",
   "author": "bibi",
   "license": "UNLICENSED",
