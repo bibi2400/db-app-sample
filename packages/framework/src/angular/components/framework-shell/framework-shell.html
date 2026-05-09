@@ -11,7 +11,9 @@
 <div class="row">
   <mat-sidenav-container class="sidenav">
     <mat-sidenav #sidenav mode="over" [(opened)]="opened">
-      <eaf-sidebar [version]="version" [author]="author()" (closed)="opened.set(false)" />
+      <eaf-sidebar [version]="version" [author]="author()" (closed)="opened.set(false)">
+         <ng-content select="header"></ng-content>
+      </eaf-sidebar>
     </mat-sidenav>
 
     <mat-sidenav-content>

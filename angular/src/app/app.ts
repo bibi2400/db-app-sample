@@ -4,7 +4,7 @@ import { FrameworkShell, NavigationService } from '@bibi2400/electron-angular-fr
 @Component({
   selector: 'app-root',
   imports: [FrameworkShell],
-  template: '<eaf-shell author="bibi" />',
+  templateUrl: './app.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
