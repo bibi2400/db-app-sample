@@ -1,10 +1,11 @@
 import { DbMigrationDefinition } from '@bibi2400/electron-angular-framework/shared';
+import type { DataSource } from 'typeorm';
 
-export const CREATE_HUGE_TABLE: DbMigrationDefinition = {
-  id: '003_create_huge_table',
-  description:
-    'Migrazione di test: crea una tabella con molti record per testare le performance',
-  async up(dataSource) {
+export class CreateHugeTableMigration extends DbMigrationDefinition {
+  readonly id = '003_create_huge_table';
+  readonly description = 'Migrazione di test: crea una tabella con molti record per testare le performance';
+
+  async up(dataSource: DataSource): Promise<void> {
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS hugeTable (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,5 +21,5 @@ export const CREATE_HUGE_TABLE: DbMigrationDefinition = {
       INSERT INTO hugeTable (message, created_at)
       VALUES ${values.join(', ')}
     `);
-  },
-};
+  }
+}

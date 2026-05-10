@@ -1,9 +1,11 @@
 import { DbMigrationDefinition } from '@bibi2400/electron-angular-framework/shared';
+import type { DataSource } from 'typeorm';
 
-export const CREATE_LOG_TABLE_SQL: DbMigrationDefinition = {
-  id: '001_test_migration',
-  description: 'Migrazione di test: aggiunge la tabella migration_test_log',
-  async up(dataSource) {
+export class CreateLogTableMigration extends DbMigrationDefinition {
+  readonly id = '001_test_migration';
+  readonly description = 'Migrazione di test: aggiunge la tabella migration_test_log';
+
+  async up(dataSource: DataSource): Promise<void> {
     // Simula un'operazione leggermente lenta per rendere visibile l'overlay
     await new Promise((r) => setTimeout(r, 2000));
     await dataSource.query(`
@@ -17,5 +19,5 @@ export const CREATE_LOG_TABLE_SQL: DbMigrationDefinition = {
         INSERT INTO migration_test_log (message, created_at)
         VALUES ('Migrazione 001 applicata', datetime('now'))
       `);
-  },
-};
+  }
+}

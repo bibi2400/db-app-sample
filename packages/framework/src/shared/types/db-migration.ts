@@ -9,8 +9,8 @@ import type { DataSource } from 'typeorm';
  *   Must be idempotent — the framework ensures it is called only once per installation,
  *   but the function itself should handle partial states gracefully.
  */
-export interface DbMigrationDefinition {
-  id: string;
-  description: string;
-  up: (dataSource: DataSource) => Promise<void>;
+export abstract class DbMigrationDefinition {
+  abstract readonly id: string;
+  abstract readonly description: string;
+  abstract up(dataSource: DataSource): Promise<void>;
 }

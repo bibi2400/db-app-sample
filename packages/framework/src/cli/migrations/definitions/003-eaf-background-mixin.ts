@@ -1,4 +1,4 @@
-import { Migration } from '../types';
+import { Migration, MigrationContext } from '../types';
 
 /**
  * Aggiunge l'invocazione del mixin `eaf-background` al `styles.scss` del consumer
@@ -6,10 +6,11 @@ import { Migration } from '../types';
  *
  * Idempotente: se `eaf-background` è già presente, non fa nulla.
  */
-export const migration: Migration = {
-  id: '003',
-  description: 'Aggiunge il mixin eaf-background per personalizzare lo sfondo globale dell\'app',
-  up: (ctx) => {
+export class Migration003 extends Migration {
+  readonly id = '003';
+  readonly description = 'Aggiunge il mixin eaf-background per personalizzare lo sfondo globale dell\'app';
+
+  up(ctx: MigrationContext): void {
     const path = 'angular/src/styles.scss';
     if (!ctx.fileExists(path)) {
       ctx.warn(`File ${path} non trovato, migrazione saltata.`);
@@ -63,5 +64,5 @@ export const migration: Migration = {
 
     ctx.writeFile(path, content);
     ctx.log('styles.scss aggiornato con eaf-background.');
-  },
-};
+  }
+}

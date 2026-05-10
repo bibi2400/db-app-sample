@@ -1,10 +1,10 @@
-export interface Migration {
+export abstract class Migration {
   /** Identificativo univoco della migrazione (es. '001', '002', ...) */
-  id: string;
+  abstract readonly id: string;
   /** Descrizione della migrazione */
-  description: string;
+  abstract readonly description: string;
   /** Funzione che applica la migrazione */
-  up: (ctx: MigrationContext) => void | Promise<void>;
+  abstract up(ctx: MigrationContext): void | Promise<void>;
 }
 
 export interface MigrationContext {

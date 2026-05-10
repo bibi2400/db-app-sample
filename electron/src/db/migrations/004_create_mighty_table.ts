@@ -1,4 +1,5 @@
 import { DbMigrationDefinition } from '@bibi2400/electron-angular-framework/shared';
+import type { DataSource } from 'typeorm';
 
 const mySQLdataTypes = [
   'INT',
@@ -12,11 +13,12 @@ const mySQLdataTypes = [
   'DECIMAL(10,2)',
 ] as const;
 
-export const CREATE_MIGHTY_TABLE: DbMigrationDefinition = {
-  id: '004_create_mighty_table',
-  description:
-    'Migrazione di test: crea una tabella con molti record per testare le performance',
-  async up(dataSource) {
+export class CreateMightyTableMigration extends DbMigrationDefinition {
+  readonly id = '004_create_mighty_table';
+  readonly description =
+    'Migrazione di test: crea una tabella con molti record per testare le performance';
+
+  async up(dataSource: DataSource): Promise<void> {
     const headers: { key: string; type: string }[] = [];
 
     for (let index = 0; index < 40; index++) {
@@ -66,5 +68,5 @@ export const CREATE_MIGHTY_TABLE: DbMigrationDefinition = {
       INSERT INTO mightyTable (${headers.map((header) => header.key).join(', ')})
       VALUES ${values.join(', ')}
     `);
-  },
-};
+  }
+}

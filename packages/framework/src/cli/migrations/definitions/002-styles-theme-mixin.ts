@@ -1,4 +1,4 @@
-import { Migration } from '../types';
+import { Migration, MigrationContext } from '../types';
 
 const NEW_STYLES = `// Include theming for Angular Material with \`mat.theme()\`.
 // This Sass mixin will define CSS variables that are used for styling Angular Material
@@ -27,10 +27,11 @@ html {
 );
 `;
 
-export const migration: Migration = {
-  id: '002',
-  description: 'Refactor styles.scss per usare i mixin di theming del framework (eaf-base, eaf-severity-themes)',
-  up: (ctx) => {
+export class Migration002 extends Migration {
+  readonly id = '002';
+  readonly description = 'Refactor styles.scss per usare i mixin di theming del framework (eaf-base, eaf-severity-themes)';
+
+  up(ctx: MigrationContext): void {
     const path = 'angular/src/styles.scss';
     if (!ctx.fileExists(path)) {
       ctx.warn(`File ${path} non trovato, migrazione saltata.`);
@@ -58,5 +59,5 @@ export const migration: Migration = {
         `Aggiorna manualmente per usare '@bibi2400/electron-angular-framework/styles/theme' (mixin eaf-base e eaf-severity-themes).`
       );
     }
-  },
-};
+  }
+}

@@ -1,9 +1,10 @@
-import { Migration } from '../types';
+import { Migration, MigrationContext } from '../types';
 
-export const migration: Migration = {
-  id: '001',
-  description: 'Sposta runtime-config nel progetto consumer e aggiorna main.ts per passare runtimeConfig al bootstrap',
-  up: (ctx) => {
+export class Migration001 extends Migration {
+  readonly id = '001';
+  readonly description = 'Sposta runtime-config nel progetto consumer e aggiorna main.ts per passare runtimeConfig al bootstrap';
+
+  up(ctx: MigrationContext): void {
     // 1. Crea il file runtime-config.ts nel consumer
     if (!ctx.fileExists('electron/src/config/runtime-config.ts')) {
       ctx.createFile(
@@ -41,5 +42,5 @@ export const RUNTIME_CONFIG: RuntimeConfig = {
         );
       }
     }
-  },
-};
+  }
+}
