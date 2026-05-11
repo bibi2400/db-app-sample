@@ -9,7 +9,10 @@ import { FrameworkShell, NavigationService } from '@bibi2400/electron-angular-fr
 })
 export class App {
   constructor() {
-    inject(NavigationService).addMenuItems([
+    const nav = inject(NavigationService);
+    nav.logoUrl.set('assets/menu-logo.png');
+    nav.toolbarLogoUrl.set('assets/menu-logo.png');
+    nav.addMenuItems([
       { title: 'Demo Tabella', icon: 'table_chart', route: '/table-demo' },
       { title: 'Demo Form Upload', icon: 'upload_file', route: '/form-upload-demo' },
       { title: 'Top 5 Stelle', icon: 'star', route: '/table-demo', queryParams: { rating: '{"mode":"equal","equal":5}' } },

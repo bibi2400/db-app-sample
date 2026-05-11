@@ -24,6 +24,7 @@ import { NotificationService } from '../../services/notification.service';
 })
 export class Toolbar {
   menuToggled = output<void>();
+  toolbarLogoError = false;
 
   readonly navigationService = inject(NavigationService);
   readonly notificationService = inject(NotificationService);

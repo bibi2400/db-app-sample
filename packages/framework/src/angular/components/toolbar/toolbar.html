@@ -15,6 +15,15 @@
   <div class="sdsadsad">
     <ng-content></ng-content>
   </div>
+  @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
+    <div class="toolbar-center-logo">
+      <img
+        [src]="navigationService.toolbarLogoUrl()"
+        (error)="toolbarLogoError = true"
+        [alt]="navigationService.appName()"
+      />
+    </div>
+  }
   <span class="toolbar-spacer"></span>
   <button
     mat-icon-button
