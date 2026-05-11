@@ -373,3 +373,8 @@ When adding new elements, remember to register them:
 - Feature branches → merge into `staging` → beta releases
 - `staging` → merge into `main` → production releases
 - VS Code tasks: "🔀 Merge in Staging", "🚢 Publish Branch (Staging)", "🔀 Merge in Main", "🚢 Publish Branch"
+
+## Dev rules
+- Use `eaf generate` for Angular/Electron components
+- Tell me if I need to launch `eaf migrate` after your modifications
+- For any modification, prepare a implementation plan and share it with me before starting to code, so we can align on the approach and I can give you feedback before you invest time in coding.

@@ -20,6 +20,24 @@ export class DbMigrationService {
   }
 
   /**
+   * Ensures the `_eaf_db_migrations` tracking table exists in the database.
+   * Uses raw DDL so it works regardless of whether TypeORM `synchronize` is
+   * enabled or not. Safe to call multiple times — CREATE TABLE IF NOT EXISTS
+   * is idempotent.
+   */
+  private async ensureSchemaExists(): Promise<void> {
+    await this.dataSourceService.dataSource.query(`
+      CREATE TABLE IF NOT EXISTS _eaf_db_migrations (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        migrationId VARCHAR NOT NULL,
+        appliedAt   VARCHAR NOT NULL,
+        description VARCHAR,
+        UNIQUE (migrationId)
+      )
+    `);
+  }
+
+  /**
    * Execute all pending migrations in order.
    * Called via IPC from the Angular frontend at startup.
    *
@@ -31,6 +49,14 @@ export class DbMigrationService {
    * or `{ success: false, error }` if any migration throws.
    */
   async runPendingMigrations(): Promise<IpcResponse<void>> {
+    try {
+      await this.ensureSchemaExists();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      Logger.error("[DbMigration] Failed to create migrations table:", err);
+      return { success: false, error: `Impossibile creare la tabella delle migrazioni: ${message}` };
+    }
+
     if (this.migrations.length === 0) {
       return { success: true };
     }

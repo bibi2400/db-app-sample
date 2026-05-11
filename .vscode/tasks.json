@@ -44,12 +44,24 @@
       "label": "⭐ Bump Version",
       "type": "shell",
       "command": "npm version ${input:versionType} --no-git-tag-version",
-      "problemMatcher": [],
+      "problemMatcher": []
     },
     {
       "label": "📦 Package Win (No Update Token)",
       "type": "npm",
       "script": "package:win:noUpdateToken",
+      "problemMatcher": []
+    },
+    {
+      "label": "♣️​ Update Framework",
+      "type": "npm",
+      "script": "update-framework",
+      "problemMatcher": []
+    },
+    {
+      "label": "✈️ Apply framework's files migration",
+      "type": "shell",
+      "command": "npx eaf migrate",
       "problemMatcher": []
     },
     {
