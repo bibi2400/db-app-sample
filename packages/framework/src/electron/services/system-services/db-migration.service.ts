@@ -20,13 +20,14 @@ export class DbMigrationService {
   }
 
   /**
-   * Ensures the `_eaf_db_migrations` tracking table exists in the database.
+   * Ensures all framework-owned tables exist in the database.
    * Uses raw DDL so it works regardless of whether TypeORM `synchronize` is
-   * enabled or not. Safe to call multiple times — CREATE TABLE IF NOT EXISTS
-   * is idempotent.
+   * enabled or not. Safe to call multiple times — all statements are idempotent.
    */
   private async ensureSchemaExists(): Promise<void> {
-    await this.dataSourceService.dataSource.query(`
+    const ds = this.dataSourceService.dataSource;
+
+    await ds.query(`
       CREATE TABLE IF NOT EXISTS _eaf_db_migrations (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
         migrationId VARCHAR NOT NULL,
@@ -35,6 +36,24 @@ export class DbMigrationService {
         UNIQUE (migrationId)
       )
     `);
+
+    await ds.query(`
+      CREATE TABLE IF NOT EXISTS attachment (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        fileName     VARCHAR NOT NULL,
+        originalName VARCHAR NOT NULL,
+        relativePath VARCHAR NOT NULL DEFAULT '',
+        size         INTEGER NOT NULL,
+        mimeType     VARCHAR,
+        checksum     VARCHAR(64) NOT NULL,
+        ownerType    VARCHAR,
+        ownerId      INTEGER,
+        uploadDate   DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+      )
+    `);
+    await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_relativePath ON attachment (relativePath)`);
+    await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_checksum     ON attachment (checksum)`);
+    await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_owner        ON attachment (ownerType, ownerId)`);
   }
 
   /**
