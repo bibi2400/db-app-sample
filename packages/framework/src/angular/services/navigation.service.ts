@@ -60,6 +60,7 @@ export class NavigationService {
   expandedMenus = signal<Set<string>>(new Set());
   updateAvailable = signal(false);
   appName = signal('');
+  logoUrl = signal('');
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);

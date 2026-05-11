@@ -1,5 +1,14 @@
 <div class="sidebar-header">
-  <span class="sidebar-app-name">{{ navigationService.appName() }}</span>
+  @if (navigationService.logoUrl() && !logoError) {
+    <img
+      class="sidebar-logo"
+      [src]="navigationService.logoUrl()"
+      (error)="logoError = true"
+      [alt]="navigationService.appName()"
+    />
+  } @else {
+    <span class="sidebar-app-name">{{ navigationService.appName() }}</span>
+  }
   <button mat-icon-button (click)="closed.emit()"><mat-icon>close</mat-icon></button>
 </div>
 <mat-nav-list class="sidebar-menu">
