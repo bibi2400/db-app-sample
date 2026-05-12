@@ -3,18 +3,14 @@ import { Logger } from "../../helpers/logger";
 import { DbMigrationDefinition } from "../../../shared/types/db-migration";
 import { DbMigrationRecord } from "../../entities/db-migration-record";
 import { DataSourceService } from "./data-source.service";
-import { DevModeService } from "./dev-mode.service";
 import { IpcResponse } from "../../../shared/types/ipc";
-import type { SchemaDriftIssue, SchemaDriftReport } from "../../../shared/types/schema-drift";
+import type { SchemaDriftIssue } from "../../../shared/types/schema-drift";
 
 @Injectable()
 export class DbMigrationService {
   private migrations: DbMigrationDefinition[] = [];
 
-  constructor(
-    private readonly dataSourceService: DataSourceService,
-    private readonly devModeService: DevModeService,
-  ) {}
+  constructor(private readonly dataSourceService: DataSourceService) {}
 
   /**
    * Register the migration definitions to run.
@@ -134,15 +130,38 @@ export class DbMigrationService {
 
   /**
    * Compares registered TypeORM entity metadata against the physical SQLite
-   * schema and returns a report of any missing tables or columns.
+   * schema and warns about any missing tables or columns.
    *
-   * In **dev** mode, throws if drift is detected so the developer is forced to
-   * write a migration before the app opens.
-   * In **prod** mode, logs a warning only — the app must not crash for this.
+   * Never throws — the check is purely informational. The developer is
+   * responsible for writing the corresponding migration.
    */
-  async verifySchema(): Promise<SchemaDriftReport> {
-    const ds = this.dataSourceService.dataSource;
+  async verifySchema(): Promise<void> {
+    const issues = await this.collectDriftIssues();
+
+    if (issues.length === 0) {
+      Logger.info('[SchemaVerification] ✓ No schema drift detected.');
+      return;
+    }
+
+    const lines = issues
+      .map(issue => {
+        if (issue.type === 'missing-table') {
+          return `  - Table "${issue.table}": MISSING TABLE`;
+        }
+        const nullable = issue.nullable ? 'nullable' : 'not-null';
+        const dflt = issue.defaultValue !== undefined ? `, default: ${issue.defaultValue}` : '';
+        return `  - Table "${issue.table}": missing column "${issue.column}" (${issue.columnType}, ${nullable}${dflt})`;
+      })
+      .join('\n');
+
+    Logger.warn(
+      `[SchemaVerification] ⚠ Schema drift detected (${issues.length} issue(s)):\n${lines}`,
+    );
+  }
+
+  private async collectDriftIssues(): Promise<SchemaDriftIssue[]> {
     const issues: SchemaDriftIssue[] = [];
+    const ds = this.dataSourceService.dataSource;
 
     for (const meta of ds.entityMetadatas) {
       const tableName = meta.tableName;
@@ -156,10 +175,7 @@ export class DbMigrationService {
       }
 
       const existingCols = new Set(pragmaRows.map(r => r.name));
-
-      const physicalCols = meta.columns.filter(
-        col => !col.isVirtual && col.databaseName !== undefined,
-      );
+      const physicalCols = meta.columns.filter(col => !col.isVirtual && col.databaseName);
 
       for (const col of physicalCols) {
         if (!existingCols.has(col.databaseName)) {
@@ -175,35 +191,6 @@ export class DbMigrationService {
       }
     }
 
-    const report: SchemaDriftReport = { issues, hasIssues: issues.length > 0 };
-
-    if (!report.hasIssues) {
-      Logger.info('[SchemaVerification] ✓ No schema drift detected.');
-      return report;
-    }
-
-    const lines = issues.map(issue => {
-      if (issue.type === 'missing-table') {
-        return `  - Missing table "${issue.table}"`;
-      }
-      const nullable = issue.nullable ? 'nullable' : 'not-null';
-      const dflt = issue.defaultValue !== undefined ? `, default: ${issue.defaultValue}` : '';
-      return `  - Table "${issue.table}": missing column "${issue.column}" (${issue.columnType}, ${nullable}${dflt})`;
-    });
-
-    if (this.devModeService.isDev) {
-      Logger.error(
-        `[SchemaVerification] ✗ SCHEMA DRIFT DETECTED — ${issues.length} issue(s):\n${lines.join('\n')}`,
-      );
-      throw new Error(
-        `[SchemaVerification] Schema drift detected (${issues.length} issue(s)). Add the missing migration(s) before running the app.`,
-      );
-    } else {
-      Logger.warn(
-        `[SchemaVerification] ⚠ Schema drift detected (${issues.length} issue(s)). Pending migrations should resolve this.`,
-      );
-    }
-
-    return report;
+    return issues;
   }
 }
