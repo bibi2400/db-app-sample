@@ -2,8 +2,9 @@
 // Angular frontend: config, components, services, routes
 
 // ─── Framework Config ────────────────────────────────────────────────────────
-export { FrameworkConfig } from './config';
-export type { FrameworkConfigOptions } from './config';
+export { FrameworkConfig, EAF_STORAGE_CONFIG } from './config';
+export type { FrameworkConfigOptions, EafStorageConfig } from './config';
+export type { StorageType } from './types/storage.types';
 
 // ─── Framework Shell (all-in-one layout component) ───────────────────────────
 export { FrameworkShell } from './components/framework-shell/framework-shell';

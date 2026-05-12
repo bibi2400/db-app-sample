@@ -1,15 +1,26 @@
-import { ApplicationConfig, LOCALE_ID, Provider, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, InjectionToken, LOCALE_ID, Provider, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter, Routes } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import localeIt from '@angular/common/locales/it';
+import { EafStorageConfig } from './types/storage.types';
+
+export type { EafStorageConfig } from './types/storage.types';
+
+/** Token di iniezione per la configurazione globale della persistenza. */
+export const EAF_STORAGE_CONFIG = new InjectionToken<EafStorageConfig>('EAF_STORAGE_CONFIG');
 
 export interface FrameworkConfigOptions {
   /** Route Angular complete (stock + consumer, tipicamente da FrameworkRoutes.build()) */
   routes: Routes;
   /** Provider aggiuntivi del consumer (opzionale) */
   providers?: Provider[];
+  /**
+   * Configurazione globale della persistenza (localStorage/sessionStorage).
+   * Può essere sovrascritto a livello di singolo componente tramite i suoi input.
+   */
+  storageConfig?: EafStorageConfig;
 }
 
 /**
@@ -28,6 +39,10 @@ export class FrameworkConfig {
 
   /** Genera l'ApplicationConfig per `bootstrapApplication()` */
   toApplicationConfig(): ApplicationConfig {
+    const storageProviders: Provider[] = this.options.storageConfig
+      ? [{ provide: EAF_STORAGE_CONFIG, useValue: this.options.storageConfig }]
+      : [];
+
     return {
       providers: [
         provideBrowserGlobalErrorListeners(),
@@ -35,6 +50,7 @@ export class FrameworkConfig {
         provideAnimationsAsync(),
         provideHttpClient(withInterceptorsFromDi()),
         { provide: LOCALE_ID, useValue: 'it' },
+        ...storageProviders,
         ...(this.options.providers ?? []),
       ]
     };

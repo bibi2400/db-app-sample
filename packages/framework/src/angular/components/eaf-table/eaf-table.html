@@ -156,10 +156,10 @@
     </tr>
   </table>
 
-  @if (saveScroll()) {
+  @if (effectiveTableScrollType() !== 'none') {
   <eaf-scroll-restorer 
     [key]="tableId()"
-    [isPersistant]="isScrollPersistant()"
+    [storageType]="effectiveTableScrollType()"
   />
   }
 

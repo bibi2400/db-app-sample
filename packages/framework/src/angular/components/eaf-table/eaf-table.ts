@@ -18,6 +18,8 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { EAF_STORAGE_CONFIG } from '../../config';
+import { StorageType } from '../../types/storage.types';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
@@ -63,6 +65,7 @@ import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
 })
 export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private readonly storageService = inject(EafTableStorageService);
+  private readonly globalStorageConfig = inject(EAF_STORAGE_CONFIG, { optional: true });
 
   // ─── Inputs ──────────────────────────────────────────────────────────────
 
@@ -75,14 +78,20 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   /** Dati: array statico o Observable */
   readonly data = input<T[] | Observable<T[]>>([]);
 
-  /** Salvataggio dello scroll */
-  readonly saveScroll = input(false);
+  /**
+   * StorageType per lo scroll della tabella.
+   * `null` → usa il valore da EAF_STORAGE_CONFIG.tableScrollStorageType (default: 'none').
+   */
+  readonly tableScrollStorageType = input<StorageType | null>(null);
+
+  /**
+   * StorageType per lo stato della tabella (colonne, sort, filtri, paginazione).
+   * `null` → usa il valore da EAF_STORAGE_CONFIG.tableStateStorageType (default: 'none').
+   */
+  readonly tableStateStorageType = input<StorageType | null>(null);
 
   /** Altezza della tabella */
   readonly height = input<string | null>(null);
-
-  /** Persistenza dello scroll */
-  readonly isScrollPersistant = input(false);
 
   /**
    * Configurazione paginazione.
@@ -196,6 +205,18 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private initialized = false;
   private dataLoaded = false;
 
+  // ─── Computed Storage Types ─────────────────────────────────────────────
+
+  /** StorageType effettivo per lo stato: input locale > config globale > 'none' */
+  protected readonly effectiveTableStateType = computed<StorageType>(() =>
+    this.tableStateStorageType() ?? this.globalStorageConfig?.tableStateStorageType ?? 'none'
+  );
+
+  /** StorageType effettivo per lo scroll: input locale > config globale > 'none' */
+  protected readonly effectiveTableScrollType = computed<StorageType>(() =>
+    this.tableScrollStorageType() ?? this.globalStorageConfig?.tableScrollStorageType ?? 'none'
+  );
+
   // ─── Computed ────────────────────────────────────────────────────────────
 
   /** Column defs filtrate per visibilità, ordinate */
@@ -257,7 +278,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
         pageIndex: this.currentPageIndex(),
       };
       untracked(() => {
-        this.storageService.save(this.tableId(), state);
+        this.storageService.save(this.tableId(), state, this.effectiveTableStateType());
         this.stateChange.emit(state);
       });
     });
@@ -304,8 +325,8 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     const allKeys = cols.map(c => c.key);
     const validKeys = new Set(allKeys);
 
-    // 1. Carica da localStorage
-    const stored = this.storageService.load(this.tableId());
+    // 1. Carica dallo storage
+    const stored = this.storageService.load(this.tableId(), this.effectiveTableStateType());
 
     // 2. initialState ha priorità su stored
     const ext = this.initialState();

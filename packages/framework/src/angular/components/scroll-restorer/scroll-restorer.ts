@@ -1,6 +1,7 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  computed,
   ElementRef,
   OnDestroy,
   AfterViewInit,
@@ -12,6 +13,8 @@ import {
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { Subscription, fromEvent } from 'rxjs';
 import { auditTime, filter } from 'rxjs/operators';
+import { EAF_STORAGE_CONFIG } from '../../config';
+import { StorageType } from '../../types/storage.types';
 
 /**
  * Scroll position restorer.
@@ -56,11 +59,21 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
   /** Delay between restore attempts (ms). */
   restoreRetryDelayMs = input<number>(50);
 
-  isPersistant = input<boolean>(true); // For compatibility with non-Angular usage patterns.
+  /**
+   * StorageType per la persistenza dello scroll.
+   * `null` → usa il valore da EAF_STORAGE_CONFIG.scrollStorageType (default: 'none').
+   */
+  storageType = input<StorageType | null>(null);
 
+  private readonly globalStorageConfig = inject(EAF_STORAGE_CONFIG, { optional: true });
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly router = inject(Router, { optional: true });
   private readonly zone = inject(NgZone);
+
+  /** StorageType effettivo: input locale > config globale > 'none' */
+  private readonly effectiveStorageType = computed<StorageType>(() =>
+    this.storageType() ?? this.globalStorageConfig?.scrollStorageType ?? 'none'
+  );
 
   private target: HTMLElement | Window | null = null;
   private scrollSub?: Subscription;
@@ -229,13 +242,12 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
   private save(): void {
     if (!this.target || !this.currentKey) return;
     if (this.isNavigatingAway) return; // Don't save if we're navigating away, to avoid body height collapsing.
+    const storageType = this.effectiveStorageType();
+    if (storageType === 'none') return;
+    const storage = storageType === 'local' ? localStorage : sessionStorage;
     const { top, left } = this.getOffsets();
     try {
-      if (this.isPersistant()) {
-        localStorage.setItem(this.currentKey, JSON.stringify({ top, left }));
-      } else {
-        sessionStorage.setItem(this.currentKey, JSON.stringify({ top, left }));
-      }
+      storage.setItem(this.currentKey, JSON.stringify({ top, left }));
     } catch {
       /* storage may be full or unavailable */
     }
@@ -244,15 +256,15 @@ export class ScrollRestorer implements AfterViewInit, OnDestroy {
   private restoreWithRetry(): void {
     if (!this.target || !this.currentKey) return;
 
+    const storageType = this.effectiveStorageType();
     let raw: string | null = null;
-    try {
-      if (this.isPersistant()) {
-        raw = localStorage.getItem(this.currentKey);
-      } else {
-        raw = sessionStorage.getItem(this.currentKey);
+    if (storageType !== 'none') {
+      const storage = storageType === 'local' ? localStorage : sessionStorage;
+      try {
+        raw = storage.getItem(this.currentKey);
+      } catch {
+        return;
       }
-    } catch {
-      return;
     }
     if (!raw) {
       // Reset scroll del contenitore principale
