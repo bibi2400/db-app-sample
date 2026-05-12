@@ -26,3 +26,4 @@ export type {
 export type { KeyBinding, ShortcutEntry, ShortcutDefinition } from './types/shortcut';
 export type { CommandPaletteItem } from './types/command-palette';
 export { DbMigrationDefinition } from './types/db-migration';
+export type { SchemaDriftIssue, SchemaDriftIssueType, SchemaDriftReport } from './types/schema-drift';

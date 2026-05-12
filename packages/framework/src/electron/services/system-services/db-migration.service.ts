@@ -3,13 +3,18 @@ import { Logger } from "../../helpers/logger";
 import { DbMigrationDefinition } from "../../../shared/types/db-migration";
 import { DbMigrationRecord } from "../../entities/db-migration-record";
 import { DataSourceService } from "./data-source.service";
+import { DevModeService } from "./dev-mode.service";
 import { IpcResponse } from "../../../shared/types/ipc";
+import type { SchemaDriftIssue, SchemaDriftReport } from "../../../shared/types/schema-drift";
 
 @Injectable()
 export class DbMigrationService {
   private migrations: DbMigrationDefinition[] = [];
 
-  constructor(private readonly dataSourceService: DataSourceService) {}
+  constructor(
+    private readonly dataSourceService: DataSourceService,
+    private readonly devModeService: DevModeService,
+  ) {}
 
   /**
    * Register the migration definitions to run.
@@ -125,5 +130,80 @@ export class DbMigrationService {
 
     Logger.info(`[DbMigration] All pending migrations applied.`);
     return { success: true };
+  }
+
+  /**
+   * Compares registered TypeORM entity metadata against the physical SQLite
+   * schema and returns a report of any missing tables or columns.
+   *
+   * In **dev** mode, throws if drift is detected so the developer is forced to
+   * write a migration before the app opens.
+   * In **prod** mode, logs a warning only — the app must not crash for this.
+   */
+  async verifySchema(): Promise<SchemaDriftReport> {
+    const ds = this.dataSourceService.dataSource;
+    const issues: SchemaDriftIssue[] = [];
+
+    for (const meta of ds.entityMetadatas) {
+      const tableName = meta.tableName;
+
+      const pragmaRows: Array<{ name: string; type: string; notnull: number; dflt_value: string | null }> =
+        await ds.query(`PRAGMA table_info("${tableName}")`);
+
+      if (pragmaRows.length === 0) {
+        issues.push({ table: tableName, type: 'missing-table' });
+        continue;
+      }
+
+      const existingCols = new Set(pragmaRows.map(r => r.name));
+
+      const physicalCols = meta.columns.filter(
+        col => !col.isVirtual && col.databaseName !== undefined,
+      );
+
+      for (const col of physicalCols) {
+        if (!existingCols.has(col.databaseName)) {
+          issues.push({
+            table: tableName,
+            type: 'missing-column',
+            column: col.databaseName,
+            columnType: col.type as string,
+            nullable: col.isNullable,
+            defaultValue: col.default,
+          });
+        }
+      }
+    }
+
+    const report: SchemaDriftReport = { issues, hasIssues: issues.length > 0 };
+
+    if (!report.hasIssues) {
+      Logger.info('[SchemaVerification] ✓ No schema drift detected.');
+      return report;
+    }
+
+    const lines = issues.map(issue => {
+      if (issue.type === 'missing-table') {
+        return `  - Missing table "${issue.table}"`;
+      }
+      const nullable = issue.nullable ? 'nullable' : 'not-null';
+      const dflt = issue.defaultValue !== undefined ? `, default: ${issue.defaultValue}` : '';
+      return `  - Table "${issue.table}": missing column "${issue.column}" (${issue.columnType}, ${nullable}${dflt})`;
+    });
+
+    if (this.devModeService.isDev) {
+      Logger.error(
+        `[SchemaVerification] ✗ SCHEMA DRIFT DETECTED — ${issues.length} issue(s):\n${lines.join('\n')}`,
+      );
+      throw new Error(
+        `[SchemaVerification] Schema drift detected (${issues.length} issue(s)). Add the missing migration(s) before running the app.`,
+      );
+    } else {
+      Logger.warn(
+        `[SchemaVerification] ⚠ Schema drift detected (${issues.length} issue(s)). Pending migrations should resolve this.`,
+      );
+    }
+
+    return report;
   }
 }

@@ -14,6 +14,7 @@ import { UpdaterService } from './updater.service';
 import { DevModeService } from './dev-mode.service';
 import { ErrorNotificationService } from './error-notification.service';
 import { ContextMenuService } from './context-menu.service';
+import { DbMigrationService } from './db-migration.service';
 import { initChronomancerForElectron, Chronomancer } from '../../helpers/chronomancer.adapter';
 import type { BootstrapHooks } from '../../bootstrap';
 
@@ -39,6 +40,7 @@ export class AppBootstrapService {
     private readonly errorNotificationService: ErrorNotificationService,
     private readonly contextMenuService: ContextMenuService,
     private readonly dataSourceService: DataSourceService,
+    private readonly dbMigrationService: DbMigrationService,
   ) {}
 
   /**
@@ -120,6 +122,9 @@ export class AppBootstrapService {
       await this.dataSourceService.initialize();
       Chronomancer.stop('database-init', 'bootstrap');
       Logger.info('[Bootstrap] ✓ Database connection established');
+
+      // Verify schema drift (throws in dev if drift is found)
+      await this.dbMigrationService.verifySchema();
 
       // Hook: afterDbInit
       if (this.hooks.afterDbInit) {
