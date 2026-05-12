@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { NavigationService } from '../../services/navigation.service';
 import { NotificationService } from '../../services/notification.service';
 import { ElectronZoomService } from '../../services/electron-api/electron-zoom.service';
+import { GracefulShutdownService } from '../../services/graceful-shutdown.service';
 
 @Component({
   selector: 'eaf-toolbar',
@@ -30,6 +31,7 @@ export class Toolbar {
   readonly navigationService = inject(NavigationService);
   readonly notificationService = inject(NotificationService);
   readonly zoomService = inject(ElectronZoomService);
+  readonly shutdownService = inject(GracefulShutdownService);
   private location = inject(Location);
   private router = inject(Router);
 

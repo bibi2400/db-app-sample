@@ -8,6 +8,7 @@ import { Logger } from '../helpers/logger';
 import { AppConfigService } from '../services/system-services/app-config.service';
 import { AppDataService } from '../services/system-services/app-data.service';
 import { DbConfigService } from '../services/system-services/db-config.service';
+import { LifecycleService } from '../services/system-services/lifecycle.service';
 
 @Controller({ prefix: 'app' })
 export class AppController extends BaseController {
@@ -20,6 +21,7 @@ export class AppController extends BaseController {
     private readonly appConfigService: AppConfigService,
     private readonly appDataService: AppDataService,
     private readonly dbConfigService: DbConfigService,
+    private readonly lifecycleService: LifecycleService,
   ) {
     super();
   }
@@ -112,6 +114,16 @@ export class AppController extends BaseController {
         node: process.versions.node,
         chrome: process.versions.chrome,
       });
+    } catch (error) {
+      return this.error(error);
+    }
+  }
+
+  @IpcHandler('quit')
+  async quitApp() {
+    try {
+      this.lifecycleService.quit();
+      return this.success(null);
     } catch (error) {
       return this.error(error);
     }

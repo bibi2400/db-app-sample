@@ -59,6 +59,7 @@ export { FrameworkRoutes } from './routes';
 export { ElectronPushService } from './services/electron-api/electron-push.service';
 export { ElectronAppService } from './services/electron-api/electron-app.service';
 export { ElectronZoomService } from './services/electron-api/electron-zoom.service';
+export { GracefulShutdownService } from './services/graceful-shutdown.service';
 export { ElectronBackupService } from './services/electron-api/electron-backup.service';
 export { ElectronUpdateService } from './services/electron-api/electron-update.service';
 export { ElectronUploadService } from './services/electron-api/electron-upload.service';

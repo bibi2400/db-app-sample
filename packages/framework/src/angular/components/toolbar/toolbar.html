@@ -33,7 +33,7 @@
       (click)="zoomService.zoomOut()"
       [disabled]="!zoomService.canZoomOut()"
     >
-      <mat-icon>remove</mat-icon>
+      <mat-icon>zoom_out</mat-icon>
     </button>
     <button
       mat-button
@@ -50,7 +50,7 @@
       (click)="zoomService.zoomIn()"
       [disabled]="!zoomService.canZoomIn()"
     >
-      <mat-icon>add</mat-icon>
+      <mat-icon>zoom_in</mat-icon>
     </button>
   </div>
   <button
@@ -88,4 +88,13 @@
       </button>
     }
   }
+  <button
+    mat-icon-button
+    class="shutdown-btn"
+    aria-label="Chiudi applicazione"
+    matTooltip="Chiudi applicazione"
+    (click)="shutdownService.quit()"
+  >
+    <mat-icon>power_settings_new</mat-icon>
+  </button>
 </mat-toolbar>

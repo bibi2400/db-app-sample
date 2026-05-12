@@ -56,4 +56,8 @@ export class ElectronAppService {
     }
     return response.data ?? null;
   }
+
+  async quit(): Promise<void> {
+    await window.electronAPI.invoke<IpcResponse<null>>('app:quit');
+  }
 }

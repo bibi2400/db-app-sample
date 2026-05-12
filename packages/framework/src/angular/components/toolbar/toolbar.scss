@@ -68,6 +68,15 @@
   margin: 0 8px;
 }
 
+.shutdown-btn {
+  margin-left: 4px;
+  color: inherit;
+
+  &:hover {
+    color: var(--mat-sys-error, #f44336);
+  }
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
