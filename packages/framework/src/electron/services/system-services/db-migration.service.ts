@@ -4,6 +4,7 @@ import { DbMigrationDefinition } from "../../../shared/types/db-migration";
 import { DbMigrationRecord } from "../../entities/db-migration-record";
 import { DataSourceService } from "./data-source.service";
 import { IpcResponse } from "../../../shared/types/ipc";
+import type { SchemaDriftIssue } from "../../../shared/types/schema-drift";
 
 @Injectable()
 export class DbMigrationService {
@@ -125,5 +126,71 @@ export class DbMigrationService {
 
     Logger.info(`[DbMigration] All pending migrations applied.`);
     return { success: true };
+  }
+
+  /**
+   * Compares registered TypeORM entity metadata against the physical SQLite
+   * schema and warns about any missing tables or columns.
+   *
+   * Never throws — the check is purely informational. The developer is
+   * responsible for writing the corresponding migration.
+   */
+  async verifySchema(): Promise<void> {
+    const issues = await this.collectDriftIssues();
+
+    if (issues.length === 0) {
+      Logger.info('[SchemaVerification] ✓ No schema drift detected.');
+      return;
+    }
+
+    const lines = issues
+      .map(issue => {
+        if (issue.type === 'missing-table') {
+          return `  - Table "${issue.table}": MISSING TABLE`;
+        }
+        const nullable = issue.nullable ? 'nullable' : 'not-null';
+        const dflt = issue.defaultValue !== undefined ? `, default: ${issue.defaultValue}` : '';
+        return `  - Table "${issue.table}": missing column "${issue.column}" (${issue.columnType}, ${nullable}${dflt})`;
+      })
+      .join('\n');
+
+    Logger.warn(
+      `[SchemaVerification] ⚠ Schema drift detected (${issues.length} issue(s)):\n${lines}`,
+    );
+  }
+
+  private async collectDriftIssues(): Promise<SchemaDriftIssue[]> {
+    const issues: SchemaDriftIssue[] = [];
+    const ds = this.dataSourceService.dataSource;
+
+    for (const meta of ds.entityMetadatas) {
+      const tableName = meta.tableName;
+
+      const pragmaRows: Array<{ name: string; type: string; notnull: number; dflt_value: string | null }> =
+        await ds.query(`PRAGMA table_info("${tableName}")`);
+
+      if (pragmaRows.length === 0) {
+        issues.push({ table: tableName, type: 'missing-table' });
+        continue;
+      }
+
+      const existingCols = new Set(pragmaRows.map(r => r.name));
+      const physicalCols = meta.columns.filter(col => !col.isVirtual && col.databaseName);
+
+      for (const col of physicalCols) {
+        if (!existingCols.has(col.databaseName)) {
+          issues.push({
+            table: tableName,
+            type: 'missing-column',
+            column: col.databaseName,
+            columnType: col.type as string,
+            nullable: col.isNullable,
+            defaultValue: col.default,
+          });
+        }
+      }
+    }
+
+    return issues;
   }
 }

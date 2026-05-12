@@ -2,6 +2,22 @@
   flex: 1 1 auto;
 }
 
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-right: 4px;
+
+  .zoom-label {
+    min-width: 46px;
+    padding: 0 4px;
+    font-size: 12px;
+    line-height: 36px;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+}
+
 .toolbar-center-logo {
   position: absolute;
   left: 50%;
@@ -50,6 +66,15 @@
   height: 32px;
   background-color: rgba(0, 0, 0, 0.12);
   margin: 0 8px;
+}
+
+.shutdown-btn {
+  margin-left: 4px;
+  color: inherit;
+
+  &:hover {
+    color: var(--mat-sys-error, #f44336);
+  }
 }
 
 .breadcrumb {

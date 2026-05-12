@@ -56,4 +56,22 @@ export const SHORTCUT_REGISTRY: Record<string, ShortcutEntry> = {
     category: 'Azioni',
     defaultBinding: { key: 'p', ctrl: true },
   },
+  'zoom.in': {
+    name: 'Zoom avanti',
+    description: 'Aumenta lo zoom della finestra',
+    category: 'Vista',
+    defaultBinding: { key: '=', ctrl: true },
+  },
+  'zoom.out': {
+    name: 'Zoom indietro',
+    description: 'Diminuisci lo zoom della finestra',
+    category: 'Vista',
+    defaultBinding: { key: '-', ctrl: true },
+  },
+  'zoom.reset': {
+    name: 'Reset zoom',
+    description: 'Ripristina lo zoom al 100%',
+    category: 'Vista',
+    defaultBinding: { key: '0', ctrl: true },
+  },
 };

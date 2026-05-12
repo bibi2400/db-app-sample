@@ -18,6 +18,17 @@ declare global {
        * Unsubscribe from push events.
        */
       off: (channel: string, callback: (...args: unknown[]) => void) => void;
+
+      /**
+       * Set the zoom level of the renderer window.
+       * Level 0 = 100%, 1 = 120%, -1 = ~83%, etc. (each step = ×1.2)
+       */
+      setZoomLevel: (level: number) => void;
+
+      /**
+       * Get the current zoom level of the renderer window.
+       */
+      getZoomLevel: () => number;
     }
   }
 }
