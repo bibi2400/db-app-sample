@@ -62,6 +62,10 @@ export class NavigationService {
   appName = signal('');
   logoUrl = signal('');
   toolbarLogoUrl = signal('');
+  /** Colore di sfondo della toolbar. Se `null`, viene usato il default del tema Material. */
+  toolbarColor = signal<string | null>(null);
+  /** Colore del testo/icone della toolbar. Se `null`, viene usato il default del tema Material. */
+  toolbarTextColor = signal<string | null>(null);
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);

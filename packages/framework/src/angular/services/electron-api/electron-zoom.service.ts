@@ -42,7 +42,12 @@ export class ElectronZoomService {
   private applyZoom(level: number): void {
     this.zoomLevel.set(level);
     localStorage.setItem(STORAGE_KEY, String(level));
-    window.electronAPI.setZoomLevel(level);
+    // Applica lo zoom via CSS solo al contenuto della pagina (.main-container),
+    // lasciando toolbar e sidebar alla dimensione naturale.
+    // webFrame rimane sempre a 0 per evitare doppio zoom.
+    const factor = Math.pow(1.2, level);
+    document.documentElement.style.setProperty('--eaf-content-zoom', String(factor));
+    window.electronAPI.setZoomLevel(0);
   }
 
   private loadZoomLevel(): number {

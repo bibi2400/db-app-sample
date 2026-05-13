@@ -377,5 +377,5 @@ When adding new elements, remember to register them:
 ## Dev rules
 - Use `eaf generate` for Angular/Electron components
 - Tell me if I need to launch `eaf migrate` after your template-related changes.
-- For any modification, prepare a implementation plan and share it with me before starting to code, so we can align on the approach and I can give you feedback before you invest time in coding.
+- For any modification and fix, prepare a implementation plan and share it with me before starting to code, so we can align on the approach and I can give you feedback before you invest time in coding.
 - Write in the framework's code comments and examples about functionalities usage, so I can learn and Copilot in consumers' codebase can suggest the right usage patterns.

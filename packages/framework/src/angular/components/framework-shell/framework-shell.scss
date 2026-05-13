@@ -13,7 +13,11 @@
 
 .main-container {
   padding: 20px;
-  margin-top: var(--mat-toolbar-standard-height, 64px);
+  // zoom scala anche i margini dell'elemento stesso: dividendo per il fattore
+  // il margin-top torna sempre a 64px fisici dopo la scalatura.
+  margin-top: calc(var(--mat-toolbar-standard-height, 64px) / var(--eaf-content-zoom, 1));
+  // Zoom applicato solo al contenuto: toolbar e sidebar rimangono invariate.
+  zoom: var(--eaf-content-zoom, 1);
 }
 
 .fixed-toolbar {
