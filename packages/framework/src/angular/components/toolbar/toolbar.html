@@ -1,6 +1,7 @@
 <mat-toolbar
   [style.background-color]="navigationService.toolbarColor() ?? null"
   [style.color]="navigationService.toolbarTextColor() ?? null"
+  [style.--eaf-toolbar-zoom-label-opacity]="navigationService.toolbarColor() ? '1' : null"
 >
   <button mat-icon-button (click)="menuToggled.emit()">
     <mat-icon>menu</mat-icon>
