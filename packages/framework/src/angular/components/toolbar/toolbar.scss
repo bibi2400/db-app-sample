@@ -10,6 +10,11 @@
   .mat-mdc-icon-button {
     color: inherit;
     --mdc-icon-button-icon-color: currentColor;
+    // State layer (cerchietto hover/focus/pressed): forza il colore ereditato
+    --mat-icon-button-state-layer-color: currentColor;
+    --mat-icon-button-hover-state-layer-color: currentColor;
+    --mat-icon-button-focus-state-layer-color: currentColor;
+    --mat-icon-button-pressed-state-layer-color: currentColor;
   }
 
   .mat-mdc-button {
