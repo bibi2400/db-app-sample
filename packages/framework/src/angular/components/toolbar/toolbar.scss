@@ -38,8 +38,6 @@
     font-size: 12px;
     line-height: 36px;
     font-weight: 500;
-    // Configurabile dal consumer via CSS custom property (es. in styles.scss: html { --eaf-toolbar-zoom-label-opacity: 1; })
-    opacity: var(--eaf-toolbar-zoom-label-opacity, 0.85);
   }
 }
 
