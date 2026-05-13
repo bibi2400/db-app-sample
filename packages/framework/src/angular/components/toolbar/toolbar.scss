@@ -1,3 +1,27 @@
+// Le MDC variables di Material sovrascrivono l'ereditarietà CSS per default.
+// Resettiamo qui in modo che icone e icon-buttons ereditino il colore impostato
+// tramite il signal toolbarTextColor, senza richiedere override globali nel consumer.
+// ::ng-deep è necessario qui: Angular Material imposta --mdc-icon-button-icon-color
+// direttamente su .mat-mdc-icon-button nel suo tema. Un valore "ereditato" da un
+// antenato (anche !important) perde sempre contro un valore esplicito sull'elemento.
+// L'unica soluzione CSS-standard è scrivere una regola esplicita con specificità più
+// alta, che richiede ::ng-deep per raggiungere gli interni di componenti figli.
+:host ::ng-deep {
+  .mat-mdc-icon-button {
+    color: inherit;
+    --mdc-icon-button-icon-color: currentColor;
+  }
+
+  .mat-mdc-button {
+    color: inherit;
+    --mdc-text-button-label-text-color: currentColor;
+  }
+
+  mat-icon {
+    color: inherit;
+  }
+}
+
 .toolbar-spacer {
   flex: 1 1 auto;
 }

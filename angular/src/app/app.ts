@@ -12,6 +12,8 @@ export class App {
     const nav = inject(NavigationService);
     nav.logoUrl.set('assets/menu-logo.png');
     nav.toolbarLogoUrl.set('assets/menu-logo.png');
+    nav.toolbarColor.set('#112B45');
+    nav.toolbarTextColor.set('#ffffff');
     nav.addMenuItems([
       { title: 'Demo Tabella', icon: 'table_chart', route: '/table-demo' },
       { title: 'Demo Form Upload', icon: 'upload_file', route: '/form-upload-demo' },
