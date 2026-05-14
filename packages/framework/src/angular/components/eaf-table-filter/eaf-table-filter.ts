@@ -62,6 +62,8 @@ export class EafTableFilter implements OnInit, OnDestroy {
   protected readonly numberEqual = signal<number | null>(null);
   protected readonly dateMode = signal<'equal' | 'range'>('range');
   protected readonly dateEqual = signal<Date | null>(null);
+  /** Filtro "Solo vuoti": mostra solo righe con valore data nullo/undefined */
+  protected readonly onlyEmpty = signal<boolean>(false);
 
   private optionsSub?: Subscription;
 
@@ -140,6 +142,7 @@ export class EafTableFilter implements OnInit, OnDestroy {
   }
 
   onDateChange(from: Date | null, to: Date | null): void {
+    this.onlyEmpty.set(false);
     this.dateFrom.set(from);
     this.dateTo.set(to);
     const range = (from || to) ? { mode: 'range' as const, from: from?.toISOString() ?? null, to: to?.toISOString() ?? null } : null;
@@ -148,6 +151,7 @@ export class EafTableFilter implements OnInit, OnDestroy {
   }
 
   onDateEqualChange(value: Date | null): void {
+    this.onlyEmpty.set(false);
     this.dateEqual.set(value);
     const result = value ? { mode: 'equal' as const, equal: value.toISOString() } : null;
     this.currentValue.set(result);
@@ -157,6 +161,22 @@ export class EafTableFilter implements OnInit, OnDestroy {
   onDateModeChange(mode: 'equal' | 'range'): void {
     this.dateMode.set(mode);
     this.onClear();
+  }
+
+  onOnlyEmptyChange(checked: boolean): void {
+    this.onlyEmpty.set(checked);
+    if (checked) {
+      // Pulisce i campi range/equal quando si attiva "Solo vuoti"
+      this.dateFrom.set(null);
+      this.dateTo.set(null);
+      this.dateEqual.set(null);
+      const value = { mode: 'only-empty' as const };
+      this.currentValue.set(value);
+      this.valueChange.emit(value);
+    } else {
+      this.currentValue.set(null);
+      this.valueChange.emit(null);
+    }
   }
 
   onBooleanChange(checked: boolean): void {
@@ -178,6 +198,7 @@ export class EafTableFilter implements OnInit, OnDestroy {
     this.dateFrom.set(null);
     this.dateTo.set(null);
     this.dateEqual.set(null);
+    this.onlyEmpty.set(false);
     this.valueChange.emit(null);
   }
 
@@ -197,7 +218,9 @@ export class EafTableFilter implements OnInit, OnDestroy {
       }
     } else if (cfg.type === 'date' && typeof value === 'object' && value !== null) {
       const v = value as { mode?: string; from?: string | null; to?: string | null; equal?: string | null };
-      if (v.mode === 'equal') {
+      if (v.mode === 'only-empty') {
+        this.onlyEmpty.set(true);
+      } else if (v.mode === 'equal') {
         this.dateMode.set('equal');
         this.dateEqual.set(v.equal ? new Date(v.equal) : null);
       } else {

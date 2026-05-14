@@ -5,6 +5,7 @@ import {
   FindOptionsOrder,
   FindOptionsWhere,
   In,
+  IsNull,
   LessThanOrEqual,
   Like,
   MoreThanOrEqual,
@@ -30,7 +31,7 @@ interface NumberFilterValue {
  * I valori sono ISO string serializzabili via IPC.
  */
 interface DateFilterValue {
-  mode?: "equal" | "range";
+  mode?: "equal" | "range" | "only-empty";
   equal?: string | null;
   from?: string | null;
   to?: string | null;
@@ -53,11 +54,12 @@ interface DateFilterValue {
  *  - stringa                                    \u2192 ILike('%value%')   (case-insensitive contains)
  *  - array (anche con un solo elemento)         \u2192 In([...])
  *  - boolean                                    \u2192 Equal(true|false)
- *  - { mode:'equal', equal: number }            \u2192 Equal(number)
- *  - { mode:'range', min?, max? }               \u2192 Between / MoreThanOrEqual / LessThanOrEqual
- *  - { mode:'equal', equal: ISOString }         \u2192 Equal(Date)
- *  - { mode:'range', from?, to? }               \u2192 Between / MoreThanOrEqual / LessThanOrEqual su Date
- *  - null / undefined / ''                      \u2192 ignorato
+ *  - { mode:'equal', equal: number }            → Equal(number)
+ *  - { mode:'range', min?, max? }               → Between / MoreThanOrEqual / LessThanOrEqual
+ *  - { mode:'equal', equal: ISOString }         → Equal(Date)
+ *  - { mode:'range', from?, to? }               → Between / MoreThanOrEqual / LessThanOrEqual su Date
+ *  - { mode:'only-empty' }                      → IsNull()  (mostra solo righe con colonna NULL)
+ *  - null / undefined / ''                      → ignorato
  *
  * SICUREZZA:
  *  - Sia le chiavi dei filtri sia `sort.column` vengono validate contro le colonne
@@ -150,8 +152,14 @@ function toFindOperator(value: unknown): unknown {
     return Equal(value);
   }
 
-  // Oggetto strutturato: number/date con mode equal/range
+  // Oggetto strutturato: number/date con mode equal/range/only-empty
   if (typeof value === "object" && value !== null) {
+    const raw = value as { mode?: string };
+
+    if (raw.mode === "only-empty") {
+      return IsNull();
+    }
+
     const v = value as NumberFilterValue & DateFilterValue;
 
     if (v.mode === "equal") {

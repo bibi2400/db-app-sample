@@ -664,20 +664,30 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       }
 
       case 'date': {
-        const dateVal =
-          cellValue instanceof Date ? cellValue : new Date(String(cellValue));
         const df = filterValue as {
           mode?: string;
           from?: string | null;
           to?: string | null;
           equal?: string | null;
         };
+        // "Solo vuoti": mostra solo righe con valore nullo/undefined/''
+        if (df.mode === 'only-empty') {
+          return cellValue == null || cellValue === '';
+        }
+        const isEmpty = cellValue == null || cellValue === '';
         if (df.mode === 'equal' && df.equal) {
+          if (isEmpty) return false;
+          const dateVal = cellValue instanceof Date ? cellValue : new Date(String(cellValue));
           const eq = new Date(df.equal);
           return dateVal.toDateString() === eq.toDateString();
         }
-        if (df.from && dateVal < new Date(df.from)) return false;
-        if (df.to && dateVal > new Date(df.to)) return false;
+        // Range: esclude le righe con valore nullo se almeno un bound è attivo
+        if (df.from || df.to) {
+          if (isEmpty) return false;
+          const dateVal = cellValue instanceof Date ? cellValue : new Date(String(cellValue));
+          if (df.from && dateVal < new Date(df.from)) return false;
+          if (df.to && dateVal > new Date(df.to)) return false;
+        }
         return true;
       }
 
