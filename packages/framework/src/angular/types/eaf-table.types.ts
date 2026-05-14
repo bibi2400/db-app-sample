@@ -3,7 +3,16 @@ import { TemplateRef } from '@angular/core';
 
 // ─── Column Filter Types ─────────────────────────────────────────────────────
 
-export type EafFilterType = 'text' | 'number' | 'date' | 'select' | 'select-distinct' | 'boolean' | 'custom';
+// I tipi `EafFilterType`, `EafSortState`, `EafTableServerEvent` ed `EafTableResult`
+// sono definiti in `shared/` per essere usati anche dal lato Electron
+// (helper `buildFindOptions`). Sono ri-esportati da qui per retro-compatibilità.
+export type {
+  EafFilterType,
+  EafSortState,
+  EafTableServerEvent,
+  EafTableResult,
+} from '../../shared/types/eaf-table';
+import type { EafFilterType, EafSortState } from '../../shared/types/eaf-table';
 
 export interface EafSelectOption {
   value: unknown;
@@ -134,13 +143,6 @@ export interface EafPageEvent {
 
 export type EafSelectionMode = 'none' | 'single' | 'multiple';
 
-// ─── Sort ────────────────────────────────────────────────────────────────────
-
-export interface EafSortState {
-  column: string;
-  direction: 'asc' | 'desc' | '';
-}
-
 // ─── Filter State ────────────────────────────────────────────────────────────
 
 export interface EafFilterValue {
@@ -177,15 +179,6 @@ export interface EafTableState {
 
   /** Indice pagina corrente */
   pageIndex?: number;
-}
-
-// ─── Server-Side Events ──────────────────────────────────────────────────────
-
-export interface EafTableServerEvent {
-  sort?: EafSortState;
-  filters: Record<string, unknown>;
-  pageIndex: number;
-  pageSize: number;
 }
 
 // ─── Template Context ────────────────────────────────────────────────────────

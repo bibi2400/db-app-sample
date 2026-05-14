@@ -1,68 +1,39 @@
 <div class="table-demo-page">
-  <h2>Demo Tabella</h2>
-  <p class="subtitle">{{ products().length }} prodotti in catalogo</p>
+  <h2>Demo Tabella (server-side)</h2>
+  <p class="subtitle">
+    {{ totalRows() }} righe totali · {{ products().length }} in pagina
+  </p>
 
   <eaf-table
     height="calc(100vh - 269px)"
     tableId="demo-products"
-    [data]="products()"
+    [data]="products$"
     [columns]="columns"
     [pagination]="pagination"
+    [serverSide]="true"
+    [serverTotalRows]="totalRows()"
     [draggable]="true"
     selectionMode="multiple"
     [stickyHeader]="true"
     [initialState]="initialState"
+    (serverEvent)="onServerEvent($event)"
     (selectionChange)="onSelectionChange($event)"
-    (rowClick)="onRowClick($event)">
-
-    <!-- Cella custom: prezzo -->
-    <ng-template eafCellDef="price" let-row let-value="value">
-      <span class="price">{{ formatPrice(value) }}</span>
-    </ng-template>
-
-    <!-- Cella custom: stato attivo -->
-    <ng-template eafCellDef="active" let-row let-value="value">
-      <mat-chip [highlighted]="value" [class.chip-active]="value" [class.chip-inactive]="!value">
-        {{ value ? 'Sì' : 'No' }}
-      </mat-chip>
-    </ng-template>
-
-    <!-- Cella custom: data -->
-    <ng-template eafCellDef="createdAt" let-row let-value="value">
-      {{ formatDate(value) }}
-    </ng-template>
-
-    <!-- Cella custom: ultimo aggiornamento -->
-    <ng-template eafCellDef="updatedAt" let-row let-value="value">
-      {{ formatDate(value) }}
-    </ng-template>
-
-    <!-- Cella custom: rating (stelle) -->
-    <ng-template eafCellDef="rating" let-row let-value="value">
-      @for (star of [1,2,3,4,5]; track star) {
-        <mat-icon class="star-icon" [class.star-filled]="star <= value">{{ star <= value ? 'star' : 'star_border' }}</mat-icon>
-      }
-    </ng-template>
-
-    <!-- Cella custom: stato -->
-    <ng-template eafCellDef="status" let-row let-value="value">
-      <mat-chip [class]="'status-' + statusClass(value)">{{ value }}</mat-chip>
-    </ng-template>
-
-    <!-- Filtro custom: categoria (checkbox multipli) -->
-    <ng-template eafFilterDef="category" let-column let-value="value" let-filterChange="filterChange">
-      <div class="category-filter">
-        <p class="category-filter-title">Filtra per categoria</p>
-        <button mat-raised-button>Qualsiasi cosa</button>
-      </div>
-    </ng-template>
-
+    (rowClick)="onRowClick($event)"
+  >
     <!-- Colonna azioni -->
     <ng-template eafActionsDef let-row>
-      <button mat-icon-button color="primary" (click)="onEdit(row); $event.stopPropagation()">
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="onEdit(row); $event.stopPropagation()"
+      >
         <mat-icon>edit</mat-icon>
       </button>
-      <button mat-icon-button color="warn" (click)="onDelete(row); $event.stopPropagation()">
+      <button
+        mat-icon-button
+        color="warn"
+        (click)="onDelete(row); $event.stopPropagation()"
+      >
         <mat-icon>delete</mat-icon>
       </button>
     </ng-template>

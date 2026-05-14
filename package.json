@@ -3,7 +3,7 @@
   "productName": "Db App Sample",
   "version": "2.9.0",
   "main": "electron/dist-electron/electron/main.js",
-  "author": "bibi",
+  "author": "manu e bibi",
   "workspaces": [
     "packages/*"
   ],

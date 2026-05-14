@@ -48,6 +48,7 @@ export type {
   EafFilterValue,
   EafTableState,
   EafTableServerEvent,
+  EafTableResult,
   EafCellContext,
   EafFilterContext,
   EafActionsContext,

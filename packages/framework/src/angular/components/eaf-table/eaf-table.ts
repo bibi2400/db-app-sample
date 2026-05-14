@@ -1,5 +1,9 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -23,12 +27,20 @@ import { StorageType } from '../../types/storage.types';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+  MatPaginator,
+  MatPaginatorModule,
+  PageEvent,
+} from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { isObservable, Observable, Subject, Subscription } from 'rxjs';
 
-import { EafActionsDefDirective, EafCellDefDirective, EafFilterDefDirective } from '../../directives/eaf-table.directives';
+import {
+  EafActionsDefDirective,
+  EafCellDefDirective,
+  EafFilterDefDirective,
+} from '../../directives/eaf-table.directives';
 import { EafTableStorageService } from '../../services/eaf-table-storage.service';
 import {
   EafColumnDef,
@@ -42,7 +54,7 @@ import {
   EafTableState,
 } from '../../types/eaf-table.types';
 import { EafTableFilter } from '../eaf-table-filter/eaf-table-filter';
-import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
+import { ScrollRestorer } from '../scroll-restorer/scroll-restorer';
 
 @Component({
   selector: 'eaf-table',
@@ -57,15 +69,17 @@ import { ScrollRestorer } from "../scroll-restorer/scroll-restorer";
     MatButtonModule,
     DragDropModule,
     EafTableFilter,
-    ScrollRestorer
-],
+    ScrollRestorer,
+  ],
   templateUrl: './eaf-table.html',
   styleUrl: './eaf-table.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private readonly storageService = inject(EafTableStorageService);
-  private readonly globalStorageConfig = inject(EAF_STORAGE_CONFIG, { optional: true });
+  private readonly globalStorageConfig = inject(EAF_STORAGE_CONFIG, {
+    optional: true,
+  });
 
   // ─── Inputs ──────────────────────────────────────────────────────────────
 
@@ -139,7 +153,12 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
    *   - oggetto: { 'class-a': true, 'class-b': false }
    * Ritorna null/undefined per non aggiungere classi.
    */
-  readonly rowClass = input<((row: T) => string | string[] | Record<string, boolean> | null | undefined) | null>(null);
+  readonly rowClass = input<
+    | ((
+        row: T,
+      ) => string | string[] | Record<string, boolean> | null | undefined)
+    | null
+  >(null);
 
   // ─── Outputs ─────────────────────────────────────────────────────────────
 
@@ -193,7 +212,10 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   protected readonly openFilterKey = signal<string | null>(null);
 
   /** Posizione del dropdown filtro (fixed) */
-  protected readonly filterPosition = signal<{ top: number; left: number }>({ top: 0, left: 0 });
+  protected readonly filterPosition = signal<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
 
   /** Subject per filtri custom (uno per colonna) */
   private readonly filterSubjects = new Map<string, Subject<unknown>>();
@@ -208,13 +230,19 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Computed Storage Types ─────────────────────────────────────────────
 
   /** StorageType effettivo per lo stato: input locale > config globale > 'none' */
-  protected readonly effectiveTableStateType = computed<StorageType>(() =>
-    this.tableStateStorageType() ?? this.globalStorageConfig?.tableStateStorageType ?? 'none'
+  protected readonly effectiveTableStateType = computed<StorageType>(
+    () =>
+      this.tableStateStorageType() ??
+      this.globalStorageConfig?.tableStateStorageType ??
+      'none',
   );
 
   /** StorageType effettivo per lo scroll: input locale > config globale > 'none' */
-  protected readonly effectiveTableScrollType = computed<StorageType>(() =>
-    this.tableScrollStorageType() ?? this.globalStorageConfig?.tableScrollStorageType ?? 'none'
+  protected readonly effectiveTableScrollType = computed<StorageType>(
+    () =>
+      this.tableScrollStorageType() ??
+      this.globalStorageConfig?.tableScrollStorageType ??
+      'none',
   );
 
   // ─── Computed ────────────────────────────────────────────────────────────
@@ -226,7 +254,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     const cols = this.columns();
 
     const ordered = order
-      .map(key => cols.find(c => c.key === key))
+      .map((key) => cols.find((c) => c.key === key))
       .filter((c): c is EafColumnDef<T> => c != null && visible.has(c.key));
 
     return ordered;
@@ -234,7 +262,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   /** Array finale di colonne mostrate (incluse select e actions) */
   protected readonly displayedColumns = computed(() => {
-    const cols = this.visibleColumnDefs().map(c => c.key);
+    const cols = this.visibleColumnDefs().map((c) => c.key);
     const result: string[] = [];
 
     if (this.selectionMode() !== 'none') {
@@ -257,13 +285,15 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   });
 
   /** Configurazione paginazione normalizzata: null se disabilitata */
-  protected readonly paginationConfig = computed<EafPaginationConfig | null>(() => {
-    const p = this.pagination();
-    if (p == null || p === false) return null;
-    if (p === true) return { enabled: true };
-    if (p.enabled === false) return null;
-    return p;
-  });
+  protected readonly paginationConfig = computed<EafPaginationConfig | null>(
+    () => {
+      const p = this.pagination();
+      if (p == null || p === false) return null;
+      if (p === true) return { enabled: true };
+      if (p.enabled === false) return null;
+      return p;
+    },
+  );
 
   // ─── Persist state on changes ────────────────────────────────────────────
 
@@ -278,7 +308,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
         pageIndex: this.currentPageIndex(),
       };
       untracked(() => {
-        this.storageService.save(this.tableId(), state, this.effectiveTableStateType());
+        this.storageService.save(
+          this.tableId(),
+          state,
+          this.effectiveTableStateType(),
+        );
         this.stateChange.emit(state);
       });
     });
@@ -314,19 +348,22 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.dataSub?.unsubscribe();
-    this.filterSubs.forEach(s => s.unsubscribe());
-    this.filterSubjects.forEach(s => s.complete());
+    this.filterSubs.forEach((s) => s.unsubscribe());
+    this.filterSubjects.forEach((s) => s.complete());
   }
 
   // ─── Initialization ─────────────────────────────────────────────────────
 
   private initializeState(): void {
     const cols = this.columns();
-    const allKeys = cols.map(c => c.key);
+    const allKeys = cols.map((c) => c.key);
     const validKeys = new Set(allKeys);
 
     // 1. Carica dallo storage
-    const stored = this.storageService.load(this.tableId(), this.effectiveTableStateType());
+    const stored = this.storageService.load(
+      this.tableId(),
+      this.effectiveTableStateType(),
+    );
 
     // 2. initialState ha priorità su stored
     const ext = this.initialState();
@@ -351,13 +388,13 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       orderEntries.push({ key: col.key, order });
 
       // Visibilità: usa salvata se presente, altrimenti default dalla configurazione
-      const visible = saved != null ? saved.visible : (col.visible !== false);
+      const visible = saved != null ? saved.visible : col.visible !== false;
       if (visible) visibleKeys.push(col.key);
     }
 
     // Ordina per order crescente
     orderEntries.sort((a, b) => a.order - b.order);
-    this.columnOrder.set(orderEntries.map(e => e.key));
+    this.columnOrder.set(orderEntries.map((e) => e.key));
     this.visibleColumnKeys.set(visibleKeys);
 
     // Sort: resetta se la colonna non esiste più
@@ -380,7 +417,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     this.activeFilters.set(filters);
 
     // Page size
-    const pageSize = ext?.pageSize ?? stored?.pageSize ?? this.paginationConfig()?.pageSize ?? 10;
+    const pageSize =
+      ext?.pageSize ??
+      stored?.pageSize ??
+      this.paginationConfig()?.pageSize ??
+      10;
     this.currentPageSize.set(pageSize);
 
     // Page index
@@ -392,7 +433,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     const dataInput = this.data();
 
     if (isObservable(dataInput)) {
-      this.dataSub = dataInput.subscribe(data => {
+      this.dataSub = dataInput.subscribe((data) => {
         this.allData = data;
         this.applyClientData();
       });
@@ -412,7 +453,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       for (const [key, filterValue] of Object.entries(filters)) {
         if (filterValue == null) continue;
 
-        const col = cols.find(c => c.key === key);
+        const col = cols.find((c) => c.key === key);
         if (!col) continue;
 
         // Custom filter function
@@ -424,13 +465,21 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
         const filterConfig = this.resolveFilterConfig(col);
 
         // Filtro 'select' con predicateOptions
-        if (filterConfig.type === 'select' && filterConfig.predicateOptions?.length) {
+        if (
+          filterConfig.type === 'select' &&
+          filterConfig.predicateOptions?.length
+        ) {
           if (Array.isArray(filterValue)) {
             // Multiselect: la riga passa se soddisfa almeno un predicato selezionato
-            const preds = filterConfig.predicateOptions.filter(o => (filterValue as unknown[]).includes(o.value));
-            if (preds.length && !preds.some(p => p.filterFn(row))) return false;
+            const preds = filterConfig.predicateOptions.filter((o) =>
+              (filterValue as unknown[]).includes(o.value),
+            );
+            if (preds.length && !preds.some((p) => p.filterFn(row)))
+              return false;
           } else {
-            const predOpt = filterConfig.predicateOptions.find(o => o.value === filterValue);
+            const predOpt = filterConfig.predicateOptions.find(
+              (o) => o.value === filterValue,
+            );
             if (predOpt && !predOpt.filterFn(row)) return false;
           }
           continue;
@@ -451,8 +500,12 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private applyClientData(): void {
     const wasLoaded = this.dataLoaded;
     this.tableDataSource.data = this.allData;
-    // Trigger filter
-    this.tableDataSource.filter = JSON.stringify(this.activeFilters());
+    // In server-side mode il filtering è gestito dal backend: non toccare
+    // tableDataSource.filter, altrimenti il predicate di default di Material
+    // filtrerebbe via tutte le righe (riceverebbe la stringa "{}" e non la troverebbe in nessuna riga).
+    if (!this.serverSide()) {
+      this.tableDataSource.filter = JSON.stringify(this.activeFilters());
+    }
     if (this.allData.length > 0) {
       this.dataLoaded = true;
       // Primo caricamento dati: ripristina il pageIndex sul paginator,
@@ -502,7 +555,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Filters ─────────────────────────────────────────────────────────────
 
   hasFilter(col: EafColumnDef<T>): boolean {
-    return col.filter !== false && col.filter !== undefined && col.filter !== null;
+    return (
+      col.filter !== false && col.filter !== undefined && col.filter !== null
+    );
   }
 
   isFilterActive(key: string): boolean {
@@ -542,7 +597,9 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     if (!this.filterSubjects.has(key)) {
       const subject = new Subject<unknown>();
       this.filterSubjects.set(key, subject);
-      const sub = subject.subscribe(value => this.onFilterValueChange(key, value));
+      const sub = subject.subscribe((value) =>
+        this.onFilterValueChange(key, value),
+      );
       this.filterSubs.push(sub);
     }
     return this.filterSubjects.get(key)!;
@@ -567,12 +624,12 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   }
 
   getCustomFilterTemplate(key: string): TemplateRef<unknown> | null {
-    const def = this.filterDefs().find(d => d.columnKey() === key);
+    const def = this.filterDefs().find((d) => d.columnKey() === key);
     return def?.templateRef ?? null;
   }
 
   getColumnData(key: string): unknown[] {
-    return this.allData.map(row => (row as Record<string, unknown>)[key]);
+    return this.allData.map((row) => (row as Record<string, unknown>)[key]);
   }
 
   private resolveFilterConfig(col: EafColumnDef<T>): EafFilterConfig {
@@ -580,7 +637,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     return { type: 'text' };
   }
 
-  private matchesFilter(cellValue: unknown, filterValue: unknown, filterType: EafFilterType): boolean {
+  private matchesFilter(
+    cellValue: unknown,
+    filterValue: unknown,
+    filterType: EafFilterType,
+  ): boolean {
     switch (filterType) {
       case 'text': {
         const cell = String(cellValue ?? '').toLowerCase();
@@ -590,7 +651,12 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
       case 'number': {
         const num = Number(cellValue);
-        const nf = filterValue as { mode?: string; min?: number | null; max?: number | null; equal?: number | null };
+        const nf = filterValue as {
+          mode?: string;
+          min?: number | null;
+          max?: number | null;
+          equal?: number | null;
+        };
         if (nf.mode === 'equal') return nf.equal != null && num === nf.equal;
         if (nf.min != null && num < nf.min) return false;
         if (nf.max != null && num > nf.max) return false;
@@ -598,8 +664,14 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       }
 
       case 'date': {
-        const dateVal = cellValue instanceof Date ? cellValue : new Date(String(cellValue));
-        const df = filterValue as { mode?: string; from?: string | null; to?: string | null; equal?: string | null };
+        const dateVal =
+          cellValue instanceof Date ? cellValue : new Date(String(cellValue));
+        const df = filterValue as {
+          mode?: string;
+          from?: string | null;
+          to?: string | null;
+          equal?: string | null;
+        };
         if (df.mode === 'equal' && df.equal) {
           const eq = new Date(df.equal);
           return dateVal.toDateString() === eq.toDateString();
@@ -643,8 +715,11 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Selection ───────────────────────────────────────────────────────────
 
   isAllSelected(): boolean {
-    return this.selection.selected.length === this.tableDataSource.filteredData.length
-      && this.selection.selected.length > 0;
+    return (
+      this.selection.selected.length ===
+        this.tableDataSource.filteredData.length &&
+      this.selection.selected.length > 0
+    );
   }
 
   isSomeSelected(): boolean {
@@ -696,7 +771,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Cell Templates ──────────────────────────────────────────────────────
 
   getCellTemplate(key: string): TemplateRef<unknown> | null {
-    const def = this.cellDefs().find(d => d.columnKey() === key);
+    const def = this.cellDefs().find((d) => d.columnKey() === key);
     return def?.templateRef ?? null;
   }
 
@@ -758,7 +833,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     if (visible && !current.includes(key)) {
       this.visibleColumnKeys.set([...current, key]);
     } else if (!visible) {
-      this.visibleColumnKeys.set(current.filter(k => k !== key));
+      this.visibleColumnKeys.set(current.filter((k) => k !== key));
     }
   }
 

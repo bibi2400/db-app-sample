@@ -27,3 +27,9 @@ export type { KeyBinding, ShortcutEntry, ShortcutDefinition } from './types/shor
 export type { CommandPaletteItem } from './types/command-palette';
 export { DbMigrationDefinition } from './types/db-migration';
 export type { SchemaDriftIssue, SchemaDriftIssueType, SchemaDriftReport } from './types/schema-drift';
+export type {
+  EafFilterType,
+  EafSortState,
+  EafTableServerEvent,
+  EafTableResult,
+} from './types/eaf-table';

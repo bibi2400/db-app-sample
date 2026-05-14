@@ -1,115 +1,67 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
-import { EafTable, EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective, ScrollRestorer } from '@bibi2400/electron-angular-framework/angular';
 import type {
   EafColumnDef,
   EafPaginationConfig,
-  EafSelectPredicateOption,
+  EafTableServerEvent,
   EafTableState,
 } from '@bibi2400/electron-angular-framework/angular';
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatCheckboxModule } from '@angular/material/checkbox';
+import {
+  EafActionsDefDirective,
+  EafTable,
+} from '@bibi2400/electron-angular-framework/angular';
 
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  rating: number;
-  status: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { ElectronTableDemoService } from '../../services/electron-table-demo.service';
+import type { MightyTableRow } from '../../types/mighty-table';
 
-const CATEGORIES = ['Elettronica', 'Abbigliamento', 'Casa', 'Sport', 'Alimentari'];
-const STATUSES = [
-  'Disponibile',
-  'Esaurito',
-  'In arrivo',
-  'Fuori produzione',
-  "Lorem",
-  "Ipsum",
-  "has",
-  "been",
-  "the",
-  "industrys",
-  "standard",
-  "dummy",
-  "text",
-  "ever",
-  "since",
-  "the",
-  "1500s",
-  "when",
-  "an",
-  "unknown",
-  "printer",
-  "took",
-  "a",
-  "galley",
-  "of",
-  "type",
-  "and",
-  "scrambled",
-  "it",
-  "to",
-  "make",
-  "a",
-  "type",
-  "specimen",
-  "book",
-  "It",
-  "has",
-  "survived",
-  "not",
-  "only",
-  "five",
-  "centuries",
-];
+import { toObservable } from '@angular/core/rxjs-interop';
 
-function generateProducts(count: number): Product[] {
-  const products: Product[] = [];
-  for (let i = 1; i <= count; i++) {
-    products.push({
-      id: i,
-      name: `Prodotto ${i}`,
-      category: CATEGORIES[i % CATEGORIES.length],
-      price: Math.round((Math.random() * 500 + 5) * 100) / 100,
-      stock: Math.floor(Math.random() * 200),
-      rating: Math.floor(Math.random() * 5) + 1,
-      status: STATUSES[Math.floor(Math.random() * STATUSES.length)],
-      active: Math.random() > 0.3,
-      createdAt: new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
-      updatedAt: new Date(2026, Math.floor(Math.random() * 4), Math.floor(Math.random() * 28) + 1).toISOString(),
-    });
-  }
-  return products;
-}
-
+/**
+ * DEMO TABELLA SERVER-SIDE.
+ *
+ * Pattern raccomandato per tabelle con dati provenienti dal DB:
+ *  1. `[serverSide]="true"` disabilita filter/sort/pagination client-side
+ *  2. La tabella emette `(serverEvent)` ad ogni cambio di paginazione, sort o filtri
+ *  3. L'handler chiama un service Angular (wrapper IPC) che richiama un controller
+ *     Electron il quale, tramite `buildFindOptions(event, repo)`, esegue la query
+ *     TypeORM e ritorna `{ items, total }`.
+ *  4. La pagina aggiorna i signal `products` e `totalRows` e li passa alla tabella.
+ *
+ * Per i filtri `select-distinct` (es. `status`) i valori unici NON sono inferibili
+ * dalla pagina corrente: si usa `loadOptions` per recuperarli con un IPC dedicato.
+ */
 @Component({
   selector: 'app-table-demo',
   imports: [
     EafTable,
-    EafCellDefDirective,
-    EafFilterDefDirective,
     EafActionsDefDirective,
     MatIconModule,
     MatButtonModule,
     MatChipsModule,
     MatCheckboxModule,
-],
+  ],
   templateUrl: './table-demo.html',
   styleUrl: './table-demo.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TableDemo {
+export class TableDemo implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly tableDemoService = inject(ElectronTableDemoService);
 
-  protected readonly products = signal<Product[]>(generateProducts(80));
+  protected readonly products = signal<MightyTableRow[]>([]);
+  protected readonly products$ = toObservable(this.products);
+  protected readonly totalRows = signal<number>(0);
+  protected readonly loading = signal<boolean>(false);
 
   protected readonly initialState: Partial<EafTableState> | null;
 
@@ -117,75 +69,78 @@ export class TableDemo {
     const params = this.route.snapshot.queryParams;
     const filters: Record<string, unknown> = {};
     for (const [key, raw] of Object.entries(params)) {
-      try { filters[key] = JSON.parse(raw as string); }
-      catch { filters[key] = raw; }
+      try {
+        filters[key] = JSON.parse(raw as string);
+      } catch {
+        filters[key] = raw;
+      }
     }
     this.initialState = Object.keys(filters).length ? { filters } : null;
   }
 
-  protected readonly categories = CATEGORIES;
-  protected readonly selectedCategories = signal<Set<string>>(new Set());
+  /**
+   * `loadOptions` per il filtro `select-distinct` su `status`.
+   * Restituito come Observable (la EafFilterConfig accetta sia Promise che Observable).
+   */
 
-  protected readonly columns: EafColumnDef<Product>[] = [
-    // number — solo equal
-    { key: 'id', header: 'ID', width: '80px', sortable: true, filter: { type: 'number', modes: ['equal'] } },
-    // text
-    { key: 'name', header: 'Nome', width: 2, sortable: true, filter: true },
-    // custom (checkbox multi-select)
+  protected readonly columns: EafColumnDef<MightyTableRow>[] = [
     {
-      key: 'category', header: 'Categoria', width: 1, sortable: true,
-      filter: { type: 'custom' },
-      filterFn: (row, value) => {
-        const selected = value as string[];
-        return !selected?.length || selected.includes(row.category);
-      },
+      key: 'id',
+      header: 'ID',
+      width: '70px',
+      sortable: true,
+      filter: { type: 'number', modes: ['equal'] },
     },
-    // number — entrambe le modalità (default)
-    { key: 'price', header: 'Prezzo (€)', width: 1, sortable: true, filter: { type: 'number' } },
-    // number — solo range
-    { key: 'stock', header: 'Giacenza', width: 1, sortable: true, filter: { type: 'number', modes: ['range'] } },
-    // number — solo equal (rating 1-5)
-    { key: 'rating', header: 'Voto', width: '80px', sortable: true, filter: { type: 'number', modes: ['equal'] } },
-    // select-distinct multiselect con autocomplete (valori unici estratti automaticamente)
-    { key: 'status', header: 'Stato', width: 1, sortable: true, filter: { type: 'select-distinct', multiple: true, autocomplete: true } },
-    // boolean
-    { key: 'active', header: 'Attivo', width: '100px', sortable: true, filter: { type: 'boolean' } },
-    // select con predicateOptions
     {
-      key: 'createdAt', header: 'Data creazione', width: 1, sortable: true,
-      filter: {
-        type: 'select',
-        predicateOptions: [
-          {
-            value: 'recent',
-            label: 'Ultimi 3 mesi',
-            filterFn: (row: Product) => {
-              const d = new Date(row.createdAt);
-              const threeMonthsAgo = new Date();
-              threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-              return d >= threeMonthsAgo;
-            },
-          },
-          {
-            value: 'old',
-            label: 'Più di 6 mesi fa',
-            filterFn: (row: Product) => {
-              const d = new Date(row.createdAt);
-              const sixMonthsAgo = new Date();
-              sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-              return d < sixMonthsAgo;
-            },
-          },
-          {
-            value: 'this-year',
-            label: 'Anno corrente',
-            filterFn: (row: Product) => new Date(row.createdAt).getFullYear() === new Date().getFullYear(),
-          },
-        ] as EafSelectPredicateOption<Product>[],
-      },
+      key: 'header1',
+      header: 'Int',
+      width: 1,
+      sortable: true,
+      filter: { type: 'number' },
     },
-    // date — solo equal
-    { key: 'updatedAt', header: 'Ultimo aggiornamento', width: 1, sortable: true, filter: { type: 'date', modes: ['equal'] } },
+    {
+      key: 'header2',
+      header: 'Varchar',
+      width: 2,
+      sortable: true,
+      filter: true,
+    },
+    { key: 'header3', header: 'Text', width: 2, sortable: true, filter: true },
+    {
+      key: 'header4',
+      header: 'Date',
+      width: 1,
+      sortable: true,
+      filter: { type: 'date' },
+    },
+    {
+      key: 'header5',
+      header: 'Datetime',
+      width: 1,
+      sortable: true,
+      filter: { type: 'date' },
+    },
+    {
+      key: 'header6',
+      header: 'Boolean',
+      width: '100px',
+      sortable: true,
+      filter: { type: 'boolean' },
+    },
+    {
+      key: 'header7',
+      header: 'Float',
+      width: 1,
+      sortable: true,
+      filter: { type: 'number', modes: ['range'] },
+    },
+    {
+      key: 'header8',
+      header: 'Double',
+      width: 1,
+      sortable: true,
+      filter: { type: 'number', modes: ['range'] },
+    },
   ];
 
   protected readonly pagination: EafPaginationConfig = {
@@ -194,54 +149,52 @@ export class TableDemo {
     pageSizeOptions: [5, 10, 25, 50],
   };
 
-  protected onEdit(product: Product): void {
-    console.log('Edit:', product);
-  }
-
-  protected onDelete(product: Product): void {
-    console.log('Delete:', product);
-    this.products.update(list => list.filter(p => p.id !== product.id));
-  }
-
-  protected onSelectionChange(selected: Product[]): void {
-    console.log('Selezione:', selected.length, 'prodotti');
-  }
-
-  protected onRowClick(product: Product): void {
-    console.log('Click riga:', product);
-  }
-
-  protected onCategoryToggle(category: string, filterChange: { next: (v: unknown) => void }): void {
-    this.selectedCategories.update(set => {
-      const copy = new Set(set);
-      if (copy.has(category)) copy.delete(category); else copy.add(category);
-      return copy;
+  ngOnInit(): void {
+    // Caricamento iniziale: emula l'evento server-side con paginazione default.
+    this.fetch({
+      filters: this.initialState?.filters ?? {},
+      pageIndex: 0,
+      pageSize: this.pagination.pageSize ?? 10,
     });
-    const arr = [...this.selectedCategories()];
-    filterChange.next(arr.length ? arr : null);
   }
 
-  protected isCategorySelected(category: string): boolean {
-    return this.selectedCategories().has(category);
+  /** Handler dell'output `(serverEvent)` della `EafTable`. */
+  protected onServerEvent(event: EafTableServerEvent): void {
+    this.fetch(event);
   }
 
-  protected formatPrice(value: unknown): string {
-    return typeof value === 'number' ? `€ ${value.toFixed(2)}` : String(value);
+  private async fetch(event: EafTableServerEvent): Promise<void> {
+    this.loading.set(true);
+    try {
+      const result = await this.tableDemoService.getRows(event);
+      this.products.set(result.items);
+      this.totalRows.set(result.total);
+    } catch (err) {
+      console.error('[TableDemo] fetch failed:', err);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  protected onEdit(row: MightyTableRow): void {
+    console.log('Edit:', row);
+  }
+
+  protected onDelete(row: MightyTableRow): void {
+    console.log('Delete:', row);
+  }
+
+  protected onSelectionChange(row: MightyTableRow[]): void {
+    console.log('Selezione:', row.length, 'prodotti');
+  }
+
+  protected onRowClick(row: MightyTableRow): void {
+    console.log('Click riga:', row);
   }
 
   protected formatDate(value: unknown): string {
     if (!value) return '';
     const d = new Date(String(value));
     return d.toLocaleDateString('it-IT');
-  }
-
-  protected statusClass(status: string): string {
-    const map: Record<string, string> = {
-      'Disponibile': 'available',
-      'Esaurito': 'out-of-stock',
-      'In arrivo': 'incoming',
-      'Fuori produzione': 'discontinued',
-    };
-    return map[status] ?? 'default';
   }
 }

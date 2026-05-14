@@ -25,6 +25,7 @@ export { BaseController } from './controllers/base.controller';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 export { Logger } from './helpers/logger';
 export { PushEmitter } from './helpers/push/push-emitter';
+export { buildFindOptions } from './helpers/build-find-options';
 
 // ─── System Services (re-exported for consumer DI injection) ─────────────────
 export { ConfigService } from './services/system-services/config.service';

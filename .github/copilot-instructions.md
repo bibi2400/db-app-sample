@@ -278,6 +278,77 @@ export class MyEntity {
 
 - Register in `electron/src/db/entities/index.ts` MODELS array
 
+### Server-Side Tables (standard)
+
+**Tutte le tabelle EAF devono usare la modalità server-side**: paginazione, filtri e ordinamento sono delegati al backend Electron + TypeORM. Questo evita di caricare grandi dataset in memoria e garantisce performance costanti.
+
+**Pipeline standard**:
+```
+EafTable (serverEvent) → ElectronXxxService → IPC invoke
+  → Controller → Service.getXxx(event)
+  → buildFindOptions(event, repo) → repo.findAndCount()
+  → EafTableResult<T> { items, total }
+```
+
+**Tipi condivisi** (`@bibi2400/electron-angular-framework/shared` o `/angular`):
+- `EafTableServerEvent` — `{ sort, filters, pageIndex, pageSize }` emesso dalla tabella
+- `EafTableResult<T>` — `{ items, total }` restituito dal backend
+
+**Helper Electron** (`@bibi2400/electron-angular-framework/electron`):
+```typescript
+import { buildFindOptions } from '@bibi2400/electron-angular-framework/electron';
+
+async getProducts(event: EafTableServerEvent): Promise<EafTableResult<Product>> {
+  const repo = this.dataSourceService.getRepository(Product);
+  const options = buildFindOptions(event, repo);
+  const [items, total] = await repo.findAndCount(options);
+  return { items, total };
+}
+```
+
+`buildFindOptions(event, repo)`:
+- Valida `sort.column` e le chiavi di `filters` contro `repo.metadata.columns` (protezione SQL injection — logga warning su colonne sconosciute)
+- Converte i valori dei filtri in operatori TypeORM:
+  - `string` → `Like('%v%')` (case-insensitive su SQLite per ASCII)
+  - `array` → `In([...])` (per filtri `select` multipli)
+  - `boolean` → `Equal(v)`
+  - `{ mode: 'equal', equal: n | isoString }` → `Equal(n | new Date(...))`
+  - `{ mode: 'range', min/max | from/to }` → `Between` / `MoreThanOrEqual` / `LessThanOrEqual`
+- Imposta `take`, `skip`, `order` a partire da `pageSize`, `pageIndex`, `sort`
+
+**Template Angular**:
+```html
+<eaf-table
+  [data]="items()"
+  [columns]="columns"
+  [serverSide]="true"
+  [serverTotalRows]="totalRows()"
+  (serverEvent)="onServerEvent($event)">
+</eaf-table>
+```
+
+**Template TypeScript**:
+```typescript
+protected readonly items = signal<Product[]>([]);
+protected readonly totalRows = signal(0);
+
+ngOnInit() {
+  this.fetch({ pageIndex: 0, pageSize: 25, filters: {}, sort: undefined });
+}
+
+onServerEvent(event: EafTableServerEvent) { this.fetch(event); }
+
+private async fetch(event: EafTableServerEvent) {
+  const result = await this.electronXxx.getProducts(event);
+  this.items.set(result.items);
+  this.totalRows.set(result.total);
+}
+```
+
+**Filtri `select-distinct`**: con server-side i valori distinct non sono più inferibili dalla pagina corrente. Esporre un IPC dedicato (es. `xxx:get-distinct-yyy`) e passare un `loadOptions` callback alla colonna che restituisca `Observable<EafSelectOption[]>` (usare `from(promise)` di rxjs).
+
+**Seed di grandi dataset**: SQLite ha un limite di ~999 parametri per statement. Usare `repo.insert(rows.slice(i, i + CHUNK))` con `CHUNK = 50` invece di `repo.save()` in loop.
+
 ## TypeScript Configuration
 
 - `strict: true` everywhere
@@ -379,3 +450,4 @@ When adding new elements, remember to register them:
 - Tell me if I need to launch `eaf migrate` after your template-related changes.
 - For any modification and fix, prepare a implementation plan and share it with me before starting to code, so we can align on the approach and I can give you feedback before you invest time in coding.
 - Write in the framework's code comments and examples about functionalities usage, so I can learn and Copilot in consumers' codebase can suggest the right usage patterns.
+- NO workaround in the consumer app. If the framework has a bug or needs a new feature, modify the framework.
