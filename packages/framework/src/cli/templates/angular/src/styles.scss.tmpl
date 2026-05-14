@@ -16,12 +16,15 @@ html {
 );
 
 // Sfondo globale dell'app. Personalizza colore/immagine/overlay qui.
-// Esempio con immagine + overlay:
+// Il mixin è zoom-aware: la dimensione del pattern viene compensata
+// automaticamente con calc($size / --eaf-content-zoom).
+//
+// Esempio con pattern ripetuto + overlay (ancorato a sx/top, invariante allo zoom):
 //   @include eaf.eaf-background(
 //     $color: #f5f7fa,
-//     $image: url('/assets/form-background.png'),
+//     $image: url('/assets/bg-pattern.png'),
 //     $overlay: rgba(245, 247, 250, 0.7),
-//     $size: 451px,
+//     $size: 600px,
 //     $repeat: repeat,
 //   );
 @include eaf.eaf-background($color: #f5f7fa);

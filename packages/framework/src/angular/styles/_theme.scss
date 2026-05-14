@@ -93,34 +93,48 @@
 /// Permette di impostare un colore di sfondo, un'immagine (con overlay opzionale
 /// per regolare il contrasto/opacità percepita), e i parametri standard CSS.
 ///
+/// Per le immagini di sfondo, il mixin è zoom-aware per default (`$zoom-aware: true`):
+/// la dimensione del pattern viene compensata automaticamente con
+/// `calc($size / var(--eaf-content-zoom, 1))`, in modo che l'immagine rimanga
+/// invariata visivamente quando l'utente zooma tramite Ctrl+/Ctrl- (webFrame zoom).
+/// Questo funziona solo con valori numerici SCSS (es. `600px`, `2rem`).
+/// Per keyword come `auto`, `cover`, `contain` il calc() non viene applicato.
+///
 /// Esempi:
 ///   // Solo colore di sfondo
 ///   @include eaf.eaf-background($color: #f5f7fa);
 ///
-///   // Solo immagine ripetuta a pattern
+///   // Pattern ripetuto — ancorato a sx/top, dimensione fissa con zoom
 ///   @include eaf.eaf-background(
-///     $image: url('/assets/form-background.png'),
-///     $size: 451px,
+///     $image: url('/assets/bg-pattern.png'),
+///     $size: 600px,
 ///     $repeat: repeat,
 ///   );
 ///
-///   // Immagine con overlay chiaro (simula opacity ~0.3 sull'immagine)
+///   // Pattern con overlay chiaro (simula opacità ~0.3 sull'immagine)
 ///   @include eaf.eaf-background(
 ///     $color: #f5f7fa,
-///     $image: url('/assets/form-background.png'),
+///     $image: url('/assets/bg-pattern.png'),
 ///     $overlay: rgba(245, 247, 250, 0.7),
-///     $size: 451px,
+///     $size: 600px,
 ///     $repeat: repeat,
-///     $attachment: fixed,
 ///   );
 ///
-/// @param {Color}  $color       Colore di sfondo                       (default: null)
-/// @param {String} $image       Url immagine di sfondo, es. `url(...)` (default: null)
-/// @param {Color}  $overlay     Colore overlay sopra l'immagine        (default: null)
-/// @param {*}      $size        background-size                        (default: auto)
-/// @param {*}      $repeat      background-repeat                      (default: no-repeat)
-/// @param {*}      $attachment  background-attachment                  (default: fixed)
-/// @param {*}      $position    background-position                    (default: center center)
+///   // Disabilitare la compensazione zoom (es. per keyword CSS)
+///   @include eaf.eaf-background(
+///     $image: url('/assets/bg.png'),
+///     $size: cover,
+///     $zoom-aware: false,
+///   );
+///
+/// @param {Color}   $color       Colore di sfondo                        (default: null)
+/// @param {String}  $image       Url immagine di sfondo, es. `url(...)`  (default: null)
+/// @param {Color}   $overlay     Colore overlay sopra l'immagine         (default: null)
+/// @param {*}       $size        background-size                         (default: auto)
+/// @param {*}       $repeat      background-repeat                       (default: no-repeat)
+/// @param {*}       $attachment  background-attachment                   (default: fixed)
+/// @param {*}       $position    background-position                     (default: left top)
+/// @param {Boolean} $zoom-aware  Compensa il webFrame zoom su $size      (default: true)
 @mixin eaf-background(
   $color: null,
   $image: null,
@@ -128,8 +142,18 @@
   $size: auto,
   $repeat: no-repeat,
   $attachment: fixed,
-  $position: center center,
+  $position: left top,
+  $zoom-aware: true,
 ) {
+  // Calcola il background-size effettivo compensando il webFrame zoom di Electron.
+  // --eaf-content-zoom è impostata da ElectronZoomService (default: 1).
+  // La compensazione si applica solo a valori numerici SCSS (px, rem, ecc.):
+  // keyword come auto/cover/contain non supportano calc() e vengono passate invariate.
+  $computed-size: $size;
+  @if $zoom-aware and meta.type-of($size) == 'number' {
+    $computed-size: calc(#{$size} / var(--eaf-content-zoom, 1));
+  }
+
   body {
     @if $color != null {
       background-color: $color;
@@ -142,13 +166,13 @@
         background-image:
           linear-gradient(#{$overlay}, #{$overlay}),
           #{$image};
-        background-size: $size, $size;
+        background-size: #{$computed-size}, #{$computed-size};
         background-repeat: $repeat, $repeat;
         background-attachment: $attachment, $attachment;
         background-position: $position, $position;
       } @else {
         background-image: #{$image};
-        background-size: $size;
+        background-size: #{$computed-size};
         background-repeat: $repeat;
         background-attachment: $attachment;
         background-position: $position;

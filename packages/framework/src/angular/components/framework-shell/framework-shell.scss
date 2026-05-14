@@ -4,10 +4,17 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: #eee;
+  // Trasparente: il body background (eaf-background) deve trasparire.
+  background: transparent;
+
+  // --mat-sidenav-container-background-color → colore del pannello drawer (mat-sidenav): NON toccare.
+  // --mat-sidenav-content-background-color   → area contenuto principale: trasparente.
+  --mat-sidenav-content-background-color: transparent;
 
   mat-sidenav {
     width: 280px;
+    // Annulla lo zoom applicato a <html> per mantenere la sidebar alla dimensione originale.
+    zoom: calc(1 / var(--eaf-content-zoom, 1));
   }
 }
 

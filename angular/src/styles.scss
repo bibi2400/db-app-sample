@@ -25,16 +25,57 @@ html {
   $info:    mat.$azure-palette,
 );
 
-// Sfondo globale dell'applicazione. Sostituire i parametri per personalizzarlo.
-// Per usare un'immagine con overlay chiaro (simula opacity ~0.3):
+// ---------------------------------------------------------------------------
+// Sfondo globale dell'applicazione — eaf-background
+// ---------------------------------------------------------------------------
+// Il mixin applica sfondo a `body` e supporta:
+//   $color      → colore di sfondo base (sempre visibile sotto l'immagine)
+//   $image      → URL immagine: url('/assets/mio-pattern.png')
+//   $overlay    → colore semi-trasparente sovrapposto all'immagine, utile per
+//                 abbassare il contrasto: rgba(255,255,255, 0.7) = overlay chiaro
+//   $size       → dimensione del tile: valore fisso (600px) o keyword (cover, auto)
+//   $repeat     → repeat | no-repeat | repeat-x | repeat-y
+//   $attachment → fixed (non scorre con il contenuto) | scroll
+//   $position   → default left top (angolo sx/superiore); può essere center center ecc.
+//   $zoom-aware → true (default): compensa il webFrame zoom di Electron con
+//                 calc($size / --eaf-content-zoom), così il pattern resta invariato
+//                 visivamente con Ctrl+/Ctrl-. Usare false solo con keyword CSS.
+//
+// Solo $color → nessuna immagine:
+//   @include eaf.eaf-background($color: #f0f0f0);
+//
+// Solo immagine senza overlay:
 //   @include eaf.eaf-background(
-//     $color: #f5f7fa,
-//     $image: url('/assets/form-background.png'),
-//     $overlay: rgba(245, 247, 250, 0.7),
-//     $size: 451px,
+//     $image: url('/assets/bg-pattern.png'),
+//     $size: 400px,
 //     $repeat: repeat,
 //   );
-@include eaf.eaf-background($color: #f5f7fa);
+//
+// Immagine + colore base + overlay (uso più comune):
+//   @include eaf.eaf-background(
+//     $color: #f5f7fa,
+//     $image: url('/assets/bg-pattern.png'),
+//     $overlay: rgba(245, 247, 250, 0.7),
+//     $size: 600px,
+//     $repeat: repeat,
+//   );
+//
+// Immagine a piena copertura (zoom-aware disabilitato perché cover è una keyword):
+//   @include eaf.eaf-background(
+//     $image: url('/assets/hero.jpg'),
+//     $size: cover,
+//     $repeat: no-repeat,
+//     $position: center center,
+//     $zoom-aware: false,
+//   );
+// ---------------------------------------------------------------------------
+@include eaf.eaf-background(
+  $color: #f5f7fa,
+  $image: url('/assets/background-test.png'),
+  $overlay: rgba(245, 247, 250, 0.7),
+  $size: 600px,
+  $repeat: repeat,
+);
 
 body {
   // Default the application to a light color theme. This can be changed to

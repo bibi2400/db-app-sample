@@ -10,8 +10,8 @@ import { FrameworkShell, NavigationService } from '@bibi2400/electron-angular-fr
 export class App {
   constructor() {
     const nav = inject(NavigationService);
-    nav.logoUrl.set('assets/menu-logo.png');
-    nav.toolbarLogoUrl.set('assets/menu-logo.png');
+    nav.logoUrl.set('assets/menu-logo.jpg');
+    nav.toolbarLogoUrl.set('assets/menu-logo.jpg');
     nav.toolbarColor.set('#112B45');
     nav.toolbarTextColor.set('#ffffff');
     nav.addMenuItems([
