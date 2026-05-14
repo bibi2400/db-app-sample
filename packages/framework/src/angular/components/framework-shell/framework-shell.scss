@@ -13,17 +13,18 @@
 
 .main-container {
   padding: 20px;
-  // zoom scala anche i margini dell'elemento stesso: dividendo per il fattore
-  // il margin-top torna sempre a 64px fisici dopo la scalatura.
+  // Lo zoom è applicato sull'elemento <html> (non qui), quindi il margin-top
+  // deve compensare l'altezza "logica" della toolbar nello spazio html-zoomato:
+  // toolbar ha zoom inverso 1/N, quindi occupa (64px / N) unità nello spazio html.
   margin-top: calc(var(--mat-toolbar-standard-height, 64px) / var(--eaf-content-zoom, 1));
-  // Zoom applicato solo al contenuto: toolbar e sidebar rimangono invariate.
-  zoom: var(--eaf-content-zoom, 1);
 }
 
 .fixed-toolbar {
   position: fixed;
   z-index: 1000;
   width: 100%;
+  // Annulla lo zoom applicato a <html> per mantenere la toolbar alla dimensione originale.
+  zoom: calc(1 / var(--eaf-content-zoom, 1));
 }
 
 .migration-error-overlay {

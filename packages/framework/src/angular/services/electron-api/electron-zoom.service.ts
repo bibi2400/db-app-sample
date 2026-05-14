@@ -42,12 +42,14 @@ export class ElectronZoomService {
   private applyZoom(level: number): void {
     this.zoomLevel.set(level);
     localStorage.setItem(STORAGE_KEY, String(level));
-    // Applica lo zoom via CSS solo al contenuto della pagina (.main-container),
-    // lasciando toolbar e sidebar alla dimensione naturale.
-    // webFrame rimane sempre a 0 per evitare doppio zoom.
+    // Applica lo zoom via webFrame (Electron compositor) anziché via CSS.
+    // Con webFrame l'intero sistema di coordinate CSS è scalato uniformemente:
+    // il cdk-overlay-container (appeso al body) e i trigger sono nello stesso
+    // spazio di coordinate → posizionamento overlay Angular Material corretto.
+    // Toolbar e sidebar sono "de-zoomate" via CSS usando la variabile --eaf-content-zoom.
     const factor = Math.pow(1.2, level);
     document.documentElement.style.setProperty('--eaf-content-zoom', String(factor));
-    window.electronAPI.setZoomLevel(0);
+    window.electronAPI.setZoomLevel(level);
   }
 
   private loadZoomLevel(): number {
