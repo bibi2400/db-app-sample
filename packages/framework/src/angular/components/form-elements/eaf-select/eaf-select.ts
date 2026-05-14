@@ -255,11 +255,28 @@ export class EafSelect implements ControlValueAccessor {
     this.searchText.set((event.target as HTMLInputElement).value);
   }
 
+  /**
+   * Flag set to true while processing an action-option click.
+   *
+   * When the user clicks an action option (rendered as a `mat-option` without a value),
+   * Angular Material fires `(click)` on the element first, then emits `selectionChange` /
+   * `optionSelected` with `undefined` as the selected value. Without this guard those
+   * handlers would call `_onChange(undefined)`, wiping the FormControl value and
+   * invalidating any required-field validation — which then blocks navigation guards.
+   *
+   * The flag is set synchronously in `onCreateOption` (before the action runs) and
+   * cleared in a `Promise.resolve()` microtask so that all synchronous Angular Material
+   * selection events that follow in the same tick are suppressed, while any subsequent
+   * genuine user selection is processed normally.
+   */
+  private _suppressNextSelectChange = false;
+
   // ─── Single autocomplete ─────────────────────
 
   protected onAutocompleteSingleSelected(
     event: MatAutocompleteSelectedEvent
   ): void {
+    if (this._suppressNextSelectChange) return;
     this.value.set(event.option.value);
     this._onChange(event.option.value);
     this.searchText.set('');
@@ -270,6 +287,7 @@ export class EafSelect implements ControlValueAccessor {
   protected onAutocompleteMultiSelected(
     event: MatAutocompleteSelectedEvent
   ): void {
+    if (this._suppressNextSelectChange) return;
     const selectedValue = event.option.value;
     const current = this.selectedValues();
     const next = [...current, selectedValue];
@@ -290,20 +308,30 @@ export class EafSelect implements ControlValueAccessor {
   // ─── Mat-select (non autocomplete) ───────────
 
   protected onSelectChange(val: unknown): void {
+    if (this._suppressNextSelectChange) return;
     this.value.set(val);
     this._onChange(val);
   }
 
   protected onCreateOption(action: EafSelectActionOption): void {
-    const prev = this.value();
+    this._suppressNextSelectChange = true;
     Promise.resolve().then(() => {
-      this.value.set(prev);
-      this._onChange(prev); // restore FormControl value after mat-select clears it via selectionChange
+      this._suppressNextSelectChange = false;
+      // Re-sync internal display controls that Angular Material may have reset
+      // to the action option's value (undefined) during the suppressed selection event.
+      if (!this.autocomplete()) {
+        this._selectControl.setValue(this.value(), { emitEvent: false });
+      } else if (!this.multiple()) {
+        const val = this.value();
+        const opt = this.options().find((o) => o.value === val);
+        this._autoDisplayControl.setValue(opt?.label ?? '', { emitEvent: false });
+      }
     });
     action.action();
   }
 
   protected onMultiSelectChange(vals: unknown[]): void {
+    if (this._suppressNextSelectChange) return;
     const next = vals?.length ? vals : null;
     this.value.set(next);
     this._onChange(next);

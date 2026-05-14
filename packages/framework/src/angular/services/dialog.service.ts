@@ -41,13 +41,14 @@ export class DialogService {
    * (non dovrebbe accadere con disableClose: true).
    *
    * - `'create'` (default): [Annulla] [Scarta modifiche] [Mantieni in memoria]
-   * - `'edit'`: [Annulla] [Salva]
+   * - `'edit'`: [Annulla] [Scarta modifiche] [Salva]
    */
   async unsavedChanges(mode: UnsavedChangesMode = 'create'): Promise<UnsavedChangesChoice | undefined> {
     const buttons =
       mode === 'edit'
         ? ([
             { label: 'Annulla', value: 'cancel', icon: 'close' },
+            { label: 'Scarta modifiche', value: 'discard', variant: 'stroked', color: 'warn', icon: 'delete_outline' },
             { label: 'Salva', value: 'save', variant: 'flat', color: 'primary', icon: 'save' },
           ] satisfies EafDialogData<UnsavedChangesChoice>['buttons'])
         : ([
