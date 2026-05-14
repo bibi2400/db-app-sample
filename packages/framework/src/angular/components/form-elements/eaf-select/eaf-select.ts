@@ -296,7 +296,10 @@ export class EafSelect implements ControlValueAccessor {
 
   protected onCreateOption(action: EafSelectActionOption): void {
     const prev = this.value();
-    Promise.resolve().then(() => { this.value.set(prev); });
+    Promise.resolve().then(() => {
+      this.value.set(prev);
+      this._onChange(prev); // restore FormControl value after mat-select clears it via selectionChange
+    });
     action.action();
   }
 
