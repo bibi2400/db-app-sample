@@ -106,6 +106,13 @@ export class FormUploadDemo implements OnInit {
   protected readonly mmControl = new FormControl<number | null>(null);
   protected readonly kgControl = new FormControl<number | null>(null);
   protected readonly tempControl = new FormControl<number | null>(null);
+
+  // ─── Demo errorMessages: validatori sul FormControl padre ────────────────
+  protected readonly errorMessagesForm = this.fb.group({
+    qty: [null as number | null, [Validators.required, Validators.min(0), Validators.max(999)]],
+    percentage: [null as number | null, [Validators.min(0), Validators.max(100)]],
+    label: ['', [Validators.required, Validators.minLength(3)]],
+  });
   protected readonly hasDraft = signal(false);
 
   // ─── Preferenze mostrate nella linguetta laterale (esempio) ──────────────

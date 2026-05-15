@@ -84,6 +84,40 @@
     </mat-card-content>
   </mat-card>
 
+  <!-- Demo: eaf-input errorMessages -->
+  <mat-card style="margin-bottom: 16px;">
+    <mat-card-content>
+      <strong>EafInput — errorMessages (validator errors dal FormControl padre)</strong>
+      <p style="font-size: 0.82em; color: gray; margin: 4px 0 12px;">
+        Tocca un campo e inserisci un valore non valido per vedere il messaggio di errore.
+      </p>
+      <form [formGroup]="errorMessagesForm" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
+        <eaf-input
+          label="Quantità (0–999)"
+          formControlName="qty"
+          [errorMessages]="{ required: 'Campo obbligatorio', min: 'Valore non può essere negativo', max: 'Massimo 999' }"
+        />
+        <eaf-input
+          label="Percentuale (0–100)"
+          formControlName="percentage"
+          [errorMessages]="{ min: 'Minimo 0%', max: 'Massimo 100%' }"
+        />
+        <eaf-input
+          label="Nome (min. 3 caratteri)"
+          type="text"
+          formControlName="label"
+          [errorMessages]="{ required: 'Campo obbligatorio', minlength: 'Almeno 3 caratteri' }"
+        />
+      </form>
+      <p style="margin-top: 8px; font-size: 0.85em; color: gray;">
+        valido: {{ errorMessagesForm.valid }} &nbsp;|&nbsp;
+        qty: {{ errorMessagesForm.value.qty ?? '—' }} &nbsp;|&nbsp;
+        %: {{ errorMessagesForm.value.percentage ?? '—' }} &nbsp;|&nbsp;
+        label: {{ errorMessagesForm.value.label || '—' }}
+      </p>
+    </mat-card-content>
+  </mat-card>
+
   <mat-card>
     <mat-card-content>
       <form [formGroup]="form" (ngSubmit)="submit()" class="form">
