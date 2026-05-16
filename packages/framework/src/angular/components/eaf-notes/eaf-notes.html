@@ -1,0 +1,234 @@
+<div class="eaf-notes">
+
+  <!-- ─── Header ─────────────────────────────────────────────────────────── -->
+  <div class="eaf-notes__header">
+    <div class="eaf-notes__header-left">
+      <mat-icon class="eaf-notes__header-icon">sticky_note_2</mat-icon>
+      <span class="eaf-notes__title">{{ title() }}</span>
+      @if (notes().length > 0) {
+        <span class="eaf-notes__count">{{ notes().length }}</span>
+      }
+    </div>
+
+    @if (!readonly()) {
+      <button
+        mat-icon-button
+        color="primary"
+        (click)="addNote()"
+        matTooltip="Aggiungi nota"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- ─── Toolbar (search + sort) ────────────────────────────────────────── -->
+  @if (notes().length > 0 || searchText()) {
+    <div class="eaf-notes__toolbar">
+      <div class="eaf-notes__search-wrap">
+        <mat-icon class="eaf-notes__search-icon">search</mat-icon>
+        <input
+          type="text"
+          class="eaf-notes__search"
+          placeholder="Cerca nelle note..."
+          [value]="searchText()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+
+      <mat-button-toggle-group
+        class="eaf-notes__sort-toggle"
+        [value]="sortField()"
+        (change)="onSortFieldChange($event.value)"
+      >
+        <mat-button-toggle value="noteDate">Data nota</mat-button-toggle>
+        <mat-button-toggle value="createdAt">Inserimento</mat-button-toggle>
+        <mat-button-toggle value="content">Testo</mat-button-toggle>
+      </mat-button-toggle-group>
+
+      <button
+        mat-icon-button
+        (click)="toggleSortDirection()"
+        [matTooltip]="sortDirection() === 'DESC' ? 'Decrescente' : 'Crescente'"
+        class="eaf-notes__sort-dir"
+      >
+        <mat-icon>{{ sortDirection() === 'DESC' ? 'arrow_downward' : 'arrow_upward' }}</mat-icon>
+      </button>
+    </div>
+  }
+
+  <!-- ─── Bulk action bar ─────────────────────────────────────────────────── -->
+  @if (selectedIds().size > 0) {
+    <div class="eaf-notes__bulk-bar">
+      <span class="eaf-notes__bulk-label">
+        {{ selectedIds().size }} {{ selectedIds().size === 1 ? 'nota selezionata' : 'note selezionate' }}
+      </span>
+      <button mat-stroked-button color="warn" (click)="bulkDelete()">
+        <mat-icon>delete_sweep</mat-icon>
+        Elimina selezionate
+      </button>
+    </div>
+  }
+
+  <!-- ─── Inline form (add / edit) ────────────────────────────────────────── -->
+  @if (showInlineForm() && mode() === 'inline') {
+    <div class="eaf-notes__inline-form">
+      <div class="eaf-notes__inline-form-title">
+        <mat-icon>{{ editingNote() ? 'edit_note' : 'note_add' }}</mat-icon>
+        {{ editingNote() ? 'Modifica nota' : 'Nuova nota' }}
+      </div>
+
+      <textarea
+        class="eaf-notes__inline-textarea"
+        [value]="formContent()"
+        (input)="formContent.set($any($event.target).value)"
+        [attr.maxlength]="maxLength() ?? null"
+        placeholder="Contenuto della nota..."
+        rows="4"
+        autofocus
+      ></textarea>
+
+      @if (maxLength()) {
+        <div class="eaf-notes__char-count"
+             [class.eaf-notes__char-count--warn]="formContent().length >= (maxLength() ?? 0) * 0.9">
+          {{ formContent().length }} / {{ maxLength() }}
+        </div>
+      }
+
+      <div class="eaf-notes__inline-form-footer">
+        <div class="eaf-notes__inline-form-footer-left">
+          <input
+            type="datetime-local"
+            class="eaf-notes__date-input"
+            [value]="formDate()"
+            (input)="formDate.set($any($event.target).value)"
+          />
+          <mat-checkbox
+            [checked]="formPinned()"
+            (change)="formPinned.set($event.checked)"
+          >Pinna</mat-checkbox>
+        </div>
+
+        <div class="eaf-notes__inline-form-footer-right">
+          <button mat-button (click)="cancelInlineForm()">Annulla</button>
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="saveInlineForm()"
+            [disabled]="!formContent().trim()"
+          >
+            <mat-icon>save</mat-icon>
+            Salva
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ─── Loading ─────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="eaf-notes__loading">
+      <mat-progress-spinner mode="indeterminate" diameter="32" />
+    </div>
+  }
+
+  <!-- ─── Empty state ─────────────────────────────────────────────────────── -->
+  @else if (!loading() && notes().length === 0 && !showInlineForm()) {
+    <div class="eaf-notes__empty">
+      <mat-icon>sticky_note_2</mat-icon>
+      <span>{{ searchText() ? 'Nessuna nota trovata' : 'Nessuna nota' }}</span>
+    </div>
+  }
+
+  <!-- ─── Notes list ──────────────────────────────────────────────────────── -->
+  @else if (notes().length > 0) {
+    <!-- Select all -->
+    @if (!readonly()) {
+      <div class="eaf-notes__select-all">
+        <mat-checkbox
+          [checked]="allSelected"
+          [indeterminate]="someSelected"
+          (change)="toggleSelectAll()"
+        >
+          Seleziona tutto
+        </mat-checkbox>
+      </div>
+    }
+
+    <div class="eaf-notes__list" role="list">
+      @for (note of notes(); track note.id) {
+        <div
+          class="eaf-notes__item"
+          role="listitem"
+          [class.eaf-notes__item--pinned]="note.pinned"
+          [class.eaf-notes__item--selected]="selectedIds().has(note.id)"
+          [class.eaf-notes__item--editing]="editingNote()?.id === note.id"
+        >
+          <!-- Checkbox selezione -->
+          @if (!readonly()) {
+            <mat-checkbox
+              class="eaf-notes__item-checkbox"
+              [checked]="selectedIds().has(note.id)"
+              (change)="toggleSelect(note.id)"
+            />
+          }
+
+          <!-- Corpo nota -->
+          <div class="eaf-notes__item-body">
+            <div class="eaf-notes__item-meta">
+              @if (note.pinned) {
+                <mat-icon class="eaf-notes__pin-badge" matTooltip="Nota pinnata">push_pin</mat-icon>
+              }
+              <span class="eaf-notes__item-date">{{ formatDate(note.noteDate) }}</span>
+              <span class="eaf-notes__item-separator">·</span>
+              <span class="eaf-notes__item-created">inserita {{ formatDate(note.createdAt) }}</span>
+            </div>
+
+            <p class="eaf-notes__item-content">{{ note.content }}</p>
+          </div>
+
+          <!-- Azioni -->
+          @if (!readonly()) {
+            <div class="eaf-notes__item-actions">
+              <button
+                mat-icon-button
+                [matTooltip]="note.pinned ? 'Rimuovi pin' : 'Pinna'"
+                [class.eaf-notes__pin-active]="note.pinned"
+                (click)="togglePin(note)"
+              >
+                <mat-icon>push_pin</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                matTooltip="Copia contenuto"
+                (click)="copyContent(note)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                color="primary"
+                matTooltip="Modifica"
+                (click)="editNote(note)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                color="warn"
+                matTooltip="Elimina"
+                (click)="deleteNote(note)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>

@@ -450,4 +450,4 @@ When adding new elements, remember to register them:
 - Tell me if I need to launch `eaf migrate` after your template-related changes.
 - For any modification and fix, prepare a implementation plan and share it with me before starting to code, so we can align on the approach and I can give you feedback before you invest time in coding.
 - Write in the framework's code comments and examples about functionalities usage, so I can learn and Copilot in consumers' codebase can suggest the right usage patterns.
-- NO workaround in the consumer app. If the framework has a bug or needs a new feature, modify the framework.
+- Do not put HTML into TypeScript files under any circumstances. FOR COMPONENTS, ALWAYS CREATE CORRESPONDING TS, HTML AND SCSS FILES. !important 

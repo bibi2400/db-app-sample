@@ -3,6 +3,7 @@ import './app.controller';
 import './backup.controller';
 import './db-migration.controller';
 import './notification.controller';
+import './note.controller';
 import './test.controller';
 import './update.controller';
 import './upload.controller';

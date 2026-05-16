@@ -1,0 +1,45 @@
+<div class="products-page">
+  <h2>Prodotti</h2>
+  <p class="subtitle">{{ totalRows() }} prodotti totali</p>
+
+  <eaf-table
+    tableId="products-list"
+    height="calc(100vh - 269px)"
+    [data]="items()"
+    [columns]="columns"
+    [pagination]="pagination"
+    [serverSide]="true"
+    [serverTotalRows]="totalRows()"
+    [stickyHeader]="true"
+    [draggable]="true"
+    (serverEvent)="onServerEvent($event)"
+    (rowClick)="openDetail($event)"
+  >
+    <!-- Colonna stato con chip colorato -->
+    <ng-template eafCellDef="status" let-ctx>
+      @switch (ctx.value) {
+        @case ('disponibile') {
+          <mat-chip color="primary" highlighted>{{ ctx.value }}</mat-chip>
+        }
+        @case ('esaurito') {
+          <mat-chip color="warn" highlighted>{{ ctx.value }}</mat-chip>
+        }
+        @default {
+          <mat-chip>{{ ctx.value }}</mat-chip>
+        }
+      }
+    </ng-template>
+
+    <!-- Colonna azioni -->
+    <ng-template eafActionsDef let-row>
+      <button
+        mat-icon-button
+        color="primary"
+        matTooltip="Apri dettaglio"
+        (click)="openDetail(row); $event.stopPropagation()"
+      >
+        <mat-icon>open_in_new</mat-icon>
+      </button>
+    </ng-template>
+  </eaf-table>
+</div>

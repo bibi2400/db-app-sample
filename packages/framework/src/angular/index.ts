@@ -26,6 +26,9 @@ export type { EafSelectActionOption } from './components/form-elements/eaf-selec
 export { EafFileUpload } from './components/form-elements/eaf-file-upload/eaf-file-upload';
 export { EafInput } from './components/form-elements/eaf-input/eaf-input';
 
+// ─── EAF Notes ───────────────────────────────────────────────────────────────
+export { EafNotes } from './components/eaf-notes/eaf-notes';
+
 // ─── Side Tab (linguetta laterale con pannello azioni) ───────────────────────
 export { EafSideTab } from './components/eaf-side-tab/eaf-side-tab';
 
@@ -65,6 +68,7 @@ export { GracefulShutdownService } from './services/graceful-shutdown.service';
 export { ElectronBackupService } from './services/electron-api/electron-backup.service';
 export { ElectronUpdateService } from './services/electron-api/electron-update.service';
 export { ElectronUploadService } from './services/electron-api/electron-upload.service';
+export { ElectronNoteService } from './services/electron-api/electron-note.service';
 export { NavigationService } from './services/navigation.service';
 export { NotificationService as AngularNotificationService } from './services/notification.service';
 export { ShortcutService } from './services/shortcut.service';

@@ -19,6 +19,21 @@ const appRoutes: Routes = [
     data: { title: 'Demo Form Upload', icon: 'upload_file' },
     loadComponent: () => import('./pages/form-upload-demo/form-upload-demo').then(m => m.FormUploadDemo)
   },
+  {
+    path: 'products',
+    data: { title: 'Prodotti', icon: 'inventory_2' },
+    loadComponent: () => import('./pages/products/products').then(m => m.Products)
+  },
+  {
+    // Detail page — no sidebar entry (no icon)
+    path: 'product-detail/:id',
+    loadComponent: () => import('./pages/product-detail/product-detail').then(m => m.ProductDetail)
+  },
+  {
+    path: 'notes-global',
+    data: { title: 'Note', icon: 'notes' },
+    loadComponent: () => import('./pages/notes-global/notes-global').then(m => m.NotesGlobal)
+  },
 ];
 
 // Merge with framework stock routes (backup, updates, notifications, shortcuts, app-info)

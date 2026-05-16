@@ -1,0 +1,103 @@
+<div class="product-detail-page">
+
+  <!-- Back button -->
+  <div class="product-detail__nav">
+    <button mat-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Torna ai prodotti
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="product-detail__loading">Caricamento...</div>
+  } @else if (!product()) {
+    <div class="product-detail__not-found">
+      <mat-icon>error_outline</mat-icon>
+      <span>Prodotto non trovato.</span>
+    </div>
+  } @else {
+    <div class="product-detail__layout">
+
+      <!-- ─── Info prodotto ──────────────────────────────────────────────── -->
+      <div class="product-detail__info-card">
+        <div class="product-detail__info-header">
+          <div class="product-detail__info-title">
+            <h2>{{ product()!.name }}</h2>
+            @if (product()!.active) {
+              <mat-chip color="primary" highlighted>Attivo</mat-chip>
+            } @else {
+              <mat-chip>Inattivo</mat-chip>
+            }
+          </div>
+          <div class="product-detail__info-id">#{{ product()!.id }}</div>
+        </div>
+
+        <mat-divider />
+
+        <div class="product-detail__info-grid">
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Categoria</span>
+            <span class="product-detail__info-value">{{ product()!.category }}</span>
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Prezzo</span>
+            <span class="product-detail__info-value product-detail__price">
+              {{ formatPrice(product()!.price) }}
+            </span>
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Stock</span>
+            <span class="product-detail__info-value"
+                  [class.product-detail__stock-empty]="product()!.stock === 0">
+              {{ product()!.stock }} unità
+            </span>
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Rating</span>
+            <span class="product-detail__info-value">{{ product()!.rating }} / 5</span>
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Stato</span>
+            @switch (product()!.status) {
+              @case ('disponibile') {
+                <mat-chip color="primary" highlighted>{{ product()!.status }}</mat-chip>
+              }
+              @case ('esaurito') {
+                <mat-chip color="warn" highlighted>{{ product()!.status }}</mat-chip>
+              }
+              @default {
+                <mat-chip>{{ product()!.status }}</mat-chip>
+              }
+            }
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Creato il</span>
+            <span class="product-detail__info-value">{{ formatDate(product()!.createdAt) }}</span>
+          </div>
+          <div class="product-detail__info-row">
+            <span class="product-detail__info-label">Aggiornato il</span>
+            <span class="product-detail__info-value">{{ formatDate(product()!.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── Note ──────────────────────────────────────────────────────── -->
+      <div class="product-detail__notes-card">
+        <!--
+          EafNotes — gestione note collegate al prodotto.
+          - ownerType: 'product' (identifica il tipo di entità owner)
+          - ownerId: id del prodotto corrente
+          - mode: 'inline' mostra il form direttamente nella lista
+                  'dialog' apre il form in un MatDialog
+        -->
+        <eaf-notes
+          ownerType="product"
+          [ownerId]="product()!.id"
+          title="Note sul prodotto"
+          mode="inline"
+        />
+      </div>
+
+    </div>
+  }
+</div>
