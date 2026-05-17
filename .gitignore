@@ -48,6 +48,9 @@ electron/dist-electron
 release
 appdata
 
+# Database
+database/
+
 # Framework build output
 packages/framework/dist
 
