@@ -55,6 +55,21 @@ export class DbMigrationService {
     await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_relativePath ON attachment (relativePath)`);
     await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_checksum     ON attachment (checksum)`);
     await ds.query(`CREATE INDEX IF NOT EXISTS IDX_attachment_owner        ON attachment (ownerType, ownerId)`);
+
+    await ds.query(`
+      CREATE TABLE IF NOT EXISTS note (
+        id        INTEGER  PRIMARY KEY AUTOINCREMENT,
+        content   TEXT     NOT NULL,
+        noteDate  DATETIME NOT NULL,
+        pinned    BOOLEAN  NOT NULL DEFAULT 0,
+        ownerType VARCHAR,
+        ownerId   INTEGER,
+        createdAt DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+        updatedAt DATETIME NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+      )
+    `);
+    await ds.query(`CREATE INDEX IF NOT EXISTS IDX_note_owner    ON note (ownerType, ownerId)`);
+    await ds.query(`CREATE INDEX IF NOT EXISTS IDX_note_ownerType ON note (ownerType)`);
   }
 
   /**

@@ -5,6 +5,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -46,6 +47,7 @@ export class Products implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly items = signal<Product[]>([]);
+  protected readonly items$ = toObservable(this.items);
   protected readonly totalRows = signal<number>(0);
   protected readonly loading = signal<boolean>(false);
 

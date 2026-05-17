@@ -27,6 +27,21 @@ export class SeedProductsMigration extends DbMigrationDefinition {
   readonly description = "Seed: inserisce prodotti demo per la pagina Prodotti";
 
   async up(dataSource: DataSource): Promise<void> {
+    await dataSource.query(`
+      CREATE TABLE IF NOT EXISTS product (
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        name      VARCHAR NOT NULL,
+        category  VARCHAR NOT NULL,
+        price     REAL    NOT NULL,
+        stock     INTEGER NOT NULL,
+        rating    INTEGER NOT NULL,
+        status    VARCHAR NOT NULL,
+        active    BOOLEAN NOT NULL,
+        createdAt DATETIME NOT NULL,
+        updatedAt DATETIME NOT NULL
+      )
+    `);
+
     const repo = dataSource.getRepository(Product);
     const existing = await repo.count();
     if (existing > 0) return; // Già popolata, non re-inserire
