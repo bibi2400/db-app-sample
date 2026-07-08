@@ -1,0 +1,27 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content class="prompt-content">
+  @if (messages.length) {
+    @for (line of messages; track $index) {
+      <p>{{ line }}</p>
+    }
+  }
+  <mat-form-field class="prompt-field">
+    <mat-label>{{ data.label ?? data.title }}</mat-label>
+    <input
+      matInput
+      cdkFocusInitial
+      [placeholder]="data.placeholder ?? ''"
+      [value]="value()"
+      (input)="onInput($event)"
+      (keydown.enter)="confirm()"
+    />
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">{{ data.cancelLabel ?? 'Annulla' }}</button>
+  <button mat-flat-button color="primary" [disabled]="!canConfirm()" (click)="confirm()">
+    {{ data.confirmLabel ?? 'Conferma' }}
+  </button>
+</mat-dialog-actions>

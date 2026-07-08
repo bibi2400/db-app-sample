@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { firstValueFrom } from 'rxjs';
 import { EafDialog, EafDialogData } from '../components/dialogs/eaf-dialog/eaf-dialog';
+import { EafPromptDialog, EafPromptDialogData } from '../components/dialogs/eaf-prompt-dialog/eaf-prompt-dialog';
 
 export type UnsavedChangesChoice = 'keep' | 'discard' | 'cancel' | 'save';
 export type UnsavedChangesMode = 'create' | 'edit';
@@ -67,5 +68,29 @@ export class DialogService {
       },
       { disableClose: true, width: '480px' },
     );
+  }
+
+  /**
+   * Dialog di input testo. Sostituisce `window.prompt()`, non supportato da Electron.
+   * Risolve con la stringa inserita (trimmed), o `undefined` se l'utente annulla.
+   *
+   * @example
+   * const name = await this.dialogService.prompt({ title: 'Nome sessione' });
+   * if (!name) return;
+   *
+   * @example
+   * const renamed = await this.dialogService.prompt({
+   *   title: 'Rinomina',
+   *   message: 'Inserisci il nuovo nome.',
+   *   defaultValue: currentName,
+   *   placeholder: 'Nuovo nome...',
+   * });
+   */
+  async prompt(options: EafPromptDialogData): Promise<string | undefined> {
+    const ref = this.dialog.open<EafPromptDialog, EafPromptDialogData, string | undefined>(
+      EafPromptDialog,
+      { data: options, width: '400px' },
+    );
+    return firstValueFrom(ref.afterClosed());
   }
 }

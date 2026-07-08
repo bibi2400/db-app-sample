@@ -27,51 +27,8 @@ export interface EafDialogData<T = unknown> {
   selector: 'eaf-dialog',
   imports: [MatDialogModule, MatButtonModule, MatIconModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <h2 mat-dialog-title>
-      @if (data.titleIcon) {
-        <mat-icon [style.color]="data.titleIconColor ?? null">{{ data.titleIcon }}</mat-icon>
-      }
-      {{ data.title }}
-    </h2>
-    @if (messages.length) {
-      <mat-dialog-content>
-        @for (line of messages; track $index) {
-          <p>{{ line }}</p>
-        }
-      </mat-dialog-content>
-    }
-    <mat-dialog-actions align="end">
-      @for (btn of data.buttons; track btn.label) {
-        @switch (btn.variant) {
-          @case ('stroked') {
-            <button mat-stroked-button [color]="btn.color ?? null" (click)="close(btn.value)">
-              @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> }
-              {{ btn.label }}
-            </button>
-          }
-          @case ('flat') {
-            <button mat-flat-button [color]="btn.color ?? null" (click)="close(btn.value)">
-              @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> }
-              {{ btn.label }}
-            </button>
-          }
-          @default {
-            <button mat-button [color]="btn.color ?? null" (click)="close(btn.value)">
-              @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> }
-              {{ btn.label }}
-            </button>
-          }
-        }
-      }
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    :host { display: block; }
-    h2 { display: flex; align-items: center; gap: 8px; margin: 0; }
-    mat-dialog-content p { margin: 8px 0; white-space: pre-line; }
-    mat-dialog-actions { gap: 8px; }
-  `],
+  templateUrl: './eaf-dialog.html',
+  styleUrls: ['./eaf-dialog.scss'],
 })
 export class EafDialog<T = unknown> {
   private readonly dialogRef = inject(MatDialogRef<EafDialog<T>, T>);
