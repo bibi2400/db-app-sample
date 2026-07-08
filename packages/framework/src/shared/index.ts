@@ -33,3 +33,11 @@ export type {
   EafTableServerEvent,
   EafTableResult,
 } from './types/eaf-table';
+export type {
+  NoteInfo,
+  CreateNoteRequest,
+  UpdateNoteRequest,
+  NoteQueryOptions,
+  NoteSortField,
+  NoteSortDirection,
+} from './types/note';

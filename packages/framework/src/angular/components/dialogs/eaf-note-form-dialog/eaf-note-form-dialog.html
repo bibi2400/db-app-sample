@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ data.note ? 'edit_note' : 'note_add' }}</mat-icon>
+  {{ data.note ? 'Modifica nota' : 'Nuova nota' }}
+</h2>
+
+<mat-dialog-content>
+  <div class="eaf-note-form-dialog__body">
+    <textarea
+      class="eaf-note-form-dialog__textarea"
+      [value]="formContent()"
+      (input)="formContent.set($any($event.target).value)"
+      [attr.maxlength]="data.maxLength ?? null"
+      placeholder="Contenuto della nota..."
+      rows="6"
+      autofocus
+    ></textarea>
+
+    @if (data.maxLength) {
+    <div
+      class="eaf-note-form-dialog__char-count"
+      [class.eaf-note-form-dialog__char-count--warn]="formContent().length >= data.maxLength * 0.9"
+    >
+      {{ formContent().length }} / {{ data.maxLength }}
+    </div>
+    }
+
+    <div class="eaf-note-form-dialog__date-row">
+      <label class="eaf-note-form-dialog__date-label">Data nota</label>
+      <input
+        type="datetime-local"
+        class="eaf-note-form-dialog__date-input"
+        [value]="formDate()"
+        (input)="formDate.set($any($event.target).value)"
+      />
+    </div>
+
+    <mat-checkbox
+      [checked]="formPinned()"
+      (change)="formPinned.set($event.checked)"
+    >
+      Pinna questa nota
+    </mat-checkbox>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Annulla</button>
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="save()"
+    [disabled]="!formContent().trim()"
+  >
+    <mat-icon>save</mat-icon>
+    Salva
+  </button>
+</mat-dialog-actions>

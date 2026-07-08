@@ -1,0 +1,109 @@
+.product-detail-page {
+  padding: 12px 24px 24px;
+  max-width: 1100px;
+}
+
+.product-detail__nav {
+  margin-bottom: 8px;
+}
+
+.product-detail__loading,
+.product-detail__not-found {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 32px;
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 16px;
+}
+
+.product-detail__layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── Info card ─────────────────────────────────────────────────────────────
+
+.product-detail__info-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-detail__info-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.product-detail__info-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.product-detail__info-id {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.38);
+  white-space: nowrap;
+}
+
+.product-detail__info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-detail__info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.product-detail__info-label {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.54);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+
+.product-detail__info-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.product-detail__price {
+  color: #2e7d32;
+  font-size: 16px;
+}
+
+.product-detail__stock-empty {
+  color: #c62828;
+}
+
+// ─── Notes card ────────────────────────────────────────────────────────────
+
+.product-detail__notes-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+}

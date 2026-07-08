@@ -41,6 +41,7 @@ export { ErrorNotificationService } from './services/system-services/error-notif
 export { BackupService } from './services/system-services/backup.service';
 export { UpdaterService } from './services/system-services/updater.service';
 export { UploadService } from './services/system-services/upload.service';
+export { NoteService } from './services/system-services/note.service';
 export { ControllerService } from './services/system-services/controller.service';
 export { ContextMenuService } from './services/system-services/context-menu.service';
 export { LifecycleService } from './services/system-services/lifecycle.service';

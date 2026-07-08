@@ -1,0 +1,48 @@
+<div class="notes-global-page">
+  <h2>Note (Globale)</h2>
+  <p class="subtitle">{{ totalRows() }} note totali nel sistema</p>
+
+  <eaf-table
+    tableId="notes-global"
+    height="calc(100vh - 269px)"
+    [data]="items()"
+    [columns]="columns"
+    [pagination]="pagination"
+    [serverSide]="true"
+    [serverTotalRows]="totalRows()"
+    [stickyHeader]="true"
+    [draggable]="true"
+    (serverEvent)="onServerEvent($event)"
+  >
+    <!-- Data nota formattata -->
+    <ng-template eafCellDef="noteDate" let-ctx>
+      {{ formatDate(ctx.value) }}
+    </ng-template>
+
+    <!-- Data creazione formattata -->
+    <ng-template eafCellDef="createdAt" let-ctx>
+      {{ formatDate(ctx.value) }}
+    </ng-template>
+
+    <!-- Pin badge -->
+    <ng-template eafCellDef="pinned" let-ctx>
+      @if (ctx.value) {
+        <mat-icon style="color: #f9a825; font-size: 18px;">push_pin</mat-icon>
+      }
+    </ng-template>
+
+    <!-- Azioni: naviga all'owner se è un product -->
+    <ng-template eafActionsDef let-row>
+      @if (row.ownerType === 'product' && row.ownerId != null) {
+        <button
+          mat-icon-button
+          color="primary"
+          matTooltip="Apri prodotto associato"
+          (click)="openOwner(row); $event.stopPropagation()"
+        >
+          <mat-icon>open_in_new</mat-icon>
+        </button>
+      }
+    </ng-template>
+  </eaf-table>
+</div>
