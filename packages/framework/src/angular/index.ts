@@ -16,6 +16,8 @@ export { NotificationPanel } from './components/notification-panel/notification-
 export { CommandPalette } from './components/command-palette/command-palette';
 export { EafDialog } from './components/dialogs/eaf-dialog/eaf-dialog';
 export type { EafDialogData, EafDialogButton } from './components/dialogs/eaf-dialog/eaf-dialog';
+export { EafPromptDialog } from './components/dialogs/eaf-prompt-dialog/eaf-prompt-dialog';
+export type { EafPromptDialogData } from './components/dialogs/eaf-prompt-dialog/eaf-prompt-dialog';
 export { ShortcutRecordDialog } from './components/dialogs/shortcut-record-dialog/shortcut-record-dialog';
 export { FullscreenLoaderComponent } from './components/fullscreen-loader/fullscreen-loader';
 export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';

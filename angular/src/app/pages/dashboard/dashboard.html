@@ -15,6 +15,22 @@
   }
 </section>
 
+<section style="margin-top: 32px;">
+  <h3 style="margin: 0 0 12px;">Prompt Dialog — test copertura opzioni</h3>
+  <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+    <button mat-stroked-button (click)="promptSimple()">Solo title</button>
+    <button mat-stroked-button (click)="promptWithMessage()">Con messaggio + label</button>
+    <button mat-stroked-button (click)="promptWithDefault()">defaultValue + placeholder</button>
+    <button mat-stroked-button (click)="promptCustomLabels()">Etichette bottoni custom</button>
+    <button mat-stroked-button (click)="promptOptional()">required=false</button>
+  </div>
+  @if (lastPrompt(); as result) {
+    <mat-chip-set>
+      <mat-chip>Ultimo risultato: {{ result }}</mat-chip>
+    </mat-chip-set>
+  }
+</section>
+
 <button matButton="tonal">
   Test button
 </button>

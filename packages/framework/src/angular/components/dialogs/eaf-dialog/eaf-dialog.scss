@@ -1,0 +1,16 @@
+:host {
+  display: block;
+}
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+mat-dialog-content p {
+  margin: 8px 0;
+  white-space: pre-line;
+}
+mat-dialog-actions {
+  gap: 8px;
+}

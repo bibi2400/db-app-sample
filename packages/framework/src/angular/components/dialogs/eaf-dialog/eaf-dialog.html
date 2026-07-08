@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>
+  @if (data.titleIcon) {
+  <mat-icon [style.color]="data.titleIconColor ?? null"
+    >{{ data.titleIcon }}</mat-icon
+  >
+  } {{ data.title }}
+</h2>
+@if (messages.length) {
+<mat-dialog-content>
+  @for (line of messages; track $index) {
+  <p>{{ line }}</p>
+  }
+</mat-dialog-content>
+}
+<mat-dialog-actions align="end">
+  @for (btn of data.buttons; track btn.label) { @switch (btn.variant) { @case
+  ('stroked') {
+  <button
+    mat-stroked-button
+    [color]="btn.color ?? null"
+    (click)="close(btn.value)"
+  >
+    @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> } {{ btn.label }}
+  </button>
+  } @case ('flat') {
+  <button
+    mat-flat-button
+    [color]="btn.color ?? null"
+    (click)="close(btn.value)"
+  >
+    @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> } {{ btn.label }}
+  </button>
+  } @default {
+  <button mat-button [color]="btn.color ?? null" (click)="close(btn.value)">
+    @if (btn.icon) { <mat-icon>{{ btn.icon }}</mat-icon> } {{ btn.label }}
+  </button>
+  } } }
+</mat-dialog-actions>
