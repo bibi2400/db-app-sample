@@ -4,6 +4,8 @@ Applicazione desktop di esempio costruita con **Angular 21 + Electron + SQLite**
 
 Questo repository funge sia da **app di esempio** (il consumer) sia da **monorepo** che ospita il framework.
 
+> Codice pubblicato a scopo dimostrativo/portfolio. Tutti i diritti riservati: nessun permesso di uso, copia, modifica o ridistribuzione senza autorizzazione dell'autore.
+
 ---
 
 ## Creare un nuovo progetto
