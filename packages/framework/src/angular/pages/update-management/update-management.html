@@ -1,35 +1,130 @@
-<div class="update-container">
-  <div class="header">
-    <h1>Aggiornamenti Applicazione</h1>
-    <button
-      mat-raised-button
-      (click)="checkForUpdates()"
-      [disabled]="isChecking() || isDownloading() || isPreparingDownload()">
-      <mat-icon>refresh</mat-icon>
-      Controlla aggiornamenti
-    </button>
-  </div>
+<main class="update-container">
+  <header class="page-header">
+    <div>
+      <h1>Aggiornamenti</h1>
+      <p>Mantieni l'applicazione aggiornata, stabile e sicura.</p>
+    </div>
 
-  <mat-card class="version-card">
+    @if (currentVersion()) {
+      <div class="installed-version" aria-label="Versione installata">
+        <span>Versione installata</span>
+        <strong>v{{ currentVersion() }}</strong>
+      </div>
+    }
+  </header>
+
+  <mat-card
+    [class]="'status-card status-card--' + status()"
+    [class.status-card--installing]="isInstalling()">
     <mat-card-content>
-      <div class="version-info">
-        <div class="version-item">
-          <mat-icon>info</mat-icon>
-          <div>
-            <div class="version-label">Versione attuale</div>
-            <div class="version-value">{{ currentVersion() }}</div>
+      <div class="status-layout" aria-live="polite" aria-atomic="true">
+        <div class="status-main">
+          <div class="status-icon" aria-hidden="true">
+            @if (isChecking()) {
+              <mat-spinner diameter="30"></mat-spinner>
+            } @else {
+              <mat-icon>{{ statusIcon() }}</mat-icon>
+            }
+          </div>
+
+          <div class="status-copy">
+            <span class="status-eyebrow">Stato aggiornamenti</span>
+            <h2>{{ statusLabel() }}</h2>
+            <p>{{ statusDescription() }}</p>
+
+            @if (lastCheckedAt()) {
+              <span class="last-check">
+                Ultimo controllo: {{ lastCheckedAt() | date:'dd/MM/yyyy, HH:mm' }}
+              </span>
+            }
           </div>
         </div>
+
         @if (availableVersion()) {
-          <div class="version-item highlight">
-            <mat-icon>new_releases</mat-icon>
-            <div>
-              <div class="version-label">Nuova versione disponibile</div>
-              <div class="version-value">{{ availableVersion() }}</div>
-              @if (releaseDate()) {
-                <div class="release-date">Rilasciata il {{ releaseDate() | date:'dd/MM/yyyy' }}</div>
-              }
-            </div>
+          <div class="version-change" aria-label="Cambio versione">
+            <span class="version-pill">v{{ currentVersion() }}</span>
+            <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+            <span class="version-pill version-pill--new">v{{ availableVersion() }}</span>
+            @if (releaseDate()) {
+              <span class="release-date">
+                Rilasciata il {{ releaseDate() | date:'dd/MM/yyyy' }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (isPreparingDownload() || isDownloading()) {
+        <div class="progress-section" aria-live="polite">
+          <div class="progress-header">
+            <span>
+              {{ isPreparingDownload() ? 'Preparazione del download…' : 'Download in corso…' }}
+            </span>
+            @if (isDownloading()) {
+              <strong>{{ downloadPercent() }}%</strong>
+            }
+          </div>
+          <mat-progress-bar
+            [mode]="isPreparingDownload() ? 'indeterminate' : 'determinate'"
+            [value]="downloadPercent()"
+            aria-label="Avanzamento download aggiornamento">
+          </mat-progress-bar>
+          @if (downloadDetails()) {
+            <span class="progress-details">{{ downloadDetails() }}</span>
+          }
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="error-panel" role="alert">
+          <div class="error-summary">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            <span>L'operazione non è riuscita. Puoi riprovare senza perdere dati.</span>
+          </div>
+          <details>
+            <summary>Mostra dettagli tecnici</summary>
+            <p>{{ errorMessage() }}</p>
+          </details>
+        </div>
+      }
+
+      <div class="primary-action">
+        @if (status() === 'idle' || status() === 'not-available' || isError()) {
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="checkForUpdates()"
+            [disabled]="isBusy()">
+            <mat-icon>refresh</mat-icon>
+            {{ status() === 'idle' ? 'Controlla aggiornamenti' : 'Controlla di nuovo' }}
+          </button>
+        }
+
+        @if (hasUpdate()) {
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="startUpdateFlow()"
+            [disabled]="isBusy()">
+            <mat-icon>system_update</mat-icon>
+            Scarica e installa
+          </button>
+        }
+
+        @if (isDownloaded() && !automaticInstallPending() && !isInstalling()) {
+          <button
+            mat-flat-button
+            color="primary"
+            (click)="installDownloadedUpdate()">
+            <mat-icon>restart_alt</mat-icon>
+            Riavvia e installa
+          </button>
+        }
+
+        @if (isDownloaded() && (automaticInstallPending() || isInstalling())) {
+          <div class="installing-message" role="status">
+            <mat-spinner diameter="22"></mat-spinner>
+            <span>Avvio dell'installazione…</span>
           </div>
         }
       </div>
@@ -37,84 +132,84 @@
   </mat-card>
 
   @if (showChangelog()) {
-    <div class="changelog-header">
-      <mat-icon>description</mat-icon>
-      <span>Changelog</span>
-    </div>
-    @for (entry of changelogs(); track entry.version) {
-      <mat-card class="changelog-card">
-        <mat-card-content>
-          <div class="changelog-entry-header">
-            <span class="changelog-version">v{{ entry.version }}</span>
-            <span class="changelog-date">{{ entry.date | date:'dd/MM/yyyy' }}</span>
-          </div>
-          <div class="changelog-content">{{ entry.body }}</div>
-        </mat-card-content>
-      </mat-card>
-    }
-  }
-
-  <mat-card class="status-card">
-    <mat-card-content>
-      <div class="status-row">
-        <mat-icon [class]="'status-icon status-' + status()">{{ statusIcon() }}</mat-icon>
-        <span class="status-text">{{ statusLabel() }}</span>
+    <section class="changelog-section" aria-labelledby="changelog-title">
+      <div class="section-heading">
+        <div>
+          <span class="section-eyebrow">Dettagli delle versioni</span>
+          <h2 id="changelog-title">Cosa c'è di nuovo</h2>
+        </div>
+        <mat-icon aria-hidden="true">description</mat-icon>
       </div>
 
-      @if (isError() && errorMessage()) {
-        <div class="error-message">
-          <mat-icon>warning</mat-icon>
-          <span>{{ errorMessage() }}</span>
-        </div>
-      }
+      <mat-accordion>
+        @for (entry of changelogViews(); track entry.version; let first = $first) {
+          <mat-expansion-panel [expanded]="first">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Versione {{ entry.version }}</mat-panel-title>
+              @if (entry.date) {
+                <mat-panel-description>
+                  {{ entry.date | date:'dd/MM/yyyy' }}
+                </mat-panel-description>
+              }
+            </mat-expansion-panel-header>
 
-      @if (isDownloading()) {
-        <div class="progress-section">
-          <mat-progress-bar mode="determinate" [value]="downloadPercent()"></mat-progress-bar>
-          <span class="progress-text">{{ downloadPercent() }}%</span>
-        </div>
-      }
-    </mat-card-content>
-  </mat-card>
+            <div class="changelog-content">
+              @for (block of entry.blocks; track $index) {
+                @switch (block.type) {
+                  @case ('heading') {
+                    <h3>{{ block.text }}</h3>
+                  }
+                  @case ('list') {
+                    <ul>
+                      @for (item of block.items ?? []; track $index) {
+                        <li>{{ item }}</li>
+                      }
+                    </ul>
+                  }
+                  @case ('paragraph') {
+                    <p>{{ block.text }}</p>
+                  }
+                }
+              }
+            </div>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    </section>
+  }
 
-  <div class="action-section">
-    @if (hasUpdate()) {
-      @if (isPreparingDownload()) {
-        <div class="preparing-download">
-          <mat-spinner diameter="24"></mat-spinner>
-          <span>Preparazione download in corso...</span>
-        </div>
-      } @else {
+  <section class="repair-section" aria-labelledby="repair-title">
+    <details [open]="isError()">
+      <summary id="repair-title">
+        <span>
+          <mat-icon aria-hidden="true">build</mat-icon>
+          Hai problemi con l'applicazione?
+        </span>
+        <mat-icon class="expand-icon" aria-hidden="true">expand_more</mat-icon>
+      </summary>
+      <div class="repair-content">
+        <p>
+          La riparazione reinstalla la versione corrente senza modificare i dati
+          dell'applicazione.
+        </p>
         <button
-          mat-raised-button
-          color="primary"
-          (click)="downloadUpdate()">
-          <mat-icon>download</mat-icon>
-          Scarica aggiornamento
+          mat-stroked-button
+          (click)="repairInstallation()"
+          [disabled]="isBusy() || isDownloaded()">
+          <mat-icon>build</mat-icon>
+          Ripara installazione
         </button>
-      }
-    }
-
-    @if (isDownloaded()) {
-      <button
-        mat-raised-button
-        color="accent"
-        (click)="installUpdate()">
-        <mat-icon>restart_alt</mat-icon>
-        Aggiorna Ora
-      </button>
-    }
-
-    <button
-      mat-stroked-button
-      (click)="repairInstallation()"
-      [disabled]="isChecking() || isDownloading() || isPreparingDownload() || repairing()">
-      <mat-icon>build</mat-icon>
-      Ripara installazione
-    </button>
-  </div>
+      </div>
+    </details>
+  </section>
 
   @if (repairing()) {
-    <app-fullscreen-loader message="Riparazione in corso... l'applicazione verrà chiusa a breve." />
+    <app-fullscreen-loader
+      message="Riparazione in corso… l'applicazione verrà chiusa a breve." />
   }
-</div>
+
+  @if (isInstalling()) {
+    <app-fullscreen-loader
+      message="Installazione in corso… l'applicazione verrà riavviata." />
+  }
+</main>

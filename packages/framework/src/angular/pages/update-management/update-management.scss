@@ -1,185 +1,489 @@
 .update-container {
-  max-width: 1200px;
+  max-width: 960px;
   margin: 0 auto;
+  padding: 32px 24px 48px;
+}
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
 
-    h1 {
-      margin: 0;
-      font-size: 28px;
+  h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 14px;
+  }
+}
+
+.installed-version {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+
+  span {
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.status-card {
+  overflow: hidden;
+  margin-bottom: 32px;
+  border: 1px solid rgba(25, 118, 210, 0.2);
+  border-left: 5px solid #1976d2;
+  box-shadow: 0 8px 24px rgba(31, 45, 61, 0.08);
+
+  mat-card-content {
+    padding: 28px;
+  }
+
+  &--available {
+    border-color: rgba(245, 124, 0, 0.28);
+    border-left-color: #f57c00;
+
+    .status-icon {
+      color: #ef6c00;
+      background: #fff3e0;
+    }
+  }
+
+  &--not-available,
+  &--downloaded,
+  &--installing {
+    border-color: rgba(46, 125, 50, 0.25);
+    border-left-color: #2e7d32;
+
+    .status-icon {
+      color: #2e7d32;
+      background: #e8f5e9;
+    }
+  }
+
+  &--error {
+    border-color: rgba(198, 40, 40, 0.25);
+    border-left-color: #c62828;
+
+    .status-icon {
+      color: #c62828;
+      background: #ffebee;
+    }
+  }
+}
+
+.status-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.status-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  color: #1565c0;
+  background: #e3f2fd;
+
+  mat-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 30px;
+  }
+}
+
+.status-copy {
+  min-width: 0;
+
+  h2 {
+    margin: 2px 0 6px;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  p {
+    max-width: 520px;
+    margin: 0;
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.status-eyebrow,
+.section-eyebrow {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.last-check {
+  display: block;
+  margin-top: 9px;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+}
+
+.version-change {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  > mat-icon {
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 18px;
+  }
+}
+
+.version-pill {
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+  font-weight: 600;
+
+  &--new {
+    color: #e65100;
+    background: #fff3e0;
+  }
+}
+
+.release-date {
+  grid-column: 1 / -1;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+  text-align: right;
+}
+
+.progress-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  font-size: 13px;
+
+  strong {
+    color: #1565c0;
+  }
+}
+
+.progress-details {
+  display: block;
+  margin-top: 7px;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+}
+
+.error-panel {
+  margin-top: 20px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: #b71c1c;
+  background: #ffebee;
+  font-size: 13px;
+
+  details {
+    margin: 8px 0 0 26px;
+
+    summary {
+      width: fit-content;
+      cursor: pointer;
+      color: #8e2424;
       font-weight: 500;
     }
-  }
 
-  .version-card {
-    margin-bottom: 16px;
-
-    .version-info {
-      display: flex;
-      gap: 48px;
-    }
-
-    .version-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      mat-icon {
-        color: #666;
-      }
-
-      &.highlight mat-icon {
-        color: #ff9800;
-      }
-
-      .version-label {
-        font-size: 12px;
-        color: #888;
-        margin-bottom: 2px;
-      }
-
-      .version-value {
-        font-size: 20px;
-        font-weight: 600;
-      }
-
-      .release-date {
-        font-size: 12px;
-        color: #888;
-        margin-top: 2px;
-      }
+    p {
+      margin: 8px 0 0;
+      overflow-wrap: anywhere;
+      color: rgba(0, 0, 0, 0.68);
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      line-height: 1.5;
     }
   }
+}
 
-  .changelog-header {
+.error-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+}
+
+.primary-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+
+  button {
+    min-height: 42px;
+    padding: 0 20px;
+  }
+}
+
+.installing-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2e7d32;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.changelog-section {
+  margin-bottom: 28px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+
+  h2 {
+    margin: 2px 0 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  > mat-icon {
+    color: #1976d2;
+  }
+}
+
+mat-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+mat-expansion-panel {
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: none !important;
+
+  mat-panel-title {
+    font-weight: 600;
+  }
+
+  mat-panel-description {
+    justify-content: flex-end;
+    font-size: 12px;
+  }
+}
+
+.changelog-content {
+  padding: 4px 0 8px;
+  color: rgba(0, 0, 0, 0.72);
+  font-size: 14px;
+  line-height: 1.6;
+
+  h3 {
+    margin: 18px 0 6px;
+    color: rgba(0, 0, 0, 0.82);
+    font-size: 14px;
+    font-weight: 600;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  p {
+    margin: 8px 0;
+  }
+
+  ul {
+    margin: 6px 0 12px;
+    padding-left: 22px;
+  }
+
+  li + li {
+    margin-top: 3px;
+  }
+}
+
+.repair-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+
+  details[open] .expand-icon {
+    transform: rotate(180deg);
+  }
+
+  summary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    font-size: 16px;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+    cursor: pointer;
+    color: rgba(0, 0, 0, 0.68);
+    font-size: 14px;
     font-weight: 500;
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    > span {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
 
     mat-icon {
-      color: #1976d2;
+      width: 19px;
+      height: 19px;
+      font-size: 19px;
+    }
+  }
+}
+
+.expand-icon {
+  transition: transform 0.2s ease;
+}
+
+.repair-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 0 20px 28px;
+
+  p {
+    max-width: 600px;
+    margin: 0;
+    color: rgba(0, 0, 0, 0.58);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  button {
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .update-container {
+    padding: 24px 16px 40px;
+  }
+
+  .page-header,
+  .status-layout,
+  .repair-content {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .page-header {
+    gap: 14px;
+  }
+
+  .installed-version {
+    align-items: flex-start;
+  }
+
+  .status-card mat-card-content {
+    padding: 22px;
+  }
+
+  .version-change {
+    align-self: flex-start;
+  }
+
+  .release-date {
+    text-align: left;
+  }
+
+  .primary-action {
+    justify-content: stretch;
+
+    button {
+      width: 100%;
     }
   }
 
-  .changelog-card {
-    margin-bottom: 12px;
+  .repair-content {
+    gap: 14px;
+    padding-left: 0;
 
-    .changelog-entry-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-
-      .changelog-version {
-        font-weight: 600;
-        font-size: 14px;
-        color: #1565c0;
-      }
-
-      .changelog-date {
-        font-size: 12px;
-        color: #666;
-      }
-    }
-
-    .changelog-content {
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.6;
-      color: #444;
+    button {
+      align-self: flex-start;
     }
   }
+}
 
-  .status-card {
-    margin-bottom: 24px;
-
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .status-icon {
-        &.status-available,
-        &.status-downloaded {
-          color: #4caf50;
-        }
-
-        &.status-checking,
-        &.status-downloading {
-          color: #2196f3;
-        }
-
-        &.status-error {
-          color: #f44336;
-        }
-
-        &.status-not-available,
-        &.status-idle {
-          color: #9e9e9e;
-        }
-      }
-
-      .status-text {
-        font-size: 15px;
-      }
-    }
-
-    .error-message {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 12px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      background: #fbe9e7;
-      color: #c62828;
-      font-size: 13px;
-
-      mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #c62828;
-      }
-    }
-
-    .progress-section {
-      margin-top: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      mat-progress-bar {
-        flex: 1;
-      }
-
-      .progress-text {
-        font-size: 14px;
-        font-weight: 500;
-        min-width: 40px;
-        text-align: right;
-      }
-    }
+@media (max-width: 460px) {
+  .page-header h1 {
+    font-size: 26px;
   }
 
-  .action-section {
-    display: flex;
-    gap: 12px;
-    align-items: center;
+  .status-main {
+    flex-direction: column;
+  }
 
-    .preparing-download {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #666;
-      font-size: 14px;
-    }
+  .status-copy h2 {
+    font-size: 20px;
+  }
+
+  mat-panel-description {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expand-icon {
+    transition: none;
   }
 }

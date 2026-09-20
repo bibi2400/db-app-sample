@@ -16,6 +16,10 @@
 
 - [ ] aggiunta di esempi di configurazione del menu e dei comandi/shortcut nei template
 
+- [x] rendere la pagina aggiornamenti guidata per stato con download e installazione in un unico flusso
+
+- [ ] collaudare il flusso aggiornamenti completo su una release Windows pacchettizzata
+
 ## Bonus Tracks:
 
 - [ ] pensare ad un modo ganzo agnostico per gestire centralizzati i file uploads (tipo file excel e altro)

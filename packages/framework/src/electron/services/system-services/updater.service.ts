@@ -20,6 +20,7 @@ export interface UpdateStatus {
   releaseDate?: string;
   releaseNotes?: string;
   changelogs?: ChangelogEntry[];
+  lastCheckedAt?: string;
   error?: string;
 }
 
@@ -89,11 +90,20 @@ export class UpdaterService {
   private registerEvents(): void {
     autoUpdater.on('update-available', (info: UpdateInfo) => {
       const releaseNotes = this.extractReleaseNotes(info.releaseNotes);
-      this.updateStatus({ status: 'available', availableVersion: info.version, releaseDate: info.releaseDate, releaseNotes });
+      this.updateStatus({
+        status: 'available',
+        availableVersion: info.version,
+        releaseDate: info.releaseDate,
+        releaseNotes,
+        lastCheckedAt: new Date().toISOString(),
+      });
     });
 
     autoUpdater.on('update-not-available', () => {
-      this.updateStatus({ status: 'not-available' });
+      this.updateStatus({
+        status: 'not-available',
+        lastCheckedAt: new Date().toISOString(),
+      });
     });
 
     autoUpdater.on('download-progress', (progress) => {
@@ -111,7 +121,14 @@ export class UpdaterService {
     });
 
     autoUpdater.on('error', (error: Error) => {
-      this.updateStatus({ status: 'error', error: error.message });
+      const lastCheckedAt = this.currentStatus.status === 'checking'
+        ? new Date().toISOString()
+        : this.currentStatus.lastCheckedAt;
+      this.updateStatus({
+        status: 'error',
+        error: error.message,
+        lastCheckedAt,
+      });
     });
   }
 
@@ -225,7 +242,15 @@ export class UpdaterService {
 
     if (this.devModeService.isDev) {
       Logger.info('[Updater] Mock install - would restart app in production');
-      this.updateStatus({ status: 'idle' });
+      this.updateStatus({
+        status: 'not-available',
+        currentVersion: this.currentStatus.availableVersion ?? this.currentStatus.currentVersion,
+        availableVersion: undefined,
+        releaseDate: undefined,
+        releaseNotes: undefined,
+        error: undefined,
+        lastCheckedAt: new Date().toISOString(),
+      });
       return;
     }
 
@@ -413,6 +438,7 @@ export class UpdaterService {
       availableVersion: mockVersion,
       releaseDate: new Date().toISOString(),
       releaseNotes: mockReleaseNotes,
+      lastCheckedAt: new Date().toISOString(),
     });
   }
 

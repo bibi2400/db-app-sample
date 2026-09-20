@@ -7,6 +7,7 @@ export interface UpdateStatus {
   releaseDate?: string;
   releaseNotes?: string;
   changelogs?: ChangelogEntry[];
+  lastCheckedAt?: string;
   error?: string;
 }
 
