@@ -12,7 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIcon } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Subscription } from 'rxjs';
 import {
@@ -43,7 +42,6 @@ interface ChangelogView extends ChangelogEntry {
     MatCardModule,
     MatExpansionModule,
     MatIcon,
-    MatProgressBarModule,
     MatProgressSpinnerModule,
     FullscreenLoaderComponent,
   ],
@@ -119,9 +117,9 @@ export class UpdateManagement implements OnInit, OnDestroy {
       case 'idle':
         return 'Verifica se è disponibile una versione più recente.';
       case 'checking':
-        return 'Stiamo contattando il servizio di aggiornamento.';
+        return 'Sto contattando il servizio di aggiornamento.';
       case 'available':
-        return 'Scarica la nuova versione e installala con un solo passaggio.';
+        return 'Scarica e installa la nuova versione.';
       case 'not-available':
         return 'Stai già utilizzando la versione più recente disponibile.';
       case 'downloading':
@@ -174,6 +172,17 @@ export class UpdateManagement implements OnInit, OnDestroy {
     }
 
     return details.join(' · ');
+  });
+
+  readonly downloadLoaderMessage = computed(() => {
+    if (this.isPreparingDownload()) {
+      return 'Preparazione del download…';
+    }
+
+    const details = this.downloadDetails();
+    const progress = `Download aggiornamento in corso… ${this.downloadPercent()}%`;
+
+    return details ? `${progress} · ${details}` : progress;
   });
 
   readonly changelogViews = computed<ChangelogView[]>(() => {

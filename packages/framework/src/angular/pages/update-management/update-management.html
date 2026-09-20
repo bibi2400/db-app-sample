@@ -2,7 +2,6 @@
   <header class="page-header">
     <div>
       <h1>Aggiornamenti</h1>
-      <p>Mantieni l'applicazione aggiornata, stabile e sicura.</p>
     </div>
 
     @if (currentVersion()) {
@@ -53,27 +52,6 @@
           </div>
         }
       </div>
-
-      @if (isPreparingDownload() || isDownloading()) {
-        <div class="progress-section" aria-live="polite">
-          <div class="progress-header">
-            <span>
-              {{ isPreparingDownload() ? 'Preparazione del download…' : 'Download in corso…' }}
-            </span>
-            @if (isDownloading()) {
-              <strong>{{ downloadPercent() }}%</strong>
-            }
-          </div>
-          <mat-progress-bar
-            [mode]="isPreparingDownload() ? 'indeterminate' : 'determinate'"
-            [value]="downloadPercent()"
-            aria-label="Avanzamento download aggiornamento">
-          </mat-progress-bar>
-          @if (downloadDetails()) {
-            <span class="progress-details">{{ downloadDetails() }}</span>
-          }
-        </div>
-      }
 
       @if (errorMessage()) {
         <div class="error-panel" role="alert">
@@ -202,6 +180,10 @@
       </div>
     </details>
   </section>
+
+  @if (isPreparingDownload() || isDownloading()) {
+    <app-fullscreen-loader [message]="downloadLoaderMessage()" />
+  }
 
   @if (repairing()) {
     <app-fullscreen-loader

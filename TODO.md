@@ -18,6 +18,10 @@
 
 - [x] rendere la pagina aggiornamenti guidata per stato con download e installazione in un unico flusso
 
+- [x] bloccare l'applicazione anche durante il download degli aggiornamenti
+
+- [x] mostrare l'avanzamento del download solo nell'overlay bloccante
+
 - [ ] collaudare il flusso aggiornamenti completo su una release Windows pacchettizzata
 
 ## Bonus Tracks:
