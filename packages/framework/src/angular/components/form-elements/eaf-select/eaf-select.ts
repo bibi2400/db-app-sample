@@ -109,6 +109,9 @@ export class EafSelect implements ControlValueAccessor, OnInit {
   /** Testo hint sotto il campo */
   readonly hint = input('');
 
+  /** Rimuove lo spazio riservato sotto il campo quando hint ed errori non sono presenti */
+  readonly hideHint = input(false);
+
   /** Mostra opzione "— Tutti —" per single non-autocomplete */
   readonly showAllOption = input(true);
 

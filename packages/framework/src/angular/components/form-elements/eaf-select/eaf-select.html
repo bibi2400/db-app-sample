@@ -1,7 +1,11 @@
 @if (autocomplete()) {
   @if (multiple()) {
     <!-- Multi autocomplete con chip grid -->
-    <mat-form-field [appearance]="appearance()" class="eaf-select-field">
+    <mat-form-field
+      [appearance]="appearance()"
+      [subscriptSizing]="hideHint() ? 'dynamic' : 'fixed'"
+      class="eaf-select-field"
+    >
       <mat-label>{{ label() }}</mat-label>
       <mat-chip-grid
         #chipGrid
@@ -64,7 +68,11 @@
     </mat-form-field>
   } @else {
     <!-- Single autocomplete -->
-    <mat-form-field [appearance]="appearance()" class="eaf-select-field">
+    <mat-form-field
+      [appearance]="appearance()"
+      [subscriptSizing]="hideHint() ? 'dynamic' : 'fixed'"
+      class="eaf-select-field"
+    >
       <mat-label>{{ label() }}</mat-label>
       <input matInput
         [formControl]="_autoDisplayControl"
@@ -116,7 +124,11 @@
   }
 } @else {
   <!-- Non-autocomplete: mat-select -->
-  <mat-form-field [appearance]="appearance()" class="eaf-select-field">
+  <mat-form-field
+    [appearance]="appearance()"
+    [subscriptSizing]="hideHint() ? 'dynamic' : 'fixed'"
+    class="eaf-select-field"
+  >
     <mat-label>{{ label() }}</mat-label>
     @if (multiple()) {
       <mat-select [multiple]="true"

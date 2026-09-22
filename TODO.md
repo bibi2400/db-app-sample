@@ -8,7 +8,7 @@
 
 - [ ] ⁠input a volte smettono di inputtare
 
-- [x] rendere configurabile con hideHint lo spazio riservato negli eaf-input
+- [x] rendere configurabile con hideHint lo spazio riservato negli eaf-input e select
 
 - [ ] ⁠gestione shortcut
 
