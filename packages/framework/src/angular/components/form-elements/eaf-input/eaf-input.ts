@@ -72,6 +72,9 @@ export class EafInput implements ControlValueAccessor, OnInit {
   /** Disabilita il componente */
   readonly disabled = input(false);
 
+  /** Rende il controllo non modificabile senza disabilitarlo */
+  readonly readOnly = input(false, { alias: 'readonly' });
+
   /**
    * Mappa di chiavi di errore validator → messaggi leggibili.
    * Il componente controlla il FormControl padre per questi errori e mostra

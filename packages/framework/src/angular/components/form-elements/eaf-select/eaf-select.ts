@@ -2,26 +2,31 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
-  forwardRef,
+  inject,
   input,
   model,
+  OnInit,
   output,
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ControlValueAccessor,
   FormControl,
   FormsModule,
-  NG_VALUE_ACCESSOR,
+  NgControl,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { merge } from 'rxjs';
 import {
   MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
+import { ErrorStateMatcher } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldAppearance, MatFormFieldModule } from '@angular/material/form-field';
@@ -52,15 +57,8 @@ export interface EafSelectActionOption {
   templateUrl: './eaf-select.html',
   styleUrl: './eaf-select.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => EafSelect),
-      multi: true,
-    },
-  ],
 })
-export class EafSelect implements ControlValueAccessor {
+export class EafSelect implements ControlValueAccessor, OnInit {
   /** Appearance del mat-form-field interno */
   readonly appearance = input<MatFormFieldAppearance>('outline');
 
@@ -87,8 +85,23 @@ export class EafSelect implements ControlValueAccessor {
   /** Abilita autocomplete con ricerca */
   readonly autocomplete = input(false);
 
+  /**
+   * Permette valori testuali liberi nell'autocomplete a selezione singola.
+   * Non è supportato quando `multiple` è true.
+   */
+  readonly allowCustomValue = input(false);
+
   /** Label del form field */
   readonly label = input('Seleziona...');
+
+  /** Placeholder del controllo */
+  readonly placeholder = input('Cerca...');
+
+  /** Campo obbligatorio */
+  readonly required = input(false);
+
+  /** Mappa di chiavi validator → messaggi mostrati dopo il blur. */
+  readonly errorMessages = input<Record<string, string>>({});
 
   /** Testo hint sotto il campo */
   readonly hint = input('');
@@ -137,7 +150,16 @@ export class EafSelect implements ControlValueAccessor {
     const text = this.searchText().toLowerCase().trim();
     const opts = this.options();
     return text
-      ? opts.filter((o) => o.label.toLowerCase().includes(text))
+      ? opts.filter((option) => {
+          const searchableText = [
+            option.label,
+            option.description ?? '',
+            String(option.value ?? ''),
+          ]
+            .join(' ')
+            .toLowerCase();
+          return searchableText.includes(text);
+        })
       : opts;
   });
 
@@ -179,7 +201,40 @@ export class EafSelect implements ControlValueAccessor {
     return opt?.label ?? String(val);
   };
 
+  private readonly ngControl = inject(NgControl, { self: true, optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly controlRevision = signal(0);
+  private readonly isTouched = signal(false);
+
+  protected readonly errorStateMatcher: ErrorStateMatcher = {
+    isErrorState: () => this.activeErrors().length > 0,
+  };
+
+  protected readonly activeErrors = computed(() => {
+    void this.controlRevision();
+    if (!this.isTouched()) return [];
+
+    const ctrl = this.ngControl?.control;
+    if (!ctrl) return [];
+
+    const messages = this.errorMessages();
+    const errors: { key: string; message: string }[] = [];
+    for (const [key, message] of Object.entries(messages)) {
+      if (ctrl.hasError(key)) {
+        errors.push({ key, message });
+      }
+    }
+    if (!('required' in messages) && ctrl.hasError('required')) {
+      errors.push({ key: 'required', message: 'Campo obbligatorio' });
+    }
+    return errors;
+  });
+
   constructor() {
+    if (this.ngControl) {
+      this.ngControl.valueAccessor = this;
+    }
+
     // Sincronizza il FormControl del display con valore + opzioni
     effect(() => {
       if (!this.autocomplete() || this.multiple()) return;
@@ -187,6 +242,12 @@ export class EafSelect implements ControlValueAccessor {
       const opts = this.options();
       if (val == null) {
         this._autoDisplayControl.setValue('', { emitEvent: false });
+      } else if (this.allowCustomValue()) {
+        const opt = opts.find((o) => o.value === val);
+        this._autoDisplayControl.setValue(
+          opt?.label ?? String(val),
+          { emitEvent: false },
+        );
       } else if (opts.length > 0) {
         const opt = opts.find((o) => o.value === val);
         this._autoDisplayControl.setValue(opt?.label ?? '', { emitEvent: false });
@@ -224,6 +285,18 @@ export class EafSelect implements ControlValueAccessor {
     });
   }
 
+  ngOnInit(): void {
+    const ctrl = this.ngControl?.control;
+    if (!ctrl) return;
+
+    merge(ctrl.statusChanges, ctrl.valueChanges)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (!ctrl.touched) this.isTouched.set(false);
+        this.controlRevision.update(value => value + 1);
+      });
+  }
+
   // ─── ControlValueAccessor ────────────────────────────────────────────────
 
   private _onChange: (value: unknown) => void = () => {};
@@ -246,13 +319,20 @@ export class EafSelect implements ControlValueAccessor {
   }
 
   protected onTouched(): void {
+    this.isTouched.set(true);
     this._onTouched();
+    this.controlRevision.update(value => value + 1);
   }
 
   // ─── Search / Filter ──────────────────────────
 
   protected onSearchInput(event: Event): void {
-    this.searchText.set((event.target as HTMLInputElement).value);
+    const text = (event.target as HTMLInputElement).value;
+    this.searchText.set(text);
+    if (this.allowCustomValue() && !this.multiple()) {
+      this.value.set(text);
+      this._onChange(text);
+    }
   }
 
   /**
@@ -324,7 +404,10 @@ export class EafSelect implements ControlValueAccessor {
       } else if (!this.multiple()) {
         const val = this.value();
         const opt = this.options().find((o) => o.value === val);
-        this._autoDisplayControl.setValue(opt?.label ?? '', { emitEvent: false });
+        const displayValue = this.allowCustomValue() && val != null
+          ? opt?.label ?? String(val)
+          : opt?.label ?? '';
+        this._autoDisplayControl.setValue(displayValue, { emitEvent: false });
       }
     });
     action.action();

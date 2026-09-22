@@ -22,11 +22,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ElectronUploadService } from '../../../services/electron-api/electron-upload.service';
 import { AttachmentInfo, UploadProgress } from '../../../types/upload';
 
+export type EafFileUploadMode = 'dropzone' | 'button';
+
 /**
  * Reusable file upload widget.
  *
  * - Standalone, OnPush, signal-based.
- * - Accepts drag & drop and file picker.
+ * - `dropzone` mode accepts drag & drop and uploads selected files.
+ * - `button` mode only returns local `File` objects without uploading them.
  * - Configurable accepted MIME types and target relative path inside the
  *   application's upload repository.
  * - Implements `ControlValueAccessor` so it can be used inside a Reactive Form
@@ -61,6 +64,15 @@ export class EafFileUpload implements ControlValueAccessor {
 
   /** Label visible inside the drop zone. */
   readonly label = input('Trascina qui i file o clicca per selezionarli');
+
+  /** Icon shown in the drop zone or picker button. */
+  readonly icon = input('cloud_upload');
+
+  /**
+   * `dropzone` uploads and persists files as before. `button` only emits the
+   * selected browser `File` objects through `filesSelected`.
+   */
+  readonly mode = input<EafFileUploadMode>('dropzone');
 
   /** Accepted MIME types or extensions, comma separated (e.g. 'image/*,.pdf'). */
   readonly accept = input<string>('');
@@ -97,6 +109,9 @@ export class EafFileUpload implements ControlValueAccessor {
 
   /** Validation/upload error messages. */
   readonly errored = output<string>();
+
+  /** Files selected locally in button mode. No upload or persistence occurs. */
+  readonly filesSelected = output<File[]>();
 
   // ── State ──────────────────────────────────────────────────────
 
@@ -169,7 +184,7 @@ export class EafFileUpload implements ControlValueAccessor {
 
   @HostListener('dragover', ['$event'])
   onDragOver(event: DragEvent): void {
-    if (this.isDisabled()) return;
+    if (this.mode() !== 'dropzone' || this.isDisabled()) return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragging.set(true);
@@ -177,6 +192,7 @@ export class EafFileUpload implements ControlValueAccessor {
 
   @HostListener('dragleave', ['$event'])
   onDragLeave(event: DragEvent): void {
+    if (this.mode() !== 'dropzone') return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragging.set(false);
@@ -184,6 +200,7 @@ export class EafFileUpload implements ControlValueAccessor {
 
   @HostListener('drop', ['$event'])
   onDrop(event: DragEvent): void {
+    if (this.mode() !== 'dropzone') return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragging.set(false);
@@ -196,9 +213,16 @@ export class EafFileUpload implements ControlValueAccessor {
 
   protected onPickerChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (!input.files || !input.files.length) return;
-    this.handleFiles(Array.from(input.files));
-    input.value = ''; // allow re-uploading same file later
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = ''; // allow selecting the same file again
+
+    if (!files.length || this.isDisabled()) return;
+    if (this.mode() === 'button') {
+      this.filesSelected.emit(files);
+      return;
+    }
+
+    void this.handleFiles(files);
   }
 
   // ── Core upload flow ───────────────────────────────────────────

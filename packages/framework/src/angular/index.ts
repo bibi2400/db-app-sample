@@ -26,6 +26,7 @@ export { ScrollRestorer } from './components/scroll-restorer/scroll-restorer';
 export { EafSelect } from './components/form-elements/eaf-select/eaf-select';
 export type { EafSelectActionOption } from './components/form-elements/eaf-select/eaf-select';
 export { EafFileUpload } from './components/form-elements/eaf-file-upload/eaf-file-upload';
+export type { EafFileUploadMode } from './components/form-elements/eaf-file-upload/eaf-file-upload';
 export { EafInput } from './components/form-elements/eaf-input/eaf-input';
 
 // ─── EAF Notes ───────────────────────────────────────────────────────────────

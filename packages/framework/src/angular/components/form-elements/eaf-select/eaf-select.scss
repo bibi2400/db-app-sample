@@ -15,6 +15,17 @@
   }
 }
 
+.eaf-select-option-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.eaf-select-option-description {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
 // Opzione speciale "Crea / Modifica" — può essere sovrascritta dal consumer
 .create-edit-option {
   font-style: italic;

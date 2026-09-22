@@ -3,7 +3,11 @@
     <!-- Multi autocomplete con chip grid -->
     <mat-form-field [appearance]="appearance()" class="eaf-select-field">
       <mat-label>{{ label() }}</mat-label>
-      <mat-chip-grid #chipGrid>
+      <mat-chip-grid
+        #chipGrid
+        [errorStateMatcher]="errorStateMatcher"
+        [required]="required()"
+      >
         @for (chip of selectedOptions(); track chip.value) {
           <mat-chip-row (removed)="removeChip(chip)">
             {{ chip.label }}
@@ -20,7 +24,7 @@
         (blur)="onTouched()"
         autocomplete="off"
         [disabled]="disabled()"
-        placeholder="Cerca...">
+        [placeholder]="placeholder()">
       @if (hasValue() && !disabled()) {
         <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
@@ -37,11 +41,25 @@
           </mat-option>
         }
         @for (opt of availableOptions(); track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          <mat-option [value]="opt.value">
+            @if (opt.description) {
+              <span class="eaf-select-option-content">
+                <span>{{ opt.label }}</span>
+                <span class="eaf-select-option-description">
+                  {{ opt.description }}
+                </span>
+              </span>
+            } @else {
+              {{ opt.label }}
+            }
+          </mat-option>
         }
       </mat-autocomplete>
       @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
+      }
+      @for (entry of activeErrors(); track entry.key) {
+        <mat-error>{{ entry.message }}</mat-error>
       }
     </mat-form-field>
   } @else {
@@ -50,11 +68,13 @@
       <mat-label>{{ label() }}</mat-label>
       <input matInput
         [formControl]="_autoDisplayControl"
+        [errorStateMatcher]="errorStateMatcher"
         [matAutocomplete]="autoSingle"
+        [required]="required()"
         (input)="onSearchInput($event)"
         (blur)="onTouched()"
         autocomplete="off"
-        placeholder="Cerca...">
+        [placeholder]="placeholder()">
       @if (hasValue() && !disabled()) {
         <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
@@ -72,11 +92,25 @@
           </mat-option>
         }
         @for (opt of filteredOptions(); track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          <mat-option [value]="opt.value">
+            @if (opt.description) {
+              <span class="eaf-select-option-content">
+                <span>{{ opt.label }}</span>
+                <span class="eaf-select-option-description">
+                  {{ opt.description }}
+                </span>
+              </span>
+            } @else {
+              {{ opt.label }}
+            }
+          </mat-option>
         }
       </mat-autocomplete>
       @if (hint()) {
         <mat-hint>{{ hint() }}</mat-hint>
+      }
+      @for (entry of activeErrors(); track entry.key) {
+        <mat-error>{{ entry.message }}</mat-error>
       }
     </mat-form-field>
   }
@@ -87,6 +121,9 @@
     @if (multiple()) {
       <mat-select [multiple]="true"
         [formControl]="_selectControl"
+        [errorStateMatcher]="errorStateMatcher"
+        [placeholder]="placeholder()"
+        [required]="required()"
         (blur)="onTouched()"
         (selectionChange)="onMultiSelectChange($event.value)">
         @for (action of _allActionOptions(); track action.label) {
@@ -95,12 +132,26 @@
           </mat-option>
         }
         @for (opt of options(); track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          <mat-option [value]="opt.value">
+            @if (opt.description) {
+              <span class="eaf-select-option-content">
+                <span>{{ opt.label }}</span>
+                <span class="eaf-select-option-description">
+                  {{ opt.description }}
+                </span>
+              </span>
+            } @else {
+              {{ opt.label }}
+            }
+          </mat-option>
         }
       </mat-select>
     } @else {
       <mat-select
           [formControl]="_selectControl"
+          [errorStateMatcher]="errorStateMatcher"
+          [placeholder]="placeholder()"
+          [required]="required()"
           (blur)="onTouched()"
           (selectionChange)="onSelectChange($event.value)">
         @for (action of _allActionOptions(); track action.label) {
@@ -112,7 +163,18 @@
           <mat-option [value]="null">— Tutti —</mat-option>
         }
         @for (opt of options(); track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+          <mat-option [value]="opt.value">
+            @if (opt.description) {
+              <span class="eaf-select-option-content">
+                <span>{{ opt.label }}</span>
+                <span class="eaf-select-option-description">
+                  {{ opt.description }}
+                </span>
+              </span>
+            } @else {
+              {{ opt.label }}
+            }
+          </mat-option>
         }
       </mat-select>
     }
@@ -126,6 +188,9 @@
     }
     @if (hint()) {
       <mat-hint>{{ hint() }}</mat-hint>
+    }
+    @for (entry of activeErrors(); track entry.key) {
+      <mat-error>{{ entry.message }}</mat-error>
     }
   </mat-form-field>
 }

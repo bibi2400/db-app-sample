@@ -8,6 +8,10 @@
   pointer-events: none;
 }
 
+.picker-button {
+  max-width: 100%;
+}
+
 .dropzone {
   display: flex;
   flex-direction: column;

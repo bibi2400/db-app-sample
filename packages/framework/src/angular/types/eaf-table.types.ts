@@ -17,6 +17,7 @@ import type { EafFilterType, EafSortState } from '../../shared/types/eaf-table';
 export interface EafSelectOption {
   value: unknown;
   label: string;
+  description?: string;
 }
 
 /**
