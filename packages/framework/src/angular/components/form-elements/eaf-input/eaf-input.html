@@ -1,4 +1,8 @@
-<mat-form-field [appearance]="appearance()" class="eaf-input-field">
+<mat-form-field
+  [appearance]="appearance()"
+  [subscriptSizing]="hideHint() ? 'dynamic' : 'fixed'"
+  class="eaf-input-field"
+>
   <mat-label>{{ label() }}</mat-label>
   @if (rows()) {
     <textarea

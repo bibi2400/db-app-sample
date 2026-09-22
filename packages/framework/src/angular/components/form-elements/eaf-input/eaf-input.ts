@@ -66,6 +66,9 @@ export class EafInput implements ControlValueAccessor, OnInit {
   /** Testo hint sotto il campo */
   readonly hint = input<string>('');
 
+  /** Rimuove lo spazio riservato sotto il campo quando hint ed errori non sono presenti */
+  readonly hideHint = input(false);
+
   /** Appearance del mat-form-field */
   readonly appearance = input<MatFormFieldAppearance>('outline');
 

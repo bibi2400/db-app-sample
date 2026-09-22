@@ -66,13 +66,14 @@
           appearance="fill"
           [unitStyle]="{ color: 'var(--mat-primary-color, #1976d2)', fontWeight: '600' }"
           [formControl]="tempControl"
-          hint="Valore in gradi Celsius"
+          [hideHint]="true"
         />
         <eaf-input
           label="Senza unità"
           [unit]="null"
           type="text"
           placeholder="Testo libero"
+          [hideHint]="true"
           [formControl]="mmControl"
         />
       </div>

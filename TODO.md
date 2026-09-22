@@ -8,6 +8,8 @@
 
 - [ ] ⁠input a volte smettono di inputtare
 
+- [x] rendere configurabile con hideHint lo spazio riservato negli eaf-input
+
 - [ ] ⁠gestione shortcut
 
 - [ ] ⁠quando cambi path del db non si aggiorna per bene (necessario riavvio manuale)
