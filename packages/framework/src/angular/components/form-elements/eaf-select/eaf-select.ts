@@ -85,6 +85,9 @@ export class EafSelect implements ControlValueAccessor, OnInit {
   /** Abilita autocomplete con ricerca */
   readonly autocomplete = input(false);
 
+  /** Numero massimo di opzioni mostrate nell'autocomplete (`null` = illimitato) */
+  readonly maxVisibleOptions = input<number | null>(null);
+
   /**
    * Permette valori testuali liberi nell'autocomplete a selezione singola.
    * Non è supportato quando `multiple` è true.
@@ -149,7 +152,7 @@ export class EafSelect implements ControlValueAccessor, OnInit {
   protected readonly filteredOptions = computed(() => {
     const text = this.searchText().toLowerCase().trim();
     const opts = this.options();
-    return text
+    const filtered = text
       ? opts.filter((option) => {
           const searchableText = [
             option.label,
@@ -161,6 +164,9 @@ export class EafSelect implements ControlValueAccessor, OnInit {
           return searchableText.includes(text);
         })
       : opts;
+    const maxVisibleOptions = this.maxVisibleOptions();
+    if (maxVisibleOptions == null) return filtered;
+    return filtered.slice(0, Math.max(0, Math.trunc(maxVisibleOptions)));
   });
 
   // Per multi autocomplete: escludi opzioni già selezionate
