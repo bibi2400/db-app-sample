@@ -1,98 +1,218 @@
 <div class="notifications-page">
-  <div class="notifications-header">
-    <h2>Notifiche</h2>
-    <div class="header-actions">
-      @if (unreadCount() > 0) {
-        <button mat-stroked-button (click)="markAllAsRead()" class="mark-all-btn">
-          <mat-icon>done_all</mat-icon>
-          Segna tutte come lette
-        </button>
-      }
-      @if (hasNotifications()) {
+  <header class="notifications-header">
+    <div>
+      <h2>Notifiche</h2>
+      <p class="page-description">
         @if (unreadCount() > 0) {
-          <button mat-stroked-button color="warn" (click)="clearRead()" class="clear-all-btn">
-            <mat-icon>delete_sweep</mat-icon>
-            Cancella lette
-          </button>
+          {{ unreadCount() }} da leggere
         } @else {
-          <button mat-stroked-button color="warn" (click)="clearAll()" class="clear-all-btn">
-            <mat-icon>delete_sweep</mat-icon>
-            Cancella tutte
-          </button>
+          Hai letto tutte le notifiche
         }
-      }
+      </p>
     </div>
+    <div class="header-actions">
+      <button
+        mat-stroked-button
+        (click)="notificationService.markAllAsRead()"
+        [disabled]="unreadCount() === 0"
+      >
+        <mat-icon>done_all</mat-icon>
+        Segna tutte come lette
+      </button>
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="manageMenu"
+        [disabled]="notifications().length === 0"
+        aria-label="Gestisci notifiche"
+        matTooltip="Gestisci notifiche"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #manageMenu="matMenu">
+        <button mat-menu-item (click)="clearRead()" [disabled]="readCount() === 0">
+          <mat-icon>delete_sweep</mat-icon>
+          Cancella lette ({{ readCount() }})
+        </button>
+        <button mat-menu-item (click)="clearAll()">
+          <mat-icon>delete_outline</mat-icon>
+          Cancella tutte ({{ notifications().length }})
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <div class="notification-tabs" role="group" aria-label="Stato delle notifiche">
+    <button
+      mat-button
+      [class.active]="!unreadOnly()"
+      [attr.aria-pressed]="!unreadOnly()"
+      (click)="setUnreadOnly(false)"
+    >
+      Tutte <span class="count">{{ notifications().length }}</span>
+    </button>
+    <button
+      mat-button
+      [class.active]="unreadOnly()"
+      [attr.aria-pressed]="unreadOnly()"
+      (click)="setUnreadOnly(true)"
+    >
+      Da leggere <span class="count">{{ unreadCount() }}</span>
+    </button>
   </div>
 
-  @if (hasNotifications()) {
-    <mat-nav-list class="notification-list">
-      @for (n of notifications(); track n.id) {
-        <mat-list-item
-          class="notification-item"
-          [class.unread]="!n.read"
-          [class.expanded]="isExpanded(n.id)"
-          [class.level-debug]="n.level === 'debug'"
-          [class.level-info]="n.level === 'info'"
-          [class.level-warn]="n.level === 'warn'"
-          [class.level-error]="n.level === 'error'"
-          (click)="toggleExpand(n)"
-        >
-          <mat-icon matListItemIcon class="level-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
-          <div matListItemTitle class="notification-title-row">
-            <span class="notification-title">{{ n.title }}</span>
-            <span class="notification-meta">
-              <span class="notification-level">{{ levelLabel(n.level) }}</span>
-              <span class="notification-time">{{ formatTimestamp(n.timestamp) | date:'dd/MM/yyyy HH:mm' }}</span>
-            </span>
-          </div>
-          <div matListItemLine class="notification-preview">
-            {{ n.message }}
-          </div>
-          <div matListItemMeta class="item-meta">
-            <button
-              mat-icon-button
-              class="action-btn"
-              (click)="toggleReadStatus($event, n)"
-              [matTooltip]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
-              [attr.aria-label]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
-            >
-              <mat-icon>{{ n.read ? 'mark_email_unread' : 'mark_email_read' }}</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              class="action-btn delete-btn"
-              (click)="removeNotification($event, n.id)"
-              matTooltip="Cancella notifica"
-              aria-label="Cancella notifica"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-        </mat-list-item>
-        @if (isExpanded(n.id)) {
-          <div class="notification-expanded"
-               [class.level-debug]="n.level === 'debug'"
-               [class.level-info]="n.level === 'info'"
-               [class.level-warn]="n.level === 'warn'"
-               [class.level-error]="n.level === 'error'">
-            <div class="expanded-header">
-              <mat-icon class="expanded-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
-              <div>
-                <strong>{{ n.title }}</strong>
-                <span class="expanded-level">{{ levelLabel(n.level) }}</span>
-              </div>
-              <span class="expanded-time">{{ formatTimestamp(n.timestamp) | date:'dd/MM/yyyy HH:mm:ss' }}</span>
-            </div>
-            <p class="expanded-message">{{ n.message }}</p>
-          </div>
-        }
-        <mat-divider />
+  <div class="notification-filters">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-label>Cerca notifiche</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        #searchInput
+        type="search"
+        [value]="search()"
+        (input)="setSearch(searchInput.value)"
+      />
+      @if (search()) {
+        <button mat-icon-button matSuffix (click)="setSearch('')" aria-label="Cancella ricerca">
+          <mat-icon>close</mat-icon>
+        </button>
       }
-    </mat-nav-list>
-  } @else {
+    </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="level-field">
+      <mat-label>Tipo</mat-label>
+      <mat-select [value]="level()" (selectionChange)="setLevel($event.value)">
+        <mat-option value="standard">Notifiche utente</mat-option>
+        <mat-option value="all">Tutti i livelli</mat-option>
+        @for (value of levels; track value) {
+          <mat-option [value]="value">{{ presentation[value].label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    @if (hasFilters()) {
+      <button mat-button (click)="resetFilters()">Ripristina filtri</button>
+    }
+  </div>
+
+  <p class="result-count" role="status">
+    {{ filteredNotifications().length }} notifiche visualizzate
+  </p>
+
+  @for (group of groups(); track group.key) {
+    <section class="notification-group" [attr.aria-label]="group.label">
+      <h3>{{ group.label }}</h3>
+      <ul class="notification-list">
+        @for (n of group.notifications; track n.id) {
+          <li
+            class="notification-item"
+            [class]="'notification-item level-' + n.level"
+            [class.unread]="!n.read"
+          >
+            <div class="notification-row">
+              <button
+                class="notification-main"
+                (click)="activate(n)"
+                [attr.aria-expanded]="n.route ? null : expandedId() === n.id"
+                [attr.aria-controls]="n.route ? null : 'detail-' + n.id"
+                [attr.aria-label]="n.title + (n.route ? ': ' + (n.actionLabel || 'Apri pagina') : '')"
+              >
+                <mat-icon class="level-icon">{{ n.icon || presentation[n.level].icon }}</mat-icon>
+                <span class="notification-content">
+                  <span class="notification-title-row">
+                    <span class="notification-title">{{ n.title }}</span>
+                    @if (!n.read) {
+                      <span class="unread-dot" aria-label="Da leggere"></span>
+                    }
+                  </span>
+                  <span class="notification-preview">{{ n.message }}</span>
+                  <span class="notification-meta">
+                    <span>{{ presentation[n.level].label }}</span>
+                    <time [attr.datetime]="n.timestamp | date:'yyyy-MM-ddTHH:mm:ssZZZZZ'">
+                      {{ n.timestamp | date:'HH:mm' }}
+                    </time>
+                    @if ((n.occurrences || 1) > 1) {
+                      <span>{{ n.occurrences }} occorrenze</span>
+                    }
+                    @if (n.route) {
+                      <span class="route-action">
+                        {{ n.actionLabel || 'Apri pagina' }}
+                        <mat-icon>arrow_forward</mat-icon>
+                      </span>
+                    }
+                  </span>
+                </span>
+                @if (!n.route) {
+                  <mat-icon class="expand-icon">
+                    {{ expandedId() === n.id ? 'expand_less' : 'expand_more' }}
+                  </mat-icon>
+                }
+              </button>
+              <div class="item-actions">
+                @if (n.route) {
+                  <button
+                    mat-icon-button
+                    (click)="toggleExpand(n)"
+                    matTooltip="Mostra dettagli"
+                    aria-label="Mostra dettagli"
+                    [attr.aria-expanded]="expandedId() === n.id"
+                    [attr.aria-controls]="'detail-' + n.id"
+                  >
+                    <mat-icon>{{ expandedId() === n.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  </button>
+                }
+                <button
+                  mat-icon-button
+                  (click)="toggleReadStatus(n)"
+                  [matTooltip]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
+                  [attr.aria-label]="n.read ? 'Segna come da leggere' : 'Segna come letta'"
+                >
+                  <mat-icon>{{ n.read ? 'mark_email_unread' : 'mark_email_read' }}</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="removeNotification(n.id)"
+                  matTooltip="Cancella notifica"
+                  aria-label="Cancella notifica"
+                >
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+            @if (expandedId() === n.id) {
+              <div class="notification-expanded" [id]="'detail-' + n.id" tabindex="-1">
+                <p class="expanded-message">{{ n.message }}</p>
+                <p class="expanded-time">{{ n.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+                @if (n.details) {
+                  <details class="technical-details">
+                    <summary>Dettagli tecnici</summary>
+                    <button
+                      mat-button
+                      [cdkCopyToClipboard]="n.details"
+                      (cdkCopyToClipboardCopied)="copied($event)"
+                    >
+                      <mat-icon>content_copy</mat-icon>
+                      Copia dettagli
+                    </button>
+                    <pre>{{ n.details }}</pre>
+                  </details>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  } @empty {
     <div class="empty-state">
-      <mat-icon class="empty-icon">notifications_none</mat-icon>
-      <p>Nessuna notifica</p>
+      <mat-icon class="empty-icon">
+        {{ notifications().length ? 'filter_list_off' : 'notifications_none' }}
+      </mat-icon>
+      <h3>{{ notifications().length ? 'Nessuna notifica corrispondente' : 'Nessuna notifica' }}</h3>
+      <p>
+        {{ notifications().length ? 'Prova a cambiare ricerca, stato o tipo.' :
+          'Le nuove notifiche compariranno qui.' }}
+      </p>
+      @if (hasFilters()) {
+        <button mat-stroked-button (click)="resetFilters()">Ripristina filtri</button>
+      }
     </div>
   }
 </div>

@@ -13,7 +13,13 @@ export type {
 } from './chronomancer/chronomancer.types';
 
 export type { IpcResponse } from './types/ipc';
-export type { AppNotification, NotificationLevel } from './types/notification';
+export type {
+  AppNotification,
+  NotificationLevel,
+  NotificationOptions,
+  NotificationInput,
+  NotificationConfig,
+} from './types/notification';
 export type { UpdateStatusType, UpdateStatus, DownloadProgress, ChangelogEntry } from './types/update';
 export type { BackupInfo, BackupOptions, RestoreResult, BackupStats } from './types/backup';
 export type {

@@ -3,18 +3,15 @@ import { PushChannel, PushEvent } from '../../decorators/push-channel.decorator'
 import { PushEmitter } from '../../helpers/push/push-emitter';
 import { PushService } from './push.service';
 import { Logger } from '../../helpers/logger';
+import { notificationInput } from '../../../shared/notifications';
+import {
+  AppNotification,
+  NotificationInput,
+  NotificationLevel,
+  NotificationOptions,
+} from '../../../shared/types/notification';
 
-export type NotificationLevel = 'debug' | 'info' | 'warn' | 'error';
-
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  level: NotificationLevel;
-  icon?: string;
-  timestamp: number;
-  dedupId?: string;
-}
+export type { AppNotification, NotificationLevel } from '../../../shared/types/notification';
 
 @PushChannel('notification')
 @Injectable()
@@ -47,39 +44,72 @@ export class NotificationService {
    * Send a notification to the renderer process.
    * If the channel is not yet enabled, notifications are queued.
    */
-  notify(level: NotificationLevel, title: string, message: string, icon?: string, dedupId?: string): void {
+  notify(input: NotificationInput): void;
+  notify(
+    level: NotificationLevel,
+    title: string,
+    message: string,
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void;
+  notify(
+    input: NotificationInput | NotificationLevel,
+    title = '',
+    message = '',
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void {
+    const payload = typeof input === 'string'
+      ? notificationInput(input, title, message, options, dedupId) : input;
     const notification: AppNotification = {
+      ...payload,
       id: `be-${Date.now()}-${++this.counter}`,
-      title,
-      message,
-      level,
-      icon,
       timestamp: Date.now(),
-      dedupId,
+      read: false,
     };
 
     if (this.enabled) {
       this.show.emit(notification);
     } else {
       this.queue.push(notification);
-      Logger.debug(`[Notification] Queued (channel not ready): ${level}: ${title}`);
+      Logger.debug(`[Notification] Queued (channel not ready): ${notification.level}: ${notification.title}`);
     }
-    Logger.info(`[Notification] ${level}: ${title}`);
+    Logger.info(`[Notification] ${notification.level}: ${notification.title}`);
   }
 
-  debug(title: string, message: string, icon?: string, dedupId?: string): void {
-    this.notify('debug', title, message, icon, dedupId);
+  debug(
+    title: string,
+    message: string,
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void {
+    this.notify('debug', title, message, options, dedupId);
   }
 
-  info(title: string, message: string, icon?: string, dedupId?: string): void {
-    this.notify('info', title, message, icon, dedupId);
+  info(
+    title: string,
+    message: string,
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void {
+    this.notify('info', title, message, options, dedupId);
   }
 
-  warn(title: string, message: string, icon?: string, dedupId?: string): void {
-    this.notify('warn', title, message, icon, dedupId);
+  warn(
+    title: string,
+    message: string,
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void {
+    this.notify('warn', title, message, options, dedupId);
   }
 
-  error(title: string, message: string, icon?: string, dedupId?: string): void {
-    this.notify('error', title, message, icon);
+  error(
+    title: string,
+    message: string,
+    options?: string | NotificationOptions,
+    dedupId?: string,
+  ): void {
+    this.notify('error', title, message, options, dedupId);
   }
 }

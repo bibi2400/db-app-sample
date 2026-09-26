@@ -37,6 +37,12 @@ export { DbConfigService } from './services/system-services/db-config.service';
 export { DevModeService } from './services/system-services/dev-mode.service';
 export { PushService } from './services/system-services/push.service';
 export { NotificationService } from './services/system-services/notification.service';
+export type {
+  AppNotification,
+  NotificationInput,
+  NotificationLevel,
+  NotificationOptions,
+} from '../shared/types/notification';
 export { ErrorNotificationService } from './services/system-services/error-notification.service';
 export { BackupService } from './services/system-services/backup.service';
 export { UpdaterService } from './services/system-services/updater.service';

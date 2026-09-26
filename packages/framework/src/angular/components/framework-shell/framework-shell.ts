@@ -59,6 +59,13 @@ export class FrameworkShell implements OnInit, OnDestroy {
   private shortcutSubs: Subscription[] = [];
 
   ngOnInit(): void {
+    this.notificationService.enableBackendChannel().catch(error => {
+      this.notificationService.error(
+        'Notifiche non disponibili',
+        'Non è stato possibile attivare la ricezione delle notifiche.',
+        { details: error instanceof Error ? error.message : String(error) },
+      );
+    });
     // Run pending DB migrations before letting the user interact with the app.
     // The fullscreen overlay is shown until the IPC call resolves.
     this.dbMigrationService.run().then(result => {
@@ -81,8 +88,12 @@ export class FrameworkShell implements OnInit, OnDestroy {
         this.notificationService.info(
           'Aggiornamento disponibile',
           `È disponibile la versione ${status.availableVersion}. Vai alla sezione Aggiornamenti per scaricarla.`,
-          'system_update',
-          'update-available',
+          {
+            icon: 'system_update',
+            dedupId: 'update-available',
+            route: '/updates',
+            actionLabel: 'Vai agli aggiornamenti',
+          },
         );
       }
     });

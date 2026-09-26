@@ -14,6 +14,11 @@ import { routes } from './app.routes';
  */
 const frameworkConfig = new FrameworkConfig({
   routes,
+  notificationConfig: {
+    persistHistory: true, // false: history exists only while the application is open
+    maxHistory: 500,
+    maxVisibleToasts: 3,
+  },
   storageConfig: {
     tableStateStorageType: 'local',    // stato tabelle (colonne, sort, filtri) → localStorage
     tableScrollStorageType: 'local', // scroll tabelle → localStorage

@@ -1,12 +1,7 @@
-export type NotificationLevel = 'debug' | 'info' | 'warn' | 'error';
-
-export interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  level: NotificationLevel;
-  icon?: string;
-  timestamp: number;
-  read: boolean;
-  dedupId?: string;
-}
+export type {
+  AppNotification,
+  NotificationLevel,
+  NotificationOptions,
+  NotificationInput,
+  NotificationConfig,
+} from '../../shared/types/notification';

@@ -2,30 +2,31 @@
   @for (n of notifications(); track n.id) {
     <div
       class="notification-toast"
-      [class.level-debug]="n.level === 'debug'"
-      [class.level-info]="n.level === 'info'"
-      [class.level-warn]="n.level === 'warn'"
-      [class.level-error]="n.level === 'error'"
-      role="status"
-      (click)="dismiss(n.id)"
+      [class]="'notification-toast level-' + n.level"
+      (mouseenter)="notificationService.setToastPaused(n.id, 'pointer', true)"
+      (mouseleave)="notificationService.setToastPaused(n.id, 'pointer', false)"
+      (focusin)="notificationService.setToastPaused(n.id, 'focus', true)"
+      (focusout)="focusOut($event, n.id)"
     >
       <div class="notification-header">
-        <mat-icon class="notification-icon">{{ n.icon || levelIcon(n.level) }}</mat-icon>
-        <span class="notification-title">{{ n.title }}</span>
+        <mat-icon class="notification-icon">{{ n.icon || presentation[n.level].icon }}</mat-icon>
+        <button class="notification-title" (click)="open(n)">{{ n.title }}</button>
         <button
           mat-icon-button
           class="notification-close"
-          (click)="dismiss(n.id)"
+          (click)="notificationService.dismissToast(n.id)"
           aria-label="Chiudi notifica"
         >
           <mat-icon>close</mat-icon>
         </button>
       </div>
-      <div class="notification-body">
-        <p class="notification-message">
-          {{ n.message }}
-        </p>
-      </div>
+      <button class="notification-content" (click)="open(n)">
+        <span class="notification-message">{{ n.message }}</span>
+        <span class="notification-action">
+          {{ n.actionLabel || 'Apri notifica' }}
+          <mat-icon>arrow_forward</mat-icon>
+        </span>
+      </button>
     </div>
   }
 </div>

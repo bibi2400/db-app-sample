@@ -17,10 +17,13 @@ export class ErrorNotificationService {
     const message = this.extractMessage(error);
     Logger.error(`[ErrorNotification] Controller error on "${channel}":`, error);
     this.notificationService.error(
-      `Errore: ${channel}`,
-      message,
-      'error',
-      `controller-error:${channel}`,
+      'Operazione non completata',
+      'Non è stato possibile completare la richiesta. Riprova o consulta i dettagli tecnici.',
+      {
+        icon: 'error',
+        dedupId: `controller-error:${channel}`,
+        details: `Operazione: ${channel}\n${message}`,
+      },
     );
   }
 
@@ -32,9 +35,12 @@ export class ErrorNotificationService {
     Logger.error(`[ErrorNotification] Bootstrap error in "${phase}":`, error);
     this.notificationService.error(
       `Errore avvio: ${phase}`,
-      message,
-      'warning',
-      `bootstrap-error:${phase}`,
+      'Si è verificato un problema durante l’avvio. Consulta i dettagli tecnici.',
+      {
+        icon: 'warning',
+        dedupId: `bootstrap-error:${phase}`,
+        details: message,
+      },
     );
   }
 
@@ -44,7 +50,11 @@ export class ErrorNotificationService {
   reportError(title: string, error: unknown): void {
     const message = this.extractMessage(error);
     Logger.error(`[ErrorNotification] ${title}:`, error);
-    this.notificationService.error(title, message);
+    this.notificationService.error(
+      title,
+      'Si è verificato un errore. Consulta i dettagli tecnici per maggiori informazioni.',
+      { details: message },
+    );
   }
 
   private extractMessage(error: unknown): string {

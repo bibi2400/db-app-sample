@@ -2,7 +2,7 @@
 // Angular frontend: config, components, services, routes
 
 // ─── Framework Config ────────────────────────────────────────────────────────
-export { FrameworkConfig, EAF_STORAGE_CONFIG } from './config';
+export { FrameworkConfig, EAF_STORAGE_CONFIG, EAF_NOTIFICATION_CONFIG } from './config';
 export type { FrameworkConfigOptions, EafStorageConfig } from './config';
 export type { StorageType } from './types/storage.types';
 
@@ -84,7 +84,13 @@ export type { UnsavedChangesChoice, UnsavedChangesMode } from './services/dialog
 // ─── Types (re-exported from shared for convenience) ─────────────────────────
 export type { MenuItem, MenuInsertPosition } from './services/navigation.service';
 export type { CommandPaletteItem } from './types/command-palette';
-export type { AppNotification, NotificationLevel } from './types/notification';
+export type {
+  AppNotification,
+  NotificationLevel,
+  NotificationOptions,
+  NotificationInput,
+  NotificationConfig,
+} from './types/notification';
 export type { UpdateStatus, UpdateStatusType, DownloadProgress, ChangelogEntry } from './types/update';
 export type { BackupInfo, BackupOptions, RestoreResult, BackupStats } from './types/backup';
 export type {

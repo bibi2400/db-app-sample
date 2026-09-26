@@ -1,6 +1,11 @@
 import { FrameworkConfig } from '{{PKG}}/angular';
 import { routes } from './app.routes';
 
-const frameworkConfig = new FrameworkConfig({ routes });
+const frameworkConfig = new FrameworkConfig({
+  routes,
+  notificationConfig: {
+    persistHistory: true, // false: history exists only while the application is open
+  },
+});
 
 export const appConfig = frameworkConfig.toApplicationConfig();

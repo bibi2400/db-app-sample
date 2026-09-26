@@ -13,7 +13,6 @@
 
 .notification-toast {
   pointer-events: auto;
-  cursor: pointer;
   width: 380px;
   max-width: calc(100vw - 32px);
   border-radius: 8px;
@@ -39,18 +38,28 @@
 
 .notification-title {
   flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
   font-weight: 600;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
 }
 
 .notification-close {
   flex-shrink: 0;
-  width: 28px !important;
-  height: 28px !important;
-  line-height: 28px !important;
 
   mat-icon {
     font-size: 16px;
@@ -59,8 +68,36 @@
   }
 }
 
-.notification-body {
-  padding: 0 12px 10px;
+.notification-content {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0 12px 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+
+.notification-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
 }
 
 .notification-message {
@@ -80,7 +117,9 @@
   border-left-color: #9e9e9e;
   color: #424242;
 
-  .notification-icon { color: #9e9e9e; }
+  .notification-icon {
+    color: #9e9e9e;
+  }
 }
 
 /* Level: info - blue */
@@ -89,7 +128,9 @@
   border-left-color: #2196f3;
   color: #0d47a1;
 
-  .notification-icon { color: #2196f3; }
+  .notification-icon {
+    color: #2196f3;
+  }
 }
 
 /* Level: warn - orange/yellow */
@@ -98,7 +139,9 @@
   border-left-color: #ff9800;
   color: #e65100;
 
-  .notification-icon { color: #ff9800; }
+  .notification-icon {
+    color: #ff9800;
+  }
 }
 
 /* Level: error - red */
@@ -107,7 +150,9 @@
   border-left-color: #f44336;
   color: #b71c1c;
 
-  .notification-icon { color: #f44336; }
+  .notification-icon {
+    color: #f44336;
+  }
 }
 
 @keyframes slideIn {
@@ -118,5 +163,11 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-toast {
+    animation: none;
   }
 }
