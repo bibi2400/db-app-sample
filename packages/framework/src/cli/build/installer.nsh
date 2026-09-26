@@ -1,8 +1,17 @@
-﻿!include "nsDialogs.nsh"
+!include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 !include "WordFunc.nsh"
 
 !ifndef BUILD_UNINSTALLER
+
+!if /FileExists "${BUILD_RESOURCES_DIR}\eaf-database.nsh"
+  !include "${BUILD_RESOURCES_DIR}\eaf-database.nsh"
+!endif
+!ifndef EAF_DATABASE_UI_ENABLED
+  !define EAF_DATABASE_UI_ENABLED 1
+!endif
+
+!if ${EAF_DATABASE_UI_ENABLED} == 1
 
 ; ── Variables for the DB path page ──────────────────────────────
 Var DbPathDialog
@@ -112,8 +121,12 @@ Function dbPathPageLeave
 FunctionEnd
 
 ; ── Register the custom page (shown after the install-dir page) ─
+!endif ; EAF_DATABASE_UI_ENABLED
+
 !macro customPageAfterChangeDir
-  Page custom dbPathPageCreate dbPathPageLeave
+  !if ${EAF_DATABASE_UI_ENABLED} == 1
+    Page custom dbPathPageCreate dbPathPageLeave
+  !endif
 !macroend
 
 ; ── After installation: write/update db-config.json ─────────────
@@ -121,18 +134,30 @@ FunctionEnd
 ; ConfigService fa shallow merge con i defaults alla lettura,
 ; quindi eventuali altri campi vengono ripristinati automaticamente.
 !macro customInstall
-  ; In silent mode (auto-update) preserve the existing db-config.json
-  ${IfNot} ${Silent}
-    ; Build full path and convert backslashes to forward slashes for JSON
-    StrCpy $R0 "$DbPathValue\database.sqlite"
-    ${WordReplace} $R0 "\" "/" "+" $R1
+  !if ${EAF_DATABASE_UI_ENABLED} == 0
+    ; Keep existing config so the runtime can safely snapshot an external DB into userData.
+    CreateDirectory "$APPDATA\${PRODUCT_NAME}\database"
+    ${IfNot} ${FileExists} "$APPDATA\${PRODUCT_NAME}\db-config.json"
+      StrCpy $R0 "$APPDATA\${PRODUCT_NAME}\database\database.sqlite"
+      ${WordReplace} $R0 "\" "/" "+" $R1
+      FileOpen $0 "$APPDATA\${PRODUCT_NAME}\db-config.json" w
+      FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
+      FileClose $0
+    ${EndIf}
+  !else
+    ; In silent mode (auto-update) preserve the existing db-config.json
+    ${IfNot} ${Silent}
+      ; Build full path and convert backslashes to forward slashes for JSON
+      StrCpy $R0 "$DbPathValue\database.sqlite"
+      ${WordReplace} $R0 "\" "/" "+" $R1
 
-    CreateDirectory "$APPDATA\${PRODUCT_NAME}"
+      CreateDirectory "$APPDATA\${PRODUCT_NAME}"
 
-    FileOpen $0 "$APPDATA\${PRODUCT_NAME}\db-config.json" w
-    FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
-    FileClose $0
-  ${EndIf}
+      FileOpen $0 "$APPDATA\${PRODUCT_NAME}\db-config.json" w
+      FileWrite $0 '{$\r$\n  "dbPath": "$R1"$\r$\n}'
+      FileClose $0
+    ${EndIf}
+  !endif
 !macroend
 
 !endif ; BUILD_UNINSTALLER

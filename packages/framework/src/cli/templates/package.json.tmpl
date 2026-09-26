@@ -14,6 +14,7 @@
     "package:win:noUpdateToken": "npx eaf package --no-token"
   },
   "build": {
+    "beforePack": "node_modules/{{PKG}}/dist/cli/build/prepare-installer.js",
     "appId": "com.{{KEBAB}}.app",
     "productName": "{{PRODUCT_NAME}}",
     "artifactName": "{{PASCAL}}-Setup-${version}.${ext}",
@@ -28,6 +29,7 @@
       "dist/**/*",
       "electron/dist-electron/**/*",
       "package.json",
+      "eaf.config.json",
       "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
       "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
       "!**/node_modules/*.d.ts",

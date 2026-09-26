@@ -1,41 +1,64 @@
-<div class="backup-container">
-  <div class="header">
-    <h1>Gestione Backup Database</h1>
+<main class="backup-container" [attr.aria-busy]="busy()">
+  <header class="header">
+    <div>
+      <h1>Backup</h1>
+      <p class="page-description">
+        Salva e ripristina il database e gli allegati dell’applicazione.
+        I backup automatici vengono creati al primo avvio della giornata.
+      </p>
+    </div>
     <div class="actions">
-      <button 
-        mat-raised-button 
-        color="primary"
+      <button
+        mat-flat-button
         (click)="createManualBackup()"
-        [disabled]="processing()">
+        [disabled]="busy() || reloadRequired()">
         <mat-icon>backup</mat-icon>
-        Crea Backup Manuale
+        Crea backup
       </button>
-      <button 
-        mat-raised-button 
+      <button
+        mat-stroked-button
         (click)="loadBackups()"
-        [disabled]="loading()">
+        [disabled]="busy() || reloadRequired()">
         <mat-icon>refresh</mat-icon>
-        Aggiorna
+        Aggiorna elenco
       </button>
     </div>
-  </div>
+  </header>
 
-  @if (stats()) {
+  @if (error()) {
+    <div class="error-panel" role="alert">
+      <div class="error-summary">
+        <mat-icon aria-hidden="true">warning</mat-icon>
+        <strong>{{ reloadRequired() ? 'Ripristino completato: ricarica l’applicazione' :
+          'Non è stato possibile completare l’operazione' }}</strong>
+      </div>
+      <details>
+        <summary>Mostra dettagli</summary>
+        <p>{{ error() }}</p>
+      </details>
+      <button mat-stroked-button (click)="retryOperation()" [disabled]="busy()">
+        <mat-icon>refresh</mat-icon>
+        {{ reloadRequired() ? 'Ricarica applicazione' : 'Riprova' }}
+      </button>
+    </div>
+  }
+
+  @if (loaded()) {
     <mat-card class="stats-card">
       <mat-card-content>
         <div class="stats">
           <div class="stat-item">
-            <mat-icon>folder</mat-icon>
+            <mat-icon aria-hidden="true">folder</mat-icon>
             <div>
-              <div class="stat-label">Backup Totali</div>
-              <div class="stat-value">{{ stats()!.count }}</div>
+              <div class="stat-label">Backup disponibili</div>
+              <div class="stat-value">{{ stats().count }}</div>
             </div>
           </div>
           <div class="stat-item">
-            <mat-icon>storage</mat-icon>
+            <mat-icon aria-hidden="true">storage</mat-icon>
             <div>
-              <div class="stat-label">Spazio Occupato</div>
-              <div class="stat-value">{{ formatSize(stats()!.totalSize) }}</div>
+              <div class="stat-label">Spazio occupato, inclusi gli allegati</div>
+              <div class="stat-value">{{ formatSize(stats().totalSize) }}</div>
             </div>
           </div>
         </div>
@@ -44,112 +67,73 @@
   }
 
   @if (loading()) {
-    <div class="loading-container">
-      <mat-spinner></mat-spinner>
-      <p>Caricamento backup...</p>
+    <div class="loading-container" role="status">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Caricamento dei backup…</p>
     </div>
-  } @else {
+  } @else if (loaded()) {
     <div class="backup-sections">
-      <!-- Backup Automatici -->
-      <mat-card class="backup-section">
-        <mat-card-header>
-          <mat-icon>schedule</mat-icon>
-          <mat-card-title>Backup Automatici</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @if (autoBackups().length === 0) {
-            <p class="empty-message">Nessun backup automatico disponibile</p>
-          } @else {
-            <div class="backup-list">
-              @for (backup of autoBackups(); track backup.path) {
-                <div class="backup-item">
+      @for (group of groups(); track group.title) {
+        <mat-card class="backup-section">
+          <mat-card-header>
+            <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
+            <mat-card-title><h2>{{ group.title }}</h2></mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <ul class="backup-list">
+              @for (backup of group.backups; track backup.path) {
+                <li class="backup-item">
                   <div class="backup-info">
-                    <mat-icon class="backup-type-icon">{{ getBackupIcon(backup.type) }}</mat-icon>
+                    <mat-icon class="backup-type-icon" aria-hidden="true">{{ group.icon }}</mat-icon>
                     <div class="backup-details">
                       <div class="backup-name">{{ backup.filename }}</div>
                       <div class="backup-meta">
-                        {{ backup.date | date:'dd/MM/yyyy HH:mm:ss' }} • {{ formatSize(backup.size) }}
+                        <time [attr.datetime]="backup.date | date:'yyyy-MM-ddTHH:mm:ssZZZZZ'">
+                          {{ backup.date | date:'dd/MM/yyyy HH:mm:ss' }}
+                        </time>
+                        · {{ formatSize(backup.size) }}
                       </div>
+                      <span
+                        class="backup-scope"
+                        [class.incomplete]="backup.attachmentError"
+                        [matTooltip]="backup.attachmentError || ''">
+                        {{ backup.attachmentError ? 'Allegati mancanti o non validi' :
+                          backup.includesAttachments ? 'Database e allegati' : 'Solo database' }}
+                      </span>
                     </div>
                   </div>
                   <div class="backup-actions">
-                    <button 
-                      mat-icon-button 
-                      color="primary"
+                    <button
+                      mat-icon-button
                       (click)="restoreBackup(backup)"
-                      [disabled]="processing()"
-                      matTooltip="Ripristina">
+                      [disabled]="busy() || reloadRequired()"
+                      [attr.aria-label]="'Ripristina ' + backup.filename"
+                      matTooltip="Ripristina backup">
                       <mat-icon>restore</mat-icon>
                     </button>
-                    <button 
-                      mat-icon-button 
-                      color="warn"
+                    <button
+                      mat-icon-button
                       (click)="deleteBackup(backup)"
-                      [disabled]="processing()"
-                      matTooltip="Elimina">
+                      [disabled]="busy() || reloadRequired()"
+                      [attr.aria-label]="'Elimina ' + backup.filename"
+                      matTooltip="Elimina backup">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
-                </div>
+                </li>
+              } @empty {
+                <li class="empty-message">Nessun backup disponibile in questa categoria.</li>
               }
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Backup Manuali -->
-      <mat-card class="backup-section">
-        <mat-card-header>
-          <mat-icon>save</mat-icon>
-          <mat-card-title>Backup Manuali</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          @if (manualBackups().length === 0) {
-            <p class="empty-message">Nessun backup manuale disponibile</p>
-          } @else {
-            <div class="backup-list">
-              @for (backup of manualBackups(); track backup.path) {
-                <div class="backup-item">
-                  <div class="backup-info">
-                    <mat-icon class="backup-type-icon">{{ getBackupIcon(backup.type) }}</mat-icon>
-                    <div class="backup-details">
-                      <div class="backup-name">{{ backup.filename }}</div>
-                      <div class="backup-meta">
-                        {{ backup.date | date:'dd/MM/yyyy HH:mm:ss' }} • {{ formatSize(backup.size) }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="backup-actions">
-                    <button 
-                      mat-icon-button 
-                      color="primary"
-                      (click)="restoreBackup(backup)"
-                      [disabled]="processing()"
-                      matTooltip="Ripristina">
-                      <mat-icon>restore</mat-icon>
-                    </button>
-                    <button 
-                      mat-icon-button 
-                      color="warn"
-                      (click)="deleteBackup(backup)"
-                      [disabled]="processing()"
-                      matTooltip="Elimina">
-                      <mat-icon>delete</mat-icon>
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </mat-card-content>
-      </mat-card>
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
     </div>
   }
 
-  @if (processing()) {
-    <div class="processing-overlay">
-      <mat-spinner></mat-spinner>
-      <p>Elaborazione in corso...</p>
+  @if (operation()) {
+    <div role="status" aria-live="polite">
+      <app-fullscreen-loader [message]="operationMessage()" />
     </div>
   }
-</div>
+</main>

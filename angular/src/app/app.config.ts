@@ -1,5 +1,6 @@
 import { FrameworkConfig } from '@bibi2400/electron-angular-framework/angular';
 import { routes } from './app.routes';
+import consumerConfig from '../../../eaf.config.json';
 
 /**
  * Configurazione globale della persistenza.
@@ -14,6 +15,7 @@ import { routes } from './app.routes';
  */
 const frameworkConfig = new FrameworkConfig({
   routes,
+  databaseUi: consumerConfig.databaseUi,
   notificationConfig: {
     persistHistory: true, // false: history exists only while the application is open
     maxHistory: 500,

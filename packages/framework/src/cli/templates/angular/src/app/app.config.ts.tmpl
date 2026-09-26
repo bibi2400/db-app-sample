@@ -1,8 +1,10 @@
 import { FrameworkConfig } from '{{PKG}}/angular';
 import { routes } from './app.routes';
+import consumerConfig from '../../../eaf.config.json';
 
 const frameworkConfig = new FrameworkConfig({
   routes,
+  databaseUi: consumerConfig.databaseUi,
   notificationConfig: {
     persistHistory: true, // false: history exists only while the application is open
   },

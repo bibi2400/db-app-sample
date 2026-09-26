@@ -21,23 +21,25 @@
             </div>
           </div>
 
-          <div class="info-item">
-            <mat-icon>storage</mat-icon>
-            <div>
-              <span class="info-label">Percorso Database</span>
-              <span class="info-value path">{{ d.dbPath }}</span>
-              @if (dbPathError()) {
-                <span class="db-path-error">
-                  <mat-icon>warning</mat-icon>
-                  {{ dbPathError() }}
-                </span>
-              }
+          @if (databaseUi.enabled) {
+            <div class="info-item">
+              <mat-icon>storage</mat-icon>
+              <div>
+                <span class="info-label">Percorso Database</span>
+                <span class="info-value path">{{ d.dbPath }}</span>
+                @if (dbPathError()) {
+                  <span class="db-path-error">
+                    <mat-icon>warning</mat-icon>
+                    {{ dbPathError() }}
+                  </span>
+                }
+              </div>
+              <div class="action-icons">
+                <mat-icon class="action-icon" (click)="openDbFolder()" matTooltip="Apri in Explorer">folder_open</mat-icon>
+                <mat-icon class="action-icon" (click)="changeDbPath()" matTooltip="Cambia percorso database">drive_file_move</mat-icon>
+              </div>
             </div>
-            <div class="action-icons">
-              <mat-icon class="action-icon" (click)="openDbFolder()" matTooltip="Apri in Explorer">folder_open</mat-icon>
-              <mat-icon class="action-icon" (click)="changeDbPath()" matTooltip="Cambia percorso database">drive_file_move</mat-icon>
-            </div>
-          </div>
+          }
 
           <div class="info-item">
             <mat-icon>folder</mat-icon>
@@ -84,32 +86,44 @@
 
     <mat-card class="info-card">
       <mat-card-content>
-        <h3>Runtime</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <mat-icon>memory</mat-icon>
-            <div>
-              <span class="info-label">Electron</span>
-              <span class="info-value">{{ d.electron }}</span>
+        <details class="technical-information" [open]="databaseUi.enabled">
+          <summary>Informazioni tecniche</summary>
+          <h3>Runtime</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <mat-icon>memory</mat-icon>
+              <div>
+                <span class="info-label">Electron</span>
+                <span class="info-value">{{ d.electron }}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="info-item">
-            <mat-icon>code</mat-icon>
-            <div>
-              <span class="info-label">Node.js</span>
-              <span class="info-value">{{ d.node }}</span>
+            <div class="info-item">
+              <mat-icon>code</mat-icon>
+              <div>
+                <span class="info-label">Node.js</span>
+                <span class="info-value">{{ d.node }}</span>
+              </div>
             </div>
-          </div>
 
-          <div class="info-item">
-            <mat-icon>language</mat-icon>
-            <div>
-              <span class="info-label">Chromium</span>
-              <span class="info-value">{{ d.chrome }}</span>
+            <div class="info-item">
+              <mat-icon>language</mat-icon>
+              <div>
+                <span class="info-label">Chromium</span>
+                <span class="info-value">{{ d.chrome }}</span>
+              </div>
             </div>
+            @if (!databaseUi.enabled && databaseUi.showTechnicalInfo) {
+              <div class="info-item database-technical-info">
+                <mat-icon aria-hidden="true">storage</mat-icon>
+                <div>
+                  <span class="info-label">Database interno</span>
+                  <span class="info-value path">{{ d.dbPath }}</span>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        </details>
       </mat-card-content>
     </mat-card>
   </div>

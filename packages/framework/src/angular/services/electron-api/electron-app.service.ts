@@ -29,7 +29,8 @@ export class ElectronAppService {
   }
 
   async reload(): Promise<void> {
-    await window.electronAPI.invoke<IpcResponse<null>>('app:reload');
+    const result = await window.electronAPI.invoke<IpcResponse<null>>('app:reload');
+    if (!result.success) throw new Error(result.error ?? 'Ricaricamento non riuscito.');
   }
 
   async openAppData(): Promise<void> {

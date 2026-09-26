@@ -17,6 +17,7 @@ import { ElectronDbMigrationService } from '../../services/electron-api/electron
 import { NotificationService } from '../../services/notification.service';
 import { ShortcutService } from '../../services/shortcut.service';
 import { CommandPaletteItem } from '../../types/command-palette';
+import { DatabaseUiService } from '../../services/database-ui.service';
 
 const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
 
@@ -36,6 +37,7 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FrameworkShell implements OnInit, OnDestroy {
+  readonly databaseUi = inject(DatabaseUiService);
   /** Nome autore mostrato nella sidebar */
   author = input<string>('');
 
@@ -101,7 +103,6 @@ export class FrameworkShell implements OnInit, OnDestroy {
     // Registra shortcut stock di navigazione
     this.shortcutSubs.push(
       this.shortcutService.on('nav.notifications').subscribe(() => this.router.navigate(['/notifications'])),
-      this.shortcutService.on('nav.backup').subscribe(() => this.router.navigate(['/backup'])),
       this.shortcutService.on('nav.updates').subscribe(() => this.router.navigate(['/updates'])),
       this.shortcutService.on('nav.shortcuts').subscribe(() => this.router.navigate(['/shortcuts'])),
       this.shortcutService.on('app.save').subscribe(() => {
@@ -115,6 +116,12 @@ export class FrameworkShell implements OnInit, OnDestroy {
         this.commandPaletteService.toggle();
       }),
     );
+
+    if (this.databaseUi.enabled) {
+      this.shortcutSubs.push(
+        this.shortcutService.on('nav.backup').subscribe(() => this.router.navigate(['/backup'])),
+      );
+    }
 
     this.registerStockCommands();
 
@@ -211,6 +218,8 @@ export class FrameworkShell implements OnInit, OnDestroy {
       },
     ];
 
-    this.commandPaletteService.registerMany(stockCommands);
+    this.commandPaletteService.registerMany(
+      stockCommands.filter(item => this.databaseUi.allowsShortcut(item.id)),
+    );
   }
 }

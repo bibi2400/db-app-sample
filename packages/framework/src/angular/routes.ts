@@ -1,10 +1,11 @@
 import { Routes, Route } from '@angular/router';
-import { Type } from '@angular/core';
+import { Type, inject } from '@angular/core';
+import { DatabaseUiService } from './services/database-ui.service';
 
 /**
  * Gestisce le route stock del framework e il merge con quelle del consumer.
  *
- * Le route stock (backup, updates, notifications, shortcuts, app-info) sono sempre presenti.
+ * Le route stock sono sempre presenti; l'accesso a backup segue la configurazione databaseUi.
  * Il consumer aggiunge le proprie route e specifica la home page.
  */
 export class FrameworkRoutes {
@@ -13,6 +14,7 @@ export class FrameworkRoutes {
     {
       path: 'backup',
       data: { title: 'Backup Database', icon: 'backup' },
+      canMatch: [() => inject(DatabaseUiService).enabled],
       loadComponent: () => import('./pages/backup-management/backup-management').then(m => m.BackupManagement)
     },
     {

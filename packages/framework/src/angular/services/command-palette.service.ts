@@ -3,9 +3,11 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CommandPaletteItem } from '../types/command-palette';
 import { ShortcutService } from './shortcut.service';
+import { DatabaseUiService } from './database-ui.service';
 
 @Injectable({ providedIn: 'root' })
 export class CommandPaletteService {
+  private readonly databaseUi = inject(DatabaseUiService);
   private shortcutService = inject(ShortcutService);
   private router = inject(Router);
   private commands = new Map<string, CommandPaletteItem>();
@@ -21,6 +23,7 @@ export class CommandPaletteService {
   }
 
   register(item: CommandPaletteItem): void {
+    if (!this.allowsCommand(item)) return;
     const wasDynamic = this.ensureShortcut(item);
     this.commands.set(item.id, item);
     if (wasDynamic) this.subscribeToShortcut(item);
@@ -29,6 +32,7 @@ export class CommandPaletteService {
 
   registerMany(items: CommandPaletteItem[]): void {
     for (const item of items) {
+      if (!this.allowsCommand(item)) continue;
       const wasDynamic = this.ensureShortcut(item);
       this.commands.set(item.id, item);
       if (wasDynamic) this.subscribeToShortcut(item);
@@ -46,6 +50,12 @@ export class CommandPaletteService {
       item.shortcutId = item.id;
     }
     return wasDynamic;
+  }
+
+  private allowsCommand(item: CommandPaletteItem): boolean {
+    return this.databaseUi.allowsRoute(item.route)
+      && this.databaseUi.allowsShortcut(item.id)
+      && this.databaseUi.allowsShortcut(item.shortcutId ?? item.id);
   }
 
   private subscribeToShortcut(item: CommandPaletteItem): void {

@@ -6,6 +6,7 @@ import { Logger } from '../../helpers/logger';
 import { getControllerMetadata, getRegisteredControllers, isController } from '../../decorators/controller.decorator';
 import { getIpcHandlerMetadata } from '../../decorators/ipc-handler.decorator';
 import { ErrorNotificationService } from './error-notification.service';
+import { MaintenanceService } from './maintenance.service';
 
 export interface IpcResponse<T = unknown> {
   success: boolean;
@@ -28,7 +29,10 @@ export class ControllerService {
   private controllerInstances: Map<string, object> = new Map();
   private registeredChannels: RegisteredChannel[] = [];
 
-  constructor(private readonly errorNotificationService: ErrorNotificationService) {}
+  constructor(
+    private readonly errorNotificationService: ErrorNotificationService,
+    private readonly maintenanceService: MaintenanceService,
+  ) {}
 
   /**
    * Registers all controllers that have been decorated with @Controller.
@@ -84,7 +88,13 @@ export class ControllerService {
 
       ipcMain.handle(fullChannel, async (_event, ...args) => {
         try {
-          return await handler(...args);
+          const operation = () => handler(...args);
+          const exclusive = ['backup:create', 'backup:auto', 'backup:restore', 'backup:delete'];
+          // Startup backup may overlap shell initialization; these calls must wait, not fail.
+          const initialization = ['notification:enable', 'db-migration:run', 'app:info', 'update:status'];
+          return await (exclusive.includes(fullChannel)
+            ? this.maintenanceService.runExclusive(operation)
+            : this.maintenanceService.runRequest(operation, initialization.includes(fullChannel)));
         } catch (error) {
           this.errorNotificationService.reportControllerError(fullChannel, error);
           return ControllerService.error(error);

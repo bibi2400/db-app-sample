@@ -22,6 +22,7 @@ export type {
 } from './types/notification';
 export type { UpdateStatusType, UpdateStatus, DownloadProgress, ChangelogEntry } from './types/update';
 export type { BackupInfo, BackupOptions, RestoreResult, BackupStats } from './types/backup';
+export type { ConsumerConfig, DatabaseUiConfig } from './types/consumer-config';
 export type {
   AttachmentInfo,
   UploadFileRequest,

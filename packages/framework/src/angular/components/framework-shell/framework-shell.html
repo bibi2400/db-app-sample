@@ -1,10 +1,19 @@
 @if (migrating()) {
-  <app-fullscreen-loader message="Aggiornamento database in corso..." />
+  <app-fullscreen-loader
+    [message]="databaseUi.enabled ? 'Aggiornamento database in corso…' : 'Preparazione dell’applicazione…'" />
 } @else if (migrationError()) {
   <div class="migration-error-overlay">
     <span class="material-symbols-outlined migration-error-icon">error</span>
-    <h2>Errore durante la migrazione del database</h2>
-    <p>{{ migrationError() }}</p>
+    <h2>{{ databaseUi.enabled ? 'Errore durante la migrazione del database' :
+      'Impossibile avviare l’applicazione' }}</h2>
+    @if (databaseUi.enabled) {
+      <p>{{ migrationError() }}</p>
+    } @else if (databaseUi.showTechnicalInfo) {
+      <details>
+        <summary>Dettagli tecnici</summary>
+        <p>{{ migrationError() }}</p>
+      </details>
+    }
     <p class="migration-error-hint">Chiudi l'applicazione e contatta il supporto tecnico.</p>
   </div>
 } @else {

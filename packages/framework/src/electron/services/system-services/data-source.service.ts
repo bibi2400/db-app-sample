@@ -56,9 +56,10 @@ export class DataSourceService {
 	}
 
 	async initialize(): Promise<void> {
+		const databasePath = await this.dbConfigService.resolveDbPath();
 		this.ds = new DataSource({
 			type: "sqlite",
-			database: this.dbConfigService.dbPath,
+			database: databasePath,
 			synchronize: false,
 			logging: false,
 			entities: this.entityList,

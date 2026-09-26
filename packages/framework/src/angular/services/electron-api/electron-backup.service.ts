@@ -3,88 +3,45 @@ import { BackupInfo, BackupOptions, RestoreResult, BackupStats } from '../../typ
 import { IpcResponse } from '../../types/global';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ElectronBackupService {
-
-  async createBackup(options: BackupOptions = {}): Promise<{ success: boolean; data?: BackupInfo; error?: string }> {
-    try {
-      const response = await window.electronAPI.invoke<IpcResponse<BackupInfo>>('backup:create', options);
-      if (response.success && response.data) {
-        console.log('Backup created:', response.data);
-        return { success: true, data: response.data };
-      } else {
-        return { success: false, error: response.error ?? 'Unknown error' };
-      }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
-    }
+  async createBackup(options: BackupOptions = {}): Promise<IpcResponse<BackupInfo>> {
+    return this.invoke('backup:create', options);
   }
 
-  async autoBackup(): Promise<{ success: boolean; data?: BackupInfo | null; error?: string }> {
-    try {
-      const response = await window.electronAPI.invoke<IpcResponse<BackupInfo | null>>('backup:auto');
-      if (response.success) {
-        console.log('Auto backup:', response.data);
-        return { success: true, data: response.data ?? null };
-      }
-      return { success: false, error: response.error ?? 'Unknown error' };
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
-    }
+  async autoBackup(): Promise<IpcResponse<BackupInfo | null>> {
+    return this.invoke('backup:auto');
   }
 
-  async listBackups(): Promise<{ success: boolean; data?: BackupInfo[]; error?: string }> {
-    try {
-      const response = await window.electronAPI.invoke<IpcResponse<BackupInfo[]>>('backup:list');
-      if (response.success && response.data) {
-        console.log('Loaded backups:', response.data);
-        return { success: true, data: response.data };
-      } else {
-        return { success: false, error: response.error ?? 'Unknown error' };
-      }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+  async listBackups(): Promise<IpcResponse<BackupInfo[]>> {
+    const result = await this.invoke<BackupInfo[]>('backup:list');
+    if (result.success && result.data) {
+      result.data = result.data.map(backup => ({ ...backup, date: new Date(backup.date) }));
     }
+    return result;
   }
 
-  async restoreBackup(backupPath: string): Promise<{ success: boolean; data?: RestoreResult; error?: string }> {
-    try {
-      const response = await window.electronAPI.invoke<IpcResponse<RestoreResult>>('backup:restore', backupPath);
-      if (response.success) {
-        console.log('Restore result:', response.data);
-        return { success: true, data: response.data };
-      }
-      return { success: false, error: response.error ?? 'Unknown error' };
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
-    }
+  async restoreBackup(backupPath: string): Promise<IpcResponse<RestoreResult>> {
+    return this.invoke('backup:restore', backupPath);
   }
 
-  async deleteBackup(backupPath: string): Promise<{ success: boolean; data?: boolean; error?: string }> {
-    try {
-      const response = await window.electronAPI.invoke<IpcResponse<boolean>>('backup:delete', backupPath);
-      if (response.success) {
-        console.log('Delete result:', response.data);
-        return { success: true, data: response.data };
-      }
-      return { success: false, error: response.error ?? 'Unknown error' };
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
-    }
+  async deleteBackup(backupPath: string): Promise<IpcResponse<boolean>> {
+    return this.invoke('backup:delete', backupPath);
   }
 
-  async getStats(): Promise<{ success: boolean; data?: BackupStats; error?: string }> {
+  async getStats(): Promise<IpcResponse<BackupStats>> {
+    return this.invoke('backup:stats');
+  }
+
+  private async invoke<T>(channel: string, payload?: unknown): Promise<IpcResponse<T>> {
     try {
-      const response = await window.electronAPI.invoke<IpcResponse<BackupStats>>('backup:stats');
-      if (response.success && response.data) {
-        console.log('Backup stats:', response.data);
-        return { success: true, data: response.data };
-      } else {
-        return { success: false, error: response.error ?? 'Unknown error' };
-      }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+      return await window.electronAPI.invoke<IpcResponse<T>>(channel, payload);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Operazione backup non riuscita.',
+      };
     }
   }
 }

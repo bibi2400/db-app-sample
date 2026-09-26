@@ -26,6 +26,17 @@
   gap: 16px;
 }
 
+.technical-information {
+  summary {
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  &[open] summary {
+    margin-bottom: 16px;
+  }
+}
+
 .info-item {
   display: flex;
   align-items: flex-start;

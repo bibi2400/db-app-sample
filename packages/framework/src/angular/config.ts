@@ -12,6 +12,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import localeIt from '@angular/common/locales/it';
 import { EafStorageConfig } from './types/storage.types';
 import { NotificationConfig } from './types/notification';
+import { DatabaseUiConfig } from './types/database-ui';
 
 export type { EafStorageConfig } from './types/storage.types';
 
@@ -19,6 +20,11 @@ export type { EafStorageConfig } from './types/storage.types';
 export const EAF_STORAGE_CONFIG = new InjectionToken<EafStorageConfig>('EAF_STORAGE_CONFIG');
 
 export const EAF_NOTIFICATION_CONFIG = new InjectionToken<NotificationConfig>('EAF_NOTIFICATION_CONFIG');
+
+export const EAF_DATABASE_UI_CONFIG = new InjectionToken<DatabaseUiConfig>('EAF_DATABASE_UI_CONFIG', {
+  providedIn: 'root',
+  factory: () => ({}),
+});
 
 export interface FrameworkConfigOptions {
   /** Route Angular complete (stock + consumer, tipicamente da FrameworkRoutes.build()) */
@@ -32,6 +38,8 @@ export interface FrameworkConfigOptions {
   storageConfig?: EafStorageConfig;
   /** Notification history persistence and toast limits. */
   notificationConfig?: NotificationConfig;
+  /** Visibility of database administration controls; the internal database remains active. */
+  databaseUi?: DatabaseUiConfig;
 }
 
 /**
@@ -65,6 +73,10 @@ export class FrameworkConfig {
         {
           provide: EAF_NOTIFICATION_CONFIG,
           useValue: this.options.notificationConfig ?? {},
+        },
+        {
+          provide: EAF_DATABASE_UI_CONFIG,
+          useValue: this.options.databaseUi ?? {},
         },
         ...(this.options.providers ?? []),
       ]

@@ -57,6 +57,7 @@ packages/framework/dist
 # Programmino
 db-config.json
 .appdata
+build/eaf-database.nsh
 
 # Environment files
 .env

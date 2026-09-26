@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
+import { DatabaseUiService } from './database-ui.service';
 
 export type MenuItem = {
   title: string;
@@ -17,6 +18,7 @@ export type MenuInsertPosition = 'before-settings' | 'after-settings';
   providedIn: 'root'
 })
 export class NavigationService {
+  private readonly databaseUi = inject(DatabaseUiService);
   private readonly stockItems: MenuItem[] = [
     {
       title: 'Notifiche',
@@ -159,13 +161,22 @@ export class NavigationService {
     const settingsItem = this.stockItems.find(i => i.title === 'Impostazioni')!;
     const notificheItem = this.stockItems.find(i => i.title === 'Notifiche')!;
 
-    return [
+    return this.filterMenu([
       this.homeItem,
       notificheItem,
       ...beforeSettings,
       settingsItem,
       ...afterSettings,
-    ];
+    ]);
+  }
+
+  private filterMenu(items: MenuItem[]): MenuItem[] {
+    return items.flatMap(item => {
+      if (!this.databaseUi.allowsRoute(item.route)) return [];
+      const children = item.children ? this.filterMenu(item.children) : undefined;
+      if (children?.length === 0) return [];
+      return [{ ...item, children }];
+    });
   }
 
   private rebuildMenu(): void {

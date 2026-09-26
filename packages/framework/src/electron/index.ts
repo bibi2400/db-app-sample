@@ -45,6 +45,7 @@ export type {
 } from '../shared/types/notification';
 export { ErrorNotificationService } from './services/system-services/error-notification.service';
 export { BackupService } from './services/system-services/backup.service';
+export { MaintenanceService } from './services/system-services/maintenance.service';
 export { UpdaterService } from './services/system-services/updater.service';
 export { UploadService } from './services/system-services/upload.service';
 export { NoteService } from './services/system-services/note.service';

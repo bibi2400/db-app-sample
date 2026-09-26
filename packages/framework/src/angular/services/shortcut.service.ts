@@ -1,12 +1,14 @@
-import { Injectable, NgZone, inject, signal } from '@angular/core';
+import { Injectable, NgZone, OnDestroy, inject, signal } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { KeyBinding, ShortcutDefinition, ShortcutEntry } from '../types/shortcut';
 import { SHORTCUT_REGISTRY } from './shortcut-registry';
+import { DatabaseUiService } from './database-ui.service';
 
 const STORAGE_KEY = 'app-shortcut-bindings';
 
 @Injectable({ providedIn: 'root' })
-export class ShortcutService {
+export class ShortcutService implements OnDestroy {
+  private readonly databaseUi = inject(DatabaseUiService);
   private ngZone = inject(NgZone);
   private subjects = new Map<string, Subject<KeyboardEvent>>();
   private bindings = new Map<string, KeyBinding>();
@@ -43,6 +45,11 @@ export class ShortcutService {
       return new Observable();
     }
     return subject.asObservable();
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('keydown', this.boundHandler);
+    this.subjects.forEach(subject => subject.complete());
   }
 
   /** Sospendi temporaneamente la gestione degli shortcut (es. durante la registrazione). */
@@ -156,6 +163,7 @@ export class ShortcutService {
     const isEditable = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
 
     for (const [id, binding] of this.bindings) {
+      if (!this.databaseUi.allowsShortcut(id)) continue;
       if (this.matchesBinding(event, binding)) {
         if (isEditable && !binding.ctrl && !binding.alt && !binding.meta) {
           return;
@@ -201,11 +209,13 @@ export class ShortcutService {
   }
 
   private refreshDefinitions(): void {
-    const defs: ShortcutDefinition[] = Object.entries(SHORTCUT_REGISTRY).map(([id, entry]) => ({
-      id,
-      ...entry,
-      currentBinding: this.bindings.get(id) ?? { ...entry.defaultBinding },
-    }));
+    const defs: ShortcutDefinition[] = Object.entries(SHORTCUT_REGISTRY)
+      .filter(([id]) => this.databaseUi.allowsShortcut(id))
+      .map(([id, entry]) => ({
+        id,
+        ...entry,
+        currentBinding: this.bindings.get(id) ?? { ...entry.defaultBinding },
+      }));
     this.definitions.set(defs);
   }
 

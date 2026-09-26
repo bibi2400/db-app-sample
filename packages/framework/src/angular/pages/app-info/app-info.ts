@@ -7,6 +7,7 @@ import { NavigationService } from '../../services/navigation.service';
 import { AppDetails, ElectronAppService } from '../../services/electron-api/electron-app.service';
 import { ElectronUploadService } from '../../services/electron-api/electron-upload.service';
 import { DialogService } from '../../services/dialog.service';
+import { DatabaseUiService } from '../../services/database-ui.service';
 
 @Component({
   selector: 'app-info',
@@ -21,6 +22,7 @@ import { DialogService } from '../../services/dialog.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppInfo implements OnInit {
+  readonly databaseUi = inject(DatabaseUiService);
   private navigationService = inject(NavigationService);
   private appService = inject(ElectronAppService);
   private uploadService = inject(ElectronUploadService);
@@ -56,6 +58,7 @@ export class AppInfo implements OnInit {
   }
 
   openDbFolder(): void {
+    if (!this.databaseUi.enabled) return;
     this.appService.openDbFolder();
   }
 
@@ -64,6 +67,7 @@ export class AppInfo implements OnInit {
   }
 
   async changeDbPath(): Promise<void> {
+    if (!this.databaseUi.enabled) return;
     this.dbPathError.set(null);
     try {
       const result = await this.appService.changeDbPath();

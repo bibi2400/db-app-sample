@@ -21,15 +21,19 @@ import { DataSourceService } from "./data-source.service";
 import { UploadService } from "./upload.service";
 import { DbMigrationService } from "./db-migration.service";
 import { NoteService } from "./note.service";
+import { MaintenanceService } from "./maintenance.service";
+import { ConsumerConfigService } from "./consumer-config.service";
 
 export const SYSTEM_SERVICES = [
   DevModeService,
   AppDataService,
   ConfigService,
+  ConsumerConfigService,
   CacheService,
   DbConfigService,
   AppConfigService,
   DataSourceService,
+  MaintenanceService,
 
   // Core services
   PushService,
