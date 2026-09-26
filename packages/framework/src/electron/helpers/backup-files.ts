@@ -14,6 +14,12 @@ export interface BackupDatabase {
   attachments: BackupAttachment[];
 }
 
+export class AttachmentChecksumError extends Error {
+  constructor() {
+    super("Un allegato è mancante o non supera la verifica del checksum.");
+  }
+}
+
 /** Snapshot a configured external DB without modifying or removing the source. */
 export async function copyDatabaseSnapshot(source: string, destination: string): Promise<void> {
   const db = await new Promise<Database>((resolve, reject) => {
@@ -125,6 +131,6 @@ export async function verifyAttachment(file: string, expected: string): Promise<
     await handle.close();
   }
   if (hash.digest("hex") !== expected) {
-    throw new Error("Un allegato è mancante o non supera la verifica del checksum.");
+    throw new AttachmentChecksumError();
   }
 }

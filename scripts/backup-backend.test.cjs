@@ -124,6 +124,85 @@ test('failed initialization rolls database and replaced attachments back', async
   assert.equal(calls, 2);
 });
 
+for (const damage of ['missing', 'checksum']) {
+  for (const initializationFails of [false, true]) {
+    test(`restore repairs ${damage} live attachments and preserves rollback: ` +
+      `initialization failure ${initializationFails}`, async t => {
+      const f = await fixture(t);
+      await addAttachment(f);
+      const backup = await f.service.createBackup();
+      await f.dataSource.dataSource.query("UPDATE sample SET value = 'before restore'");
+      const attachment = path.join(f.repository, 'file.txt');
+      if (damage === 'missing') await fs.unlink(attachment);
+      else await fs.writeFile(attachment, 'damaged file');
+      await assert.rejects(f.service.createBackup(), damage === 'missing' ? /ENOENT/ : /checksum/);
+      const initialize = f.dataSource.initialize.bind(f.dataSource);
+      let calls = 0;
+      f.dataSource.initialize = async () => {
+        if (++calls === 1 && initializationFails) throw new Error('injected initialization failure');
+        await initialize();
+      };
+      let result;
+      if (initializationFails) {
+        await assert.rejects(f.service.restoreBackup(backup.path), /injected initialization/);
+        assert.equal(await value(f), 'before restore');
+        if (damage === 'missing') await assert.rejects(fs.access(attachment), /ENOENT/);
+        else assert.equal(await fs.readFile(attachment, 'utf8'), 'damaged file');
+        assert.equal(calls, 2);
+      } else {
+        result = await f.service.restoreBackup(backup.path);
+        assert.equal(result.success, true);
+        assert.equal(await value(f), 'original');
+        assert.equal(await fs.readFile(attachment, 'utf8'), 'original attachment');
+      }
+      const safety = (await f.service.listBackups()).find(item => item.filename.includes('pre-restore'));
+      assert.ok(safety);
+      if (result) assert.equal(result.backupCreated, safety.path);
+      assert.equal(safety.includesAttachments, false);
+      assert.match(safety.attachmentError, /mancanti o danneggiati/);
+      const manifest = JSON.parse(await fs.readFile(`${safety.path}.assets/manifest.json`, 'utf8'));
+      assert.deepEqual(manifest.attachmentErrors, ['file.txt']);
+      const snapshot = new DataSourceService({
+        dbPath: safety.path, resolveDbPath: async () => safety.path,
+      });
+      await snapshot.initialize();
+      try {
+        assert.equal((await snapshot.dataSource.query('SELECT value FROM sample'))[0].value, 'before restore');
+      } finally {
+        await snapshot.destroy();
+      }
+      if (damage === 'checksum') {
+        assert.equal(await fs.readFile(`${safety.path}.assets/files/file.txt`, 'utf8'), 'damaged file');
+      }
+      await assert.rejects(f.service.restoreBackup(safety.path), /non consente un ripristino completo/);
+      assert.equal(await f.maintenance.runRequest(async () => 'released'), 'released');
+    });
+  }
+}
+
+test('permission errors in the safety snapshot abort restore without changing live data', async t => {
+  const f = await fixture(t);
+  await addAttachment(f);
+  const backup = await f.service.createBackup();
+  await f.dataSource.dataSource.query("UPDATE sample SET value = 'before restore'");
+  const copyFile = fs.copyFile;
+  fs.copyFile = async (source, destination, ...args) => {
+    if (destination.includes('pre-restore') && destination.endsWith('file.txt')) {
+      throw Object.assign(new Error('injected permission failure'), { code: 'EACCES' });
+    }
+    return copyFile(source, destination, ...args);
+  };
+  try {
+    await assert.rejects(f.service.restoreBackup(backup.path), /injected permission/);
+  } finally {
+    fs.copyFile = copyFile;
+  }
+  assert.equal(await value(f), 'before restore');
+  assert.equal(await fs.readFile(path.join(f.repository, 'file.txt'), 'utf8'), 'original attachment');
+  assert.equal((await f.service.listBackups()).length, 1);
+  assert.equal(await f.maintenance.runRequest(async () => 'released'), 'released');
+});
+
 test('failed rollback preserves recovery files and blocks subsequent IPC', async t => {
   const f = await fixture(t);
   const backup = await f.service.createBackup();

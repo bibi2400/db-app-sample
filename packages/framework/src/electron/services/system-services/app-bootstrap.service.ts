@@ -81,8 +81,8 @@ export class AppBootstrapService {
     // Set version in window title and listen for updates
     this.initializeTitleUpdater();
 
-    // Run startup tasks (backup, updates)
-    await this.runStartupTasks();
+    // Start update checks after window-dependent services are ready
+    this.startUpdateChecks();
 
     // Stop bootstrap measurement and print report
     const bootstrapDuration = Chronomancer.stop('app-bootstrap', 'bootstrap');
@@ -122,6 +122,9 @@ export class AppBootstrapService {
       await this.dataSourceService.initialize();
       Chronomancer.stop('database-init', 'bootstrap');
       Logger.info('[Bootstrap] ✓ Database connection established');
+
+      // Ensure a fresh database can be backed up before frontend migrations run.
+      await this.dbMigrationService.initializeSchema();
 
       // Verify schema drift (throws in dev if drift is found)
       await this.dbMigrationService.verifySchema();
@@ -171,6 +174,9 @@ export class AppBootstrapService {
       // Small delay to ensure splash is visible
       await new Promise(resolve => setTimeout(resolve, 100));
     }
+
+    // Finish backup maintenance before loading any consumer frontend IPC requests.
+    await this.runStartupBackup();
 
     // Create main window (splash will close automatically on ready-to-show)
     Chronomancer.start('main-window', 'bootstrap');
@@ -227,9 +233,9 @@ export class AppBootstrapService {
   }
 
   /**
-   * Runs startup background tasks (backup, updates).
+   * Completes the automatic backup before the main window loads.
    */
-  private async runStartupTasks(): Promise<void> {
+  private async runStartupBackup(): Promise<void> {
     // Auto backup
     try {
       Chronomancer.start('auto-backup', 'bootstrap');
@@ -241,7 +247,12 @@ export class AppBootstrapService {
       Logger.error('[Bootstrap] Startup backup failed:', error);
       this.errorNotificationService.reportBootstrapError('Backup automatico', error);
     }
+  }
 
+  /**
+   * Starts update checks after window-dependent services are initialized.
+   */
+  private startUpdateChecks(): void {
     // Check for updates (non-blocking) and start periodic check every 30 min
     Chronomancer.start('update-check', 'bootstrap');
     this.updaterService.checkForUpdates().catch((err: unknown) => {

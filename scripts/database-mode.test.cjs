@@ -6,12 +6,19 @@ const os = require('node:os');
 const Module = require('node:module');
 
 let appRoot;
+const handlers = new Map();
 const originalLoad = Module._load;
 Module._load = function (name, ...args) {
   if (name === 'electron') {
-    return { app: { isPackaged: false, getAppPath: () => appRoot } };
+    return {
+      app: { isPackaged: false, getAppPath: () => appRoot },
+      ipcMain: { handle: (channel, handler) => handlers.set(channel, handler) },
+    };
   }
   if (name === 'electron-log') return { debug() {}, info() {}, warn() {}, error() {} };
+  if (name === '../../controllers' && args[0].filename.endsWith('app-bootstrap.service.js')) {
+    return { registerAllControllers() {} };
+  }
   return originalLoad.call(this, name, ...args);
 };
 const base = '../packages/framework/dist/electron/services/system-services/';
@@ -22,6 +29,10 @@ const { DbConfigService } = require(`${base}db-config.service`);
 const { DataSourceService } = require(`${base}data-source.service`);
 const { BackupService } = require(`${base}backup.service`);
 const { MaintenanceService } = require(`${base}maintenance.service`);
+const { ControllerService } = require(`${base}controller.service`);
+const { AppBootstrapService } = require(`${base}app-bootstrap.service`);
+const { DbMigrationService } = require(`${base}db-migration.service`);
+const { IpcHandler } = require('../packages/framework/dist/electron/decorators/ipc-handler.decorator');
 const prepareInstaller = require('../packages/framework/dist/cli/build/prepare-installer').default;
 Module._load = originalLoad;
 
@@ -154,3 +165,119 @@ test('invalid consumer flags stop runtime and installer generation', async t => 
     packager: { projectDir: f.root, info: { buildResourcesDir: path.join(f.root, 'build') } },
   }), /booleano/);
 });
+
+for (const enabled of [false, true]) {
+  for (const scenario of [
+    { noSplash: false, failBackup: false },
+    { noSplash: true, failBackup: false },
+    { noSplash: false, failBackup: true },
+    { noSplash: false, failBackup: false, freshDatabase: true },
+  ]) {
+    const { noSplash, failBackup, freshDatabase = false } = scenario;
+    test(`startup IPC succeeds with database UI ${enabled}, no splash ${noSplash}, ` +
+      `backup failure ${failBackup}, fresh database ${freshDatabase}`, async t => {
+      const f = await fixture(t, { enabled });
+      if (enabled) f.dbConfig.dbPath = path.join(f.root, 'external.sqlite');
+      const ds = await f.open();
+      if (!freshDatabase) await populate(ds, 'startup data');
+      const migrations = new DbMigrationService(ds);
+      const repository = f.appData.resolve('uploads');
+      await fs.mkdir(repository);
+      const maintenance = new MaintenanceService();
+      const backup = new BackupService(
+        f.dbConfig, ds, { getRepositoryPath: () => repository }, maintenance,
+      );
+      const reported = [];
+      const errors = {
+        reportBootstrapError: (...args) => reported.push(args),
+        reportControllerError: (...args) => reported.push(args),
+      };
+      const controllers = new ControllerService(errors, maintenance);
+      class ConsumerController {
+        async status() {
+          return ControllerService.success(await value(ds));
+        }
+      }
+      IpcHandler('status')(ConsumerController.prototype, 'status');
+      controllers.registerIpcHandlers(new ConsumerController(), 'logistic-source');
+
+      let release;
+      const paused = new Promise(resolve => { release = resolve; });
+      let started;
+      const backupStarted = new Promise(resolve => { started = resolve; });
+      const failure = new Error('injected startup backup failure');
+      let windowCreated = false;
+      let splashVisible = false;
+      let updateChecks = 0;
+      let cleanup;
+      const win = {};
+      const bootstrap = new AppBootstrapService(
+        {
+          init() {},
+          getInfo: () => ({
+            name: 'Consumer', version: '1.0.0',
+            splashScreen: { width: 600, height: 400 },
+            mainWindow: { width: 1200, height: 800 },
+          }),
+        },
+        { create: async () => { splashVisible = true; }, setVersion() {} },
+        {
+          create: async () => {
+            windowCreated = true;
+            assert.deepEqual(await migrations.runPendingMigrations(), { success: true });
+            if (freshDatabase) await populate(ds, 'startup data');
+            const response = await handlers.get('logistic-source:status')({});
+            assert.deepEqual(response, { success: true, data: 'startup data' });
+            return win;
+          },
+          setTitle() {},
+        },
+        { setWindow: window => assert.equal(window, win) },
+        { init() {}, onCleanup: callback => { cleanup = callback; } },
+        controllers,
+        {
+          autoBackup: () => maintenance.runExclusive(async () => {
+            started();
+            await paused;
+            if (failBackup) throw failure;
+            return backup.autoBackup();
+          }),
+        },
+        {
+          onStatusChange() {},
+          checkForUpdates: async () => { updateChecks++; },
+          startPeriodicCheck() {}, stopPeriodicCheck() {},
+        },
+        { isDev: false, noSplash },
+        errors,
+        { init: async () => {} },
+        ds,
+        migrations,
+      );
+      await ds.destroy();
+      const booting = bootstrap.bootstrap();
+      t.after(() => release());
+      await backupStarted;
+      assert.equal(windowCreated, false);
+      assert.equal(splashVisible, !noSplash);
+      assert.equal(updateChecks, 0);
+      await assert.rejects(maintenance.runRequest(async () => 'write'), /Manutenzione/);
+      release();
+      assert.equal(await booting, win);
+      assert.equal(bootstrap.getMainWindow(), win);
+      assert.equal(updateChecks, 1);
+      assert.equal(typeof cleanup, 'function');
+      assert.deepEqual(reported, failBackup ? [['Backup automatico', failure]] : []);
+      const backups = await backup.listBackups();
+      assert.equal(backups.length, failBackup ? 0 : 1);
+      if (!failBackup) {
+        assert.equal(backups[0].type, 'auto');
+        if (!freshDatabase) assert.equal(await backup.autoBackup(), null);
+      }
+      await maintenance.runRequest(() => ds.dataSource.query(
+        "UPDATE sample SET value = 'after startup' WHERE id = 1",
+      ));
+      assert.equal(await value(ds), 'after startup');
+    });
+  }
+}

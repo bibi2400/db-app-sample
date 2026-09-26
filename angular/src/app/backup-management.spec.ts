@@ -113,6 +113,13 @@ describe('Backup management', () => {
     const scope: HTMLElement = fixture.nativeElement.querySelector('.backup-scope');
     expect(scope.textContent).toContain('Allegati mancanti o non validi');
     expect(scope.classList.contains('incomplete')).toBe(true);
+    const restore: HTMLButtonElement = fixture.nativeElement.querySelector(
+      `[aria-label="Ripristina ${backup.filename}"]`,
+    );
+    expect(restore.disabled).toBe(true);
+    restore.click();
+    expect(confirm).not.toHaveBeenCalled();
+    expect(api.restoreBackup).not.toHaveBeenCalled();
   });
 
   it('prevents duplicate operations while a confirmation is open', async () => {

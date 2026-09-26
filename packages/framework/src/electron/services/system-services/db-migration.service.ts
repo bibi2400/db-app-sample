@@ -25,7 +25,7 @@ export class DbMigrationService {
    * Uses raw DDL so it works regardless of whether TypeORM `synchronize` is
    * enabled or not. Safe to call multiple times — all statements are idempotent.
    */
-  private async ensureSchemaExists(): Promise<void> {
+  async initializeSchema(): Promise<void> {
     const ds = this.dataSourceService.dataSource;
 
     await ds.query(`
@@ -85,7 +85,7 @@ export class DbMigrationService {
    */
   async runPendingMigrations(): Promise<IpcResponse<void>> {
     try {
-      await this.ensureSchemaExists();
+      await this.initializeSchema();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       Logger.error("[DbMigration] Failed to create migrations table:", err);

@@ -106,9 +106,9 @@
                     <button
                       mat-icon-button
                       (click)="restoreBackup(backup)"
-                      [disabled]="busy() || reloadRequired()"
+                      [disabled]="busy() || reloadRequired() || !!backup.attachmentError"
                       [attr.aria-label]="'Ripristina ' + backup.filename"
-                      matTooltip="Ripristina backup">
+                      [matTooltip]="backup.attachmentError || 'Ripristina backup'">
                       <mat-icon>restore</mat-icon>
                     </button>
                     <button

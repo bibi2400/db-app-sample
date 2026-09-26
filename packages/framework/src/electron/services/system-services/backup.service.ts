@@ -10,6 +10,7 @@ import { MaintenanceService } from "./maintenance.service";
 import { Injectable } from "../../helpers/mini-pie/decorators";
 import { Logger } from "../../helpers/logger";
 import {
+  AttachmentChecksumError,
   attachmentPath,
   containedPath,
   inspectBackup,
@@ -71,7 +72,7 @@ export class BackupService {
     });
   }
 
-  private async create(options: BackupOptions): Promise<BackupInfo> {
+  private async create(options: BackupOptions, allowIncompleteAttachments = false): Promise<BackupInfo> {
     this.validateOptions(options);
     const databasePath = this.activeDatabasePath();
     await this.ensureDirectories();
@@ -91,14 +92,29 @@ export class BackupService {
       const assetFiles = path.join(assets, "files");
       await fs.mkdir(assetFiles);
       const repository = this.uploadService.getRepositoryPath();
+      const attachmentErrors: string[] = [];
       for (const attachment of database.attachments) {
         const source = await attachmentPath(repository, attachment);
         const destination = await attachmentPath(assetFiles, attachment);
         await fs.mkdir(path.dirname(destination), { recursive: true });
-        await fs.copyFile(source, destination, fs.constants.COPYFILE_EXCL);
-        await verifyAttachment(destination, attachment.checksum);
+        try {
+          await fs.copyFile(source, destination, fs.constants.COPYFILE_EXCL);
+          await verifyAttachment(destination, attachment.checksum);
+        } catch (error) {
+          // Only pre-restore snapshots may preserve an already damaged repository.
+          // Permission, I/O and unsafe-path failures must still abort the restore.
+          if (!allowIncompleteAttachments || (
+            (error as NodeJS.ErrnoException).code !== "ENOENT"
+            && !(error instanceof AttachmentChecksumError)
+          )) throw error;
+          attachmentErrors.push(path.join(attachment.relativePath, attachment.fileName));
+        }
       }
-      await fs.writeFile(path.join(assets, "manifest.json"), JSON.stringify({ version: 1, databasePath }));
+      await fs.writeFile(path.join(assets, "manifest.json"), JSON.stringify({
+        version: 1,
+        databasePath,
+        ...(attachmentErrors.length ? { attachmentErrors } : {}),
+      }));
       const stat = await fs.stat(staging);
       const backup: BackupInfo = {
         filename,
@@ -106,9 +122,10 @@ export class BackupService {
         size: stat.size + await this.directorySize(assets),
         date: stat.mtime,
         type,
-        includesAttachments: true,
+        includesAttachments: attachmentErrors.length === 0,
+        ...(attachmentErrors.length ? { attachmentError: this.incompleteAttachmentsMessage } : {}),
       };
-      // Publish only after the database and every referenced attachment are verified.
+      // Publish verified backups, or explicitly marked pre-restore recovery snapshots.
       await fs.rename(staging, backupPath);
       if (type === "auto") {
         try {
@@ -163,7 +180,7 @@ export class BackupService {
           await verifyAttachment(destination, attachment.checksum);
         }
       }
-      safety = await this.create({ type: "manual", name: "pre-restore" });
+      safety = await this.create({ type: "manual", name: "pre-restore" }, true);
       if ((await fs.lstat(dbPath)).isSymbolicLink()) {
         throw new Error("Il ripristino non è consentito su un database collegato simbolicamente.");
       }
@@ -297,6 +314,13 @@ export class BackupService {
       if (!data || typeof data !== "object" || (data as { version?: unknown }).version !== 1) {
         throw new Error("Formato degli allegati del backup non supportato.");
       }
+      const errors = (data as { attachmentErrors?: unknown }).attachmentErrors;
+      if (errors !== undefined) {
+        if (!Array.isArray(errors) || errors.some(error => typeof error !== "string")) {
+          throw new Error("Formato degli allegati del backup non supportato.");
+        }
+        if (errors.length) throw new Error(this.incompleteAttachmentsMessage);
+      }
       return true;
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
@@ -408,6 +432,11 @@ export class BackupService {
 
   private localDay(date: Date): string {
     return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  }
+
+  private get incompleteAttachmentsMessage(): string {
+    return "Copia di sicurezza precedente al ripristino: alcuni allegati erano mancanti o danneggiati. " +
+      "Database e file disponibili conservati; questa copia non consente un ripristino completo.";
   }
 
   private async currentSchema(): Promise<BackupDatabase["schema"]> {

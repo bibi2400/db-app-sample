@@ -38,6 +38,7 @@ testem.log
 /typings
 __screenshots__/
 backups
+.tmp*
 
 # System files
 .DS_Store
