@@ -200,14 +200,24 @@ tr.mat-mdc-header-row {
 // ─── Rows ────────────────────────────────────────────────────────────────────
 
 tr.mat-mdc-row {
+  // Le celle sticky ereditano lo sfondo: deve restare opaco anche in transizione.
+  background-color: var(--mat-table-background-color, var(--mat-sys-surface, #fff));
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: color-mix(
+      in srgb,
+      #000 4%,
+      var(--mat-table-background-color, var(--mat-sys-surface, #fff))
+    );
   }
 
   &.eaf-row-selected {
-    background-color: rgba(var(--mat-sys-primary-rgb, 25, 118, 210), 0.08);
+    background-color: color-mix(
+      in srgb,
+      rgb(var(--mat-sys-primary-rgb, 25, 118, 210)) 8%,
+      var(--mat-table-background-color, var(--mat-sys-surface, #fff))
+    );
   }
 }
 
