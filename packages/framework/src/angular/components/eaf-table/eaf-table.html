@@ -55,7 +55,11 @@
 
           <!-- Data columns -->
           @for (col of visibleColumnDefs(); track col.key) {
-          <ng-container [matColumnDef]="col.key">
+          <ng-container
+            [matColumnDef]="col.key"
+            [sticky]="col.sticky === 'start'"
+            [stickyEnd]="col.sticky === 'end'"
+          >
             <th
               mat-header-cell
               *matHeaderCellDef
@@ -170,7 +174,11 @@
 
     <!-- Data columns -->
     @for (col of visibleColumnDefs(); track col.key) {
-    <ng-container [matColumnDef]="col.key">
+    <ng-container
+      [matColumnDef]="col.key"
+      [sticky]="col.sticky === 'start'"
+      [stickyEnd]="col.sticky === 'end'"
+    >
       <th
         mat-header-cell
         *matHeaderCellDef
