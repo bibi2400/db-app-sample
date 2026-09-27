@@ -16,7 +16,7 @@
     <mat-icon>{{ activeLink().icon }}</mat-icon>
     <span>{{ activeLink().title }}</span>
   </div>
-  <div class="sdsadsad">
+  <div class="toolbar-content">
     <ng-content></ng-content>
   </div>
   @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
@@ -26,6 +26,18 @@
         (error)="toolbarLogoError = true"
         [alt]="navigationService.appName()"
       />
+    </div>
+  }
+  @if (updateNotice() || navigationService.toolbarNotices().length > 0) {
+    <div class="toolbar-notices" aria-label="Avvisi">
+      @if (updateNotice(); as notice) {
+        <a class="toolbar-notice update-notice" routerLink="/updates">{{ notice }}</a>
+      }
+      @for (notice of navigationService.toolbarNotices(); track notice.id) {
+        <button type="button" class="toolbar-notice" (click)="notice.callback()">
+          {{ notice.label }}
+        </button>
+      }
     </div>
   }
   <span class="toolbar-spacer"></span>

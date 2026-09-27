@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, 
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterOutlet } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { UpdateStatusType } from '../../types/update';
 import { NotificationPanel } from '../notification-panel/notification-panel';
 import { CommandPalette } from '../command-palette/command-palette';
 import { Sidebar } from '../sidebar/sidebar';
@@ -19,8 +18,7 @@ import { NotificationService } from '../../services/notification.service';
 import { ShortcutService } from '../../services/shortcut.service';
 import { CommandPaletteItem } from '../../types/command-palette';
 import { DatabaseUiService } from '../../services/database-ui.service';
-
-const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
+import { UpdateStateService } from '../../services/update-state.service';
 
 @Component({
   selector: 'eaf-shell',
@@ -52,6 +50,7 @@ export class FrameworkShell implements OnInit, OnDestroy {
   migrationError = signal<string | null>(null);
 
   private readonly updateService = inject(ElectronUpdateService);
+  private readonly updateState = inject(UpdateStateService);
   private readonly appService = inject(ElectronAppService);
   private readonly dbMigrationService = inject(ElectronDbMigrationService);
   private readonly navigationService = inject(NavigationService);
@@ -84,10 +83,7 @@ export class FrameworkShell implements OnInit, OnDestroy {
       this.migrating.set(false);
     });
 
-    this.statusSub = this.updateService.statusChanged$.subscribe(status => {
-      this.navigationService.updateAvailable.set(
-        UPDATE_BADGE_STATUSES.includes(status.status)
-      );
+    this.statusSub = this.updateState.statusChanged$.subscribe(status => {
       if (status.status === 'available' && status.availableVersion) {
         this.notificationService.info(
           'Aggiornamento disponibile',

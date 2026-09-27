@@ -31,6 +31,72 @@
   flex: 1 1 auto;
 }
 
+:host {
+  display: block;
+  min-width: 0;
+}
+
+mat-toolbar {
+  flex-wrap: wrap;
+  height: auto;
+  min-height: var(--mat-toolbar-standard-height, 64px);
+  padding-block: 8px;
+  row-gap: 8px;
+  white-space: normal;
+
+  > button {
+    flex: 0 0 auto;
+  }
+}
+
+.toolbar-content {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.toolbar-notices {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  padding-inline: 8px;
+  box-sizing: border-box;
+}
+
+.toolbar-notice {
+  // Una superficie autonoma mantiene il contrasto su qualsiasi colore della toolbar.
+  color: var(--mat-sys-on-surface, #1b1b1f);
+  background: var(--mat-sys-surface, #fff);
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 8px 12px;
+  max-width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  &:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -4px;
+  }
+}
+
 .zoom-controls {
   display: flex;
   align-items: center;
@@ -47,17 +113,17 @@
 }
 
 .toolbar-center-logo {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
+  flex: 0 1 160px;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
-  pointer-events: none;
-  z-index: 0;
+  justify-content: center;
+  margin-inline: 16px;
 
   img {
     max-height: 40px;
-    max-width: 160px;
+    max-width: 100%;
     object-fit: contain;
     pointer-events: auto;
     user-select: none;
@@ -72,10 +138,13 @@
   font-size: 18px;
   font-weight: 500;
   user-select: none;
-  position: relative;
-  z-index: 1;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  overflow-wrap: anywhere;
 
   mat-icon {
+    flex-shrink: 0;
     font-size: 20px;
     width: 20px;
     height: 20px;

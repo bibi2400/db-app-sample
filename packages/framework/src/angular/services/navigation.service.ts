@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { DatabaseUiService } from './database-ui.service';
+import { ToolbarNotice } from '../types/toolbar-notice';
 
 export type MenuItem = {
   title: string;
@@ -68,6 +69,10 @@ export class NavigationService {
   toolbarColor = signal<string | null>(null);
   /** Colore del testo/icone della toolbar. Se `null`, viene usato il default del tema Material. */
   toolbarTextColor = signal<string | null>(null);
+  /** Mostra l'avviso aggiornamenti nella toolbar (default: true); non altera il badge del menu. */
+  showUpdateNotice = signal(true);
+  /** Avvisi custom, indipendenti dalle azioni di salvataggio/reset della pagina. */
+  toolbarNotices = signal<ToolbarNotice[]>([]);
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);
