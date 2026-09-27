@@ -91,7 +91,11 @@ export type { UnsavedChangesChoice, UnsavedChangesMode } from './services/dialog
 
 // ─── Types (re-exported from shared for convenience) ─────────────────────────
 export type { MenuItem, MenuInsertPosition } from './services/navigation.service';
-export type { ToolbarNotice } from './types/toolbar-notice';
+export type {
+  ToolbarNotice,
+  ToolbarNoticePosition,
+  ToolbarNoticeShape,
+} from './types/toolbar-notice';
 export type { CommandPaletteItem } from './types/command-palette';
 export type {
   AppNotification,

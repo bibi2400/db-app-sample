@@ -4,7 +4,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatBadgeModule } from '@angular/material/badge';
-import { Location } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { NavigationService } from '../../services/navigation.service';
 import { NotificationService } from '../../services/notification.service';
@@ -21,6 +21,7 @@ import { UpdateStateService } from '../../services/update-state.service';
     MatTooltipModule,
     MatBadgeModule,
     RouterLink,
+    NgTemplateOutlet,
   ],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss',
@@ -49,6 +50,10 @@ export class Toolbar {
         return null;
     }
   });
+
+  readonly hasNotices = computed(() =>
+    !!this.updateNotice() || this.navigationService.toolbarNotices().length > 0,
+  );
 
   get activeLink() {
     return this.navigationService.activeLink;

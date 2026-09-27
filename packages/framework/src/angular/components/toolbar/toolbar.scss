@@ -34,6 +34,7 @@
 :host {
   display: block;
   min-width: 0;
+  container-type: inline-size;
 }
 
 mat-toolbar {
@@ -44,8 +45,40 @@ mat-toolbar {
   row-gap: 8px;
   white-space: normal;
 
-  > button {
+  button[mat-icon-button] {
     flex: 0 0 auto;
+  }
+}
+
+.toolbar-leading,
+.toolbar-commands {
+  display: contents;
+}
+
+// Le colonne laterali uguali mantengono gli avvisi al centro della finestra,
+// anche quando titolo/logo e comandi hanno larghezze diverse.
+mat-toolbar.centered-notices {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) fit-content(40%) minmax(200px, 1fr);
+  column-gap: 8px;
+
+  .toolbar-leading,
+  .toolbar-commands {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 8px;
+    min-width: 0;
+  }
+
+  .toolbar-commands {
+    justify-content: flex-end;
+  }
+}
+
+@container (max-width: 800px) {
+  mat-toolbar.centered-notices {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -60,26 +93,48 @@ mat-toolbar {
   flex: 0 1 auto;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--eaf-toolbar-notice-gap, 8px);
   min-width: 0;
   max-width: 100%;
-  padding-inline: 8px;
+  padding-inline: var(--eaf-toolbar-notice-group-padding-inline, 8px);
   box-sizing: border-box;
+
+  &[data-position='center'] {
+    justify-content: center;
+  }
+
+  &[data-position='right'] {
+    justify-content: flex-end;
+  }
+
+  &[data-shape='rectangle'] {
+    --_eaf-toolbar-notice-radius: 0px;
+  }
+
+  &[data-shape='rounded'] {
+    --_eaf-toolbar-notice-radius: 6px;
+  }
+
+  &[data-shape='pill'] {
+    --_eaf-toolbar-notice-radius: 999px;
+  }
 }
 
 .toolbar-notice {
   // Una superficie autonoma mantiene il contrasto su qualsiasi colore della toolbar.
-  color: var(--mat-sys-on-surface, #1b1b1f);
-  background: var(--mat-sys-surface, #fff);
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  padding: 8px 12px;
-  max-width: 100%;
+  color: var(--eaf-toolbar-notice-color, var(--mat-sys-on-surface, #1b1b1f));
+  background: var(--eaf-toolbar-notice-background, var(--mat-sys-surface, #fff));
+  border: var(--eaf-toolbar-notice-border, 1px solid currentColor);
+  border-radius: var(--eaf-toolbar-notice-border-radius, var(--_eaf-toolbar-notice-radius, 6px));
+  padding-block: var(--eaf-toolbar-notice-padding-block, 8px);
+  padding-inline: var(--eaf-toolbar-notice-padding-inline, 12px);
+  min-height: var(--eaf-toolbar-notice-min-height, auto);
+  max-width: min(100%, var(--eaf-toolbar-notice-max-width, 100%));
   box-sizing: border-box;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--eaf-toolbar-notice-font-size, 14px);
   font-weight: 500;
-  line-height: 20px;
+  line-height: var(--eaf-toolbar-notice-line-height, 20px);
   text-align: start;
   white-space: normal;
   overflow-wrap: anywhere;

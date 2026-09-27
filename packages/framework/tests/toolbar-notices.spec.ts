@@ -148,6 +148,40 @@ describe('Toolbar notices', () => {
     expect(fixture.nativeElement.querySelectorAll('.toolbar-notice')).toHaveLength(1);
   });
 
+  it('moves a single notice group in DOM order and preserves custom actions', () => {
+    const fixture = toolbar();
+    const navigation = TestBed.inject(NavigationService);
+    const callback = vi.fn();
+    navigation.toolbarLogoUrl.set('logo.png');
+    navigation.toolbarNotices.set([{ id: 'custom', label: 'Avviso custom', callback }]);
+    changes.next(status('available'));
+    expect(navigation.toolbarNoticePosition()).toBe('center');
+    expect(navigation.toolbarNoticeShape()).toBe('rounded');
+    for (const position of ['title', 'center', 'right'] as const) {
+      navigation.toolbarNoticePosition.set(position);
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      const group = root.querySelector('.toolbar-notices')!;
+      expect(root.querySelectorAll('.toolbar-notices')).toHaveLength(1);
+      expect(group.querySelectorAll('.toolbar-notice')).toHaveLength(2);
+      expect(group.getAttribute('data-position')).toBe(position);
+      const previousClass = position === 'title' ? 'page-title' :
+        position === 'center' ? 'toolbar-leading' : 'toolbar-spacer';
+      expect(group.previousElementSibling?.classList.contains(previousClass)).toBe(true);
+      if (position === 'right') {
+        expect(group.nextElementSibling?.classList.contains('toolbar-commands')).toBe(true);
+      }
+      group.querySelector<HTMLButtonElement>('button')!.click();
+      expect(group.querySelector('a')?.getAttribute('href')).toBe('/updates');
+    }
+    expect(callback).toHaveBeenCalledTimes(3);
+    navigation.showUpdateNotice.set(false);
+    navigation.toolbarNotices.set([]);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.toolbar-notices')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.toolbar-spacer')).not.toBeNull();
+  });
+
   it.each(['failure', 'rejection'] as const)('handles initial %s and continues receiving pushes', async kind => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fixture = toolbar();

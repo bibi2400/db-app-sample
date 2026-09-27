@@ -94,20 +94,29 @@ async function run() {
     ]);
   });
   const measurements = [];
-  for (const width of [1440, 960, 600, 360, 320]) {
+  const variants = ['title', 'center', 'right'].flatMap(position =>
+    ['rectangle', 'rounded', 'pill'].flatMap(shape =>
+      ['#ffffff', '#111111', '#f4dc00', '#123faf'].map(color => ({ position, shape, color })),
+    ),
+  );
+  for (const width of [1440, 960, 801, 800, 600, 360, 320]) {
     window.setContentSize(width, 1000);
     await settle();
-    for (const color of ['#ffffff', '#111111', '#f4dc00', '#123faf']) {
-      await evaluate(color => {
+    for (const { position, shape, color } of variants) {
+      await evaluate((position, shape, color) => {
         const nav = ng.getComponent(document.querySelector('eaf-toolbar')).navigationService;
+        nav.toolbarNoticePosition.set(position);
+        nav.toolbarNoticeShape.set(shape);
         nav.toolbarColor.set(color);
         nav.toolbarTextColor.set(color === '#ffffff' || color === '#f4dc00' ? '#111111' : '#ffffff');
-      }, color);
+      }, position, shape, color);
       await settle();
       const geometry = await evaluate(() => {
         const toolbar = document.querySelector('eaf-toolbar mat-toolbar');
         const rect = toolbar.getBoundingClientRect();
-        const elements = [...toolbar.children].filter(element => {
+        const elements = [...toolbar.querySelectorAll(
+          ':scope > *, :scope > .toolbar-leading > *, :scope > .toolbar-commands > *',
+        )].filter(element => {
           const bounds = element.getBoundingClientRect();
           return bounds.width > 0 && bounds.height > 0;
         });
@@ -120,6 +129,7 @@ async function run() {
         elements.forEach((element, index) => {
           const a = element.getBoundingClientRect();
           for (const other of elements.slice(index + 1)) {
+            if (element.contains(other) || other.contains(element)) continue;
             const b = other.getBoundingClientRect();
             if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
                 Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) {
@@ -128,6 +138,7 @@ async function run() {
           }
         });
         const notice = document.querySelector('.update-notice');
+        const group = document.querySelector('.toolbar-notices').getBoundingClientRect();
         const style = getComputedStyle(notice);
         const luminance = color => {
           const rgb = color.match(/[\d.]+/g).slice(0, 3).map(Number).map(value => {
@@ -140,6 +151,8 @@ async function run() {
         return {
           width: innerWidth,
           height: rect.height,
+          centerOffset: (group.left + group.right) / 2 - innerWidth / 2,
+          radius: style.borderTopLeftRadius,
           overflow,
           overlap,
           contrast: (values[1] + 0.05) / (values[0] + 0.05),
@@ -150,15 +163,88 @@ async function run() {
         };
       });
       assert.equal(geometry.width, width);
+      assert.equal(geometry.radius, { rectangle: '0px', rounded: '6px', pill: '999px' }[shape]);
+      if (position === 'center') {
+        assert.ok(Math.abs(geometry.centerOffset) < 1, JSON.stringify(geometry));
+      }
       assert.deepEqual(geometry.overflow, [], JSON.stringify(geometry));
       assert.deepEqual(geometry.overlap, [], JSON.stringify(geometry));
       assert.equal(geometry.clippedNotices, false, JSON.stringify(geometry));
       assert.ok(geometry.contrast >= 4.5, JSON.stringify(geometry));
       assert.ok(geometry.contentTop >= geometry.toolbarBottom - 1, JSON.stringify(geometry));
-      measurements.push({ color, ...geometry });
+      measurements.push({ position, shape, color, ...geometry });
+      if (shape === 'rounded' && color === '#123faf') {
+        await fs.writeFile(path.join(artifacts, `toolbar-${position}-${width}.png`),
+          (await window.webContents.capturePage()).toPNG());
+      }
     }
     await fs.writeFile(path.join(artifacts, `toolbar-${width}.png`),
       (await window.webContents.capturePage()).toPNG());
+  }
+  await evaluate(() => {
+    const toolbar = document.querySelector('eaf-toolbar');
+    const properties = {
+      background: '#fff3cd',
+      color: '#332701',
+      border: '2px dashed #332701',
+      'border-radius': '10px',
+      'font-size': '16px',
+      'line-height': '24px',
+      'min-height': '48px',
+      'max-width': '240px',
+      'padding-block': '10px',
+      'padding-inline': '18px',
+      gap: '12px',
+      'group-padding-inline': '4px',
+    };
+    for (const [name, value] of Object.entries(properties)) {
+      toolbar.style.setProperty(`--eaf-toolbar-notice-${name}`, value);
+    }
+  });
+  await settle();
+  const styled = await evaluate(() => {
+    const notices = [...document.querySelectorAll('.toolbar-notice')];
+    const group = getComputedStyle(document.querySelector('.toolbar-notices'));
+    return {
+      gap: group.gap,
+      groupPadding: group.paddingInlineStart,
+      notices: notices.map(notice => {
+        const style = getComputedStyle(notice);
+        return {
+          color: style.color,
+          background: style.backgroundColor,
+          borderWidth: style.borderTopWidth,
+          borderStyle: style.borderTopStyle,
+          radius: style.borderTopLeftRadius,
+          fontSize: style.fontSize,
+          lineHeight: style.lineHeight,
+          paddingBlock: style.paddingBlockStart,
+          paddingInline: style.paddingInlineStart,
+          minHeight: style.minHeight,
+          width: notice.getBoundingClientRect().width,
+          clipped: notice.scrollWidth > notice.clientWidth + 1,
+        };
+      }),
+    };
+  });
+  assert.equal(styled.gap, '12px');
+  assert.equal(styled.groupPadding, '4px');
+  for (const notice of styled.notices) {
+    assert.ok(notice.width <= 240);
+    assert.equal(notice.clipped, false);
+    const { width, clipped, ...style } = notice;
+    assert.deepEqual(style, {
+      color: 'rgb(51, 39, 1)',
+      background: 'rgb(255, 243, 205)',
+      borderWidth: '2px',
+      borderStyle: 'dashed',
+      radius: '10px',
+      fontSize: '16px',
+      lineHeight: '24px',
+      paddingBlock: '10px',
+      paddingInline: '18px',
+      minHeight: '48px',
+    });
   }
   for (const status of ['idle', 'checking', 'available', 'not-available', 'downloading', 'downloaded', 'error']) {
     await evaluate(status => window.toolbarFixture.push(status), status);
@@ -180,7 +266,7 @@ async function run() {
     ['update:check', 'update:download', 'update:install'].includes(channel))), []);
   assert.deepEqual(errors, []);
   await fs.writeFile(path.join(artifacts, 'measurements.json'), JSON.stringify(measurements, null, 2));
-  console.log('PASS: 20 layout/contrast scenarios, 7 states, navigation without updater operations');
+  console.log('PASS: 252 layout/shape/contrast scenarios, window centering, CSS overrides, states and navigation');
 }
 
 const deadline = setTimeout(() => {

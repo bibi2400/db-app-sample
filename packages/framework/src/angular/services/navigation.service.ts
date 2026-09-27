@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { DatabaseUiService } from './database-ui.service';
-import { ToolbarNotice } from '../types/toolbar-notice';
+import { ToolbarNotice, ToolbarNoticePosition, ToolbarNoticeShape } from '../types/toolbar-notice';
 
 export type MenuItem = {
   title: string;
@@ -73,6 +73,10 @@ export class NavigationService {
   showUpdateNotice = signal(true);
   /** Avvisi custom, indipendenti dalle azioni di salvataggio/reset della pagina. */
   toolbarNotices = signal<ToolbarNotice[]>([]);
+  /** Centro della finestra per default; nelle finestre strette usa una riga dedicata. */
+  toolbarNoticePosition = signal<ToolbarNoticePosition>('center');
+  /** Forma degli avvisi; il raggio puo essere sovrascritto tramite variabile CSS. */
+  toolbarNoticeShape = signal<ToolbarNoticeShape>('rounded');
 
   // Azioni toolbar per pagine di creazione/modifica
   showToolbarActions = signal<boolean>(false);

@@ -1,35 +1,132 @@
 <mat-toolbar
+  [class.centered-notices]="hasNotices() && navigationService.toolbarNoticePosition() === 'center'"
   [style.background-color]="navigationService.toolbarColor() ?? null"
   [style.color]="navigationService.toolbarTextColor() ?? null"
   [style.--mat-toolbar-container-text-color]="navigationService.toolbarTextColor() ?? null"
 >
-  <button mat-icon-button (click)="menuToggled.emit()">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <button mat-icon-button (click)="goBack()" aria-label="Indietro cronologia">
-    <mat-icon>arrow_back</mat-icon>
-  </button>
-  <button mat-icon-button (click)="goForward()" aria-label="Avanti cronologia">
-    <mat-icon>arrow_forward</mat-icon>
-  </button>
-  <div class="page-title">
-    <mat-icon>{{ activeLink().icon }}</mat-icon>
-    <span>{{ activeLink().title }}</span>
-  </div>
-  <div class="toolbar-content">
-    <ng-content></ng-content>
-  </div>
-  @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
-    <div class="toolbar-center-logo">
-      <img
-        [src]="navigationService.toolbarLogoUrl()"
-        (error)="toolbarLogoError = true"
-        [alt]="navigationService.appName()"
-      />
+  <div class="toolbar-leading">
+    <button mat-icon-button (click)="menuToggled.emit()">
+      <mat-icon>menu</mat-icon>
+    </button>
+    <button mat-icon-button (click)="goBack()" aria-label="Indietro cronologia">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <button mat-icon-button (click)="goForward()" aria-label="Avanti cronologia">
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+    <div class="page-title">
+      <mat-icon>{{ activeLink().icon }}</mat-icon>
+      <span>{{ activeLink().title }}</span>
     </div>
+    @if (navigationService.toolbarNoticePosition() === 'title') {
+      <ng-container *ngTemplateOutlet="notices" />
+    }
+    <div class="toolbar-content">
+      <ng-content></ng-content>
+    </div>
+    @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
+      <div class="toolbar-center-logo">
+        <img
+          [src]="navigationService.toolbarLogoUrl()"
+          (error)="toolbarLogoError = true"
+          [alt]="navigationService.appName()"
+        />
+      </div>
+    }
+  </div>
+  @if (navigationService.toolbarNoticePosition() === 'center') {
+    <ng-container *ngTemplateOutlet="notices" />
   }
-  @if (updateNotice() || navigationService.toolbarNotices().length > 0) {
-    <div class="toolbar-notices" aria-label="Avvisi">
+  @if (!hasNotices() || navigationService.toolbarNoticePosition() !== 'center') {
+    <span class="toolbar-spacer"></span>
+  }
+  @if (navigationService.toolbarNoticePosition() === 'right') {
+    <ng-container *ngTemplateOutlet="notices" />
+  }
+  <div class="toolbar-commands">
+    <div class="zoom-controls">
+      <button
+        mat-icon-button
+        aria-label="Zoom indietro"
+        matTooltip="Zoom indietro (Ctrl+-)"
+        (click)="zoomService.zoomOut()"
+        [disabled]="!zoomService.canZoomOut()"
+      >
+        <mat-icon>zoom_out</mat-icon>
+      </button>
+      <button
+        mat-button
+        class="zoom-label"
+        matTooltip="Reset zoom (Ctrl+0)"
+        (click)="zoomService.zoomReset()"
+      >
+        {{ zoomService.zoomPercent() }}%
+      </button>
+      <button
+        mat-icon-button
+        aria-label="Zoom avanti"
+        matTooltip="Zoom avanti (Ctrl+=)"
+        (click)="zoomService.zoomIn()"
+        [disabled]="!zoomService.canZoomIn()"
+      >
+        <mat-icon>zoom_in</mat-icon>
+      </button>
+    </div>
+    <button
+      mat-icon-button
+      aria-label="Notifiche"
+      matTooltip="Notifiche"
+      (click)="goToNotifications()"
+      [matBadge]="notificationService.unreadCount()"
+      [matBadgeHidden]="notificationService.unreadCount() === 0"
+      matBadgeColor="warn"
+    >
+      <mat-icon>notifications</mat-icon>
+    </button>
+    @if (navigationService.showToolbarActions()) {
+      @for (action of navigationService.extraActions(); track action.label) {
+        <button mat-icon-button [attr.aria-label]="action.label" (click)="action.callback()">
+          <mat-icon>{{ action.icon }}</mat-icon>
+        </button>
+      }
+      <button mat-icon-button aria-label="Reset" (click)="navigationService.onResetAction()?.()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button mat-icon-button aria-label="Salva" (click)="navigationService.onSaveAction()?.()">
+        <mat-icon>save</mat-icon>
+      </button>
+    } @else if (navigationService.extraActions().length > 0) {
+      @for (action of navigationService.extraActions(); track action.label) {
+        <button
+          mat-icon-button
+          [attr.aria-label]="action.label"
+          (click)="action.callback()"
+          [matTooltip]="action.label"
+        >
+          <mat-icon>{{ action.icon }}</mat-icon>
+        </button>
+      }
+    }
+    <button
+      mat-icon-button
+      class="shutdown-btn"
+      aria-label="Chiudi applicazione"
+      matTooltip="Chiudi applicazione"
+      (click)="shutdownService.quit()"
+    >
+      <mat-icon>power_settings_new</mat-icon>
+    </button>
+  </div>
+</mat-toolbar>
+
+<ng-template #notices>
+  @if (hasNotices()) {
+    <div
+      class="toolbar-notices"
+      [attr.data-position]="navigationService.toolbarNoticePosition()"
+      [attr.data-shape]="navigationService.toolbarNoticeShape()"
+      aria-label="Avvisi"
+    >
       @if (updateNotice(); as notice) {
         <a class="toolbar-notice update-notice" routerLink="/updates">{{ notice }}</a>
       }
@@ -40,77 +137,4 @@
       }
     </div>
   }
-  <span class="toolbar-spacer"></span>
-  <div class="zoom-controls">
-    <button
-      mat-icon-button
-      aria-label="Zoom indietro"
-      matTooltip="Zoom indietro (Ctrl+-)" 
-      (click)="zoomService.zoomOut()"
-      [disabled]="!zoomService.canZoomOut()"
-    >
-      <mat-icon>zoom_out</mat-icon>
-    </button>
-    <button
-      mat-button
-      class="zoom-label"
-      matTooltip="Reset zoom (Ctrl+0)"
-      (click)="zoomService.zoomReset()"
-    >
-      {{ zoomService.zoomPercent() }}%
-    </button>
-    <button
-      mat-icon-button
-      aria-label="Zoom avanti"
-      matTooltip="Zoom avanti (Ctrl+=)"
-      (click)="zoomService.zoomIn()"
-      [disabled]="!zoomService.canZoomIn()"
-    >
-      <mat-icon>zoom_in</mat-icon>
-    </button>
-  </div>
-  <button
-    mat-icon-button
-    aria-label="Notifiche"
-    matTooltip="Notifiche"
-    (click)="goToNotifications()"
-    [matBadge]="notificationService.unreadCount()"
-    [matBadgeHidden]="notificationService.unreadCount() === 0"
-    matBadgeColor="warn"
-  >
-    <mat-icon>notifications</mat-icon>
-  </button>
-  @if (navigationService.showToolbarActions()) {
-    @for (action of navigationService.extraActions(); track action.label) {
-      <button mat-icon-button [attr.aria-label]="action.label" (click)="action.callback()">
-        <mat-icon>{{ action.icon }}</mat-icon>
-      </button>
-    }
-    <button mat-icon-button aria-label="Reset" (click)="navigationService.onResetAction()?.()">
-      <mat-icon>refresh</mat-icon>
-    </button>
-    <button mat-icon-button aria-label="Salva" (click)="navigationService.onSaveAction()?.()">
-      <mat-icon>save</mat-icon>
-    </button>
-  } @else if (navigationService.extraActions().length > 0) {
-    @for (action of navigationService.extraActions(); track action.label) {
-      <button
-        mat-icon-button
-        [attr.aria-label]="action.label"
-        (click)="action.callback()"
-        [matTooltip]="action.label"
-      >
-        <mat-icon>{{ action.icon }}</mat-icon>
-      </button>
-    }
-  }
-  <button
-    mat-icon-button
-    class="shutdown-btn"
-    aria-label="Chiudi applicazione"
-    matTooltip="Chiudi applicazione"
-    (click)="shutdownService.quit()"
-  >
-    <mat-icon>power_settings_new</mat-icon>
-  </button>
-</mat-toolbar>
+</ng-template>
