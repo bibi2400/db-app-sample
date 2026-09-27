@@ -16,6 +16,11 @@ export class App {
     nav.toolbarTextColor.set('#ffffff');
     nav.addMenuItems([
       { title: 'Demo Tabella', icon: 'table_chart', route: '/table-demo' },
+      {
+        title: 'Demo Densità Tabella',
+        icon: 'view_column',
+        route: '/table-layout-demo',
+      },
       { title: 'Demo Form Upload', icon: 'upload_file', route: '/form-upload-demo' },
       { title: 'Prodotti', icon: 'inventory_2', route: '/products' },
       { title: 'Top 5 Stelle', icon: 'star', route: '/table-demo', queryParams: { rating: '{"mode":"equal","equal":5}' } },

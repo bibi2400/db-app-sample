@@ -1,3 +1,4 @@
+import { CdkScrollable } from '@angular/cdk/scrolling';
 import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, input } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Router, RouterOutlet } from '@angular/router';
@@ -25,6 +26,7 @@ const UPDATE_BADGE_STATUSES: UpdateStatusType[] = ['available', 'downloaded'];
   selector: 'eaf-shell',
   imports: [
     RouterOutlet,
+    CdkScrollable,
     MatSidenavModule,
     NotificationPanel,
     CommandPalette,

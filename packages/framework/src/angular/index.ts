@@ -60,6 +60,7 @@ export type {
   EafSortState,
   EafFilterValue,
   EafTableState,
+  EafTableHorizontalDensity,
   EafTableServerEvent,
   EafTableResult,
   EafCellContext,

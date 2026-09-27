@@ -27,7 +27,7 @@
 
     <mat-sidenav-content>
       <eaf-toolbar class="fixed-toolbar" (menuToggled)="opened.set(true)" />
-      <div class="main-container">
+      <div class="main-container" cdkScrollable>
         <router-outlet />
       </div>
     </mat-sidenav-content>

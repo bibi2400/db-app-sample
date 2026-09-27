@@ -15,6 +15,12 @@ const appRoutes: Routes = [
     loadComponent: () => import('./pages/table-demo/table-demo').then(m => m.TableDemo)
   },
   {
+    path: 'table-layout-demo',
+    data: { title: 'Demo Densità Tabella', icon: 'view_column' },
+    loadComponent: () => import('./pages/table-layout-demo/table-layout-demo')
+      .then(m => m.TableLayoutDemo)
+  },
+  {
     path: 'form-upload-demo',
     data: { title: 'Demo Form Upload', icon: 'upload_file' },
     loadComponent: () => import('./pages/form-upload-demo/form-upload-demo').then(m => m.FormUploadDemo)

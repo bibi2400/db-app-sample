@@ -1,5 +1,7 @@
 import { FrameworkConfig } from '@bibi2400/electron-angular-framework/angular';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { routes } from './app.routes';
+import { ItalianPaginatorIntl } from './services/italian-paginator-intl.service';
 import consumerConfig from '../../../eaf.config.json';
 
 /**
@@ -15,6 +17,9 @@ import consumerConfig from '../../../eaf.config.json';
  */
 const frameworkConfig = new FrameworkConfig({
   routes,
+  providers: [
+    { provide: MatPaginatorIntl, useClass: ItalianPaginatorIntl },
+  ],
   databaseUi: consumerConfig.databaseUi,
   notificationConfig: {
     persistHistory: true, // false: history exists only while the application is open

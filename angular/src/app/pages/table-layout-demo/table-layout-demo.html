@@ -1,0 +1,70 @@
+<div class="table-layout-demo-page">
+  <h2>Demo densità e zoom della tabella</h2>
+  <p>
+    12 colonne con testi lunghi, filtri e ordinamento. Trascina le intestazioni
+    per cambiare l'ordine e scorri orizzontalmente per raggiungere tutte le colonne.
+    Le preferenze vengono salvate automaticamente per questa tabella.
+  </p>
+
+  <div class="table-controls">
+    <mat-form-field>
+      <mat-label>Densità orizzontale</mat-label>
+      <mat-select
+        [value]="horizontalDensity() ?? 'standard'"
+        [disabled]="!tableVisible()"
+        (selectionChange)="horizontalDensity.set($event.value)"
+      >
+        <mat-option value="standard">Standard</mat-option>
+        <mat-option value="compact">Compatta</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Zoom tabella</mat-label>
+      <mat-select
+        [value]="tableZoom() ?? 1"
+        [disabled]="!tableVisible()"
+        (selectionChange)="tableZoom.set($event.value)"
+      >
+        <mat-option [value]="1">100%</mat-option>
+        <mat-option [value]="0.9">90%</mat-option>
+        <mat-option [value]="0.8">80%</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    @if (tableVisible()) {
+    <button matButton (click)="closeTable()">Chiudi tabella</button>
+    <button matButton (click)="resetState()">Ripristina stato</button>
+    } @else {
+    <button matButton (click)="tableVisible.set(true)">Riapri tabella</button>
+    }
+  </div>
+
+  @if (tableVisible()) {
+  <eaf-table
+    tableId="demo-table-layout"
+    tableStateStorageType="local"
+    tableScrollStorageType="session"
+    height="420px"
+    [data]="rows"
+    [columns]="columns"
+    [horizontalDensity]="horizontalDensity()"
+    [tableZoom]="tableZoom()"
+    [draggable]="true"
+    [stickyHeader]="true"
+    [pagination]="{ enabled: true, pageSize: 25 }"
+    (stateChange)="onStateChange($event)"
+    (rowClick)="selectedRow.set($event.id)"
+  >
+    @for (col of columns; track col.key) {
+    <ng-template [eafCellDef]="col.key" let-value="value">
+      <span class="demo-cell-text">{{ value }}</span>
+    </ng-template>
+    }
+  </eaf-table>
+  }
+
+  <p class="row-feedback" aria-live="polite">
+    @if (selectedRow(); as id) { Riga selezionata: {{ id }} }
+  </p>
+</div>

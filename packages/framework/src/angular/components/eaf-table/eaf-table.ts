@@ -4,14 +4,24 @@ import {
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
+import {
+  CdkConnectedOverlay,
+  CdkOverlayOrigin,
+  ConnectedPosition,
+  Overlay,
+  OverlayModule,
+} from '@angular/cdk/overlay';
+import { CdkScrollable } from '@angular/cdk/scrolling';
 import { NgClass, NgTemplateOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  afterRenderEffect,
   computed,
   contentChild,
   contentChildren,
   effect,
+  ElementRef,
   inject,
   input,
   OnDestroy,
@@ -34,6 +44,7 @@ import {
 } from '@angular/material/paginator';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { isObservable, Observable, Subject, Subscription } from 'rxjs';
 
 import {
@@ -52,6 +63,7 @@ import {
   EafSortState,
   EafTableServerEvent,
   EafTableState,
+  EafTableHorizontalDensity,
 } from '../../types/eaf-table.types';
 import { EafTableFilter } from '../eaf-table-filter/eaf-table-filter';
 import { ScrollRestorer } from '../scroll-restorer/scroll-restorer';
@@ -67,7 +79,10 @@ import { ScrollRestorer } from '../scroll-restorer/scroll-restorer';
     MatCheckboxModule,
     MatIconModule,
     MatButtonModule,
+    MatTooltipModule,
     DragDropModule,
+    OverlayModule,
+    CdkScrollable,
     EafTableFilter,
     ScrollRestorer,
   ],
@@ -77,6 +92,7 @@ import { ScrollRestorer } from '../scroll-restorer/scroll-restorer';
 })
 export class EafTable<T = unknown> implements OnInit, OnDestroy {
   private readonly storageService = inject(EafTableStorageService);
+  private readonly overlay = inject(Overlay);
   private readonly globalStorageConfig = inject(EAF_STORAGE_CONFIG, {
     optional: true,
   });
@@ -99,13 +115,23 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   readonly tableScrollStorageType = input<StorageType | null>(null);
 
   /**
-   * StorageType per lo stato della tabella (colonne, sort, filtri, paginazione).
+   * StorageType per lo stato della tabella (colonne, sort, filtri,
+   * paginazione, densità e zoom).
    * `null` → usa il valore da EAF_STORAGE_CONFIG.tableStateStorageType (default: 'none').
    */
   readonly tableStateStorageType = input<StorageType | null>(null);
 
   /** Altezza della tabella */
   readonly height = input<string | null>(null);
+
+  /** Input esplicito > initialState > storage > 'standard'. */
+  readonly horizontalDensity = input<EafTableHorizontalDensity>();
+
+  /**
+   * Zoom della sola tabella: numero finito tra 0.8 e 1 inclusi.
+   * Valori non validi diventano 1; omesso usa initialState/storage.
+   */
+  readonly tableZoom = input<number>();
 
   /**
    * Configurazione paginazione.
@@ -184,6 +210,28 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   private readonly paginator = viewChild(MatPaginator);
   private readonly matSort = viewChild(MatSort);
+  private readonly filterOverlay = viewChild(CdkConnectedOverlay);
+  private readonly tableElement =
+    viewChild<unknown, ElementRef<HTMLTableElement>>('tableElement', {
+      read: ElementRef,
+    });
+  private readonly tableViewport =
+    viewChild<unknown, ElementRef<HTMLDivElement>>('tableViewport', {
+      read: ElementRef,
+    });
+  private readonly headerElement =
+    viewChild<unknown, ElementRef<HTMLTableElement>>('headerElement', {
+      read: ElementRef,
+    });
+  private readonly headerViewport =
+    viewChild<unknown, ElementRef<HTMLDivElement>>('headerViewport', {
+      read: ElementRef,
+    });
+  private readonly layoutContainer =
+    viewChild<unknown, ElementRef<HTMLDivElement>>('layoutContainer', {
+      read: ElementRef,
+    });
+  private readonly renderedDataSub: Subscription;
 
   // ─── Internal State ──────────────────────────────────────────────────────
 
@@ -211,11 +259,62 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   /** Filtro attualmente aperto */
   protected readonly openFilterKey = signal<string | null>(null);
 
-  /** Posizione del dropdown filtro (fixed) */
-  protected readonly filterPosition = signal<{ top: number; left: number }>({
-    top: 0,
-    left: 0,
+  /** L'origine resta nella tabella; il dropdown è nel container CDK esterno. */
+  protected readonly filterOrigin =
+    signal<CdkOverlayOrigin | HTMLElement | null>(null);
+  protected readonly filterScrollStrategy =
+    this.overlay.scrollStrategies.reposition();
+  protected readonly filterPositions: ConnectedPosition[] = [
+    {
+      originX: 'start',
+      originY: 'bottom',
+      overlayX: 'start',
+      overlayY: 'top',
+      offsetY: 4,
+    },
+    {
+      originX: 'end',
+      originY: 'bottom',
+      overlayX: 'end',
+      overlayY: 'top',
+      offsetY: 4,
+    },
+    {
+      originX: 'start',
+      originY: 'top',
+      overlayX: 'start',
+      overlayY: 'bottom',
+      offsetY: -4,
+    },
+  ];
+
+  private readonly savedHorizontalDensity =
+    signal<EafTableHorizontalDensity>('standard');
+  private readonly savedTableZoom = signal(1);
+
+  protected readonly effectiveHorizontalDensity = computed(() =>
+    this.normalizeHorizontalDensity(
+      this.horizontalDensity() ?? this.savedHorizontalDensity(),
+    ),
+  );
+  protected readonly effectiveTableZoom = computed(() =>
+    this.normalizeTableZoom(this.tableZoom() ?? this.savedTableZoom()),
+  );
+  protected readonly surfaceWidth = signal<number | null>(null);
+  protected readonly headerViewportWidth = signal<number | null>(null);
+  protected readonly separateHeader = computed(() => this.stickyHeader());
+  protected readonly columnWidths = signal<number[]>([]);
+  protected readonly tableContentWidth = computed(() => {
+    if (!this.columnWidths().length) return null;
+    const contentWidth = this.columnWidths().reduce((total, width) => total + width, 0);
+    return this.effectiveHorizontalDensity() === 'compact'
+      ? contentWidth
+      : Math.max(contentWidth,
+        (this.headerViewportWidth() ?? 0) / this.effectiveTableZoom());
   });
+  protected readonly openFilterColumn = computed(() =>
+    this.visibleColumnDefs().find((col) => col.key === this.openFilterKey()),
+  );
 
   /** Subject per filtri custom (uno per colonna) */
   private readonly filterSubjects = new Map<string, Subject<unknown>>();
@@ -298,15 +397,20 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   // ─── Persist state on changes ────────────────────────────────────────────
 
   constructor() {
+    this.renderedDataSub = this.tableDataSource.connect().subscribe(() => {
+      this.columnWidths.set([]);
+    });
+    effect(() => {
+      this.displayedColumns();
+      this.effectiveTableZoom();
+      this.effectiveHorizontalDensity();
+      this.separateHeader();
+      this.columnWidths.set([]);
+      this.surfaceWidth.set(null);
+    });
     effect(() => {
       if (!this.initialized) return;
-      const state: EafTableState = {
-        columns: this.buildColumnStates(),
-        sort: this.activeSort() ?? undefined,
-        filters: this.activeFilters(),
-        pageSize: this.currentPageSize(),
-        pageIndex: this.currentPageIndex(),
-      };
+      const state = this.getState();
       untracked(() => {
         this.storageService.save(
           this.tableId(),
@@ -335,6 +439,77 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       const s = this.matSort() ?? null;
       this.tableDataSource.sort = s;
     });
+
+    // Ricalcola l'ancoraggio dopo il layout, anche con filtro già aperto.
+    afterRenderEffect(() => {
+      this.effectiveTableZoom();
+      this.effectiveHorizontalDensity();
+      this.columnWidths();
+      this.headerViewportWidth();
+      this.surfaceWidth();
+      const key = this.openFilterKey();
+      const table = this.headerElement()?.nativeElement ??
+        this.tableElement()?.nativeElement;
+      if (key && table) {
+        const trigger = [...table.querySelectorAll<HTMLButtonElement>(
+          '.eaf-filter-btn',
+        )].find((button) => button.dataset['columnKey'] === key);
+        const origin = this.filterOrigin();
+        const element = origin instanceof CdkOverlayOrigin
+          ? origin.elementRef.nativeElement : origin;
+        if (trigger && trigger !== element) this.filterOrigin.set(trigger);
+      }
+      this.filterOverlay()?.overlayRef?.updatePosition();
+    });
+
+    // Le due tabelle condividono le larghezze native di intestazione e dati.
+    afterRenderEffect({
+      read: () => {
+        if (this.separateHeader() && !this.columnWidths().length) {
+          this.measureColumnWidths();
+        }
+        untracked(() => this.updateLayoutGeometry());
+      },
+    });
+
+    // Segue anche i ridimensionamenti del viewport e lo zoom dell'app.
+    afterRenderEffect({
+      read: (onCleanup) => {
+        this.effectiveTableZoom();
+        const table = this.tableElement()?.nativeElement;
+        const viewport = this.tableViewport()?.nativeElement;
+        const container = this.layoutContainer()?.nativeElement;
+        const header = this.headerElement()?.nativeElement;
+        if (!table || !viewport || !container) {
+          return;
+        }
+        if (typeof ResizeObserver === 'undefined') return;
+        const fonts = table.ownerDocument.fonts;
+        const onFontsLoaded = () => {
+          this.columnWidths.set([]);
+          this.surfaceWidth.set(null);
+        };
+        fonts?.addEventListener('loadingdone', onFontsLoaded);
+        let availableWidth = container.clientWidth;
+        const observer = new ResizeObserver(() => {
+          if (container.clientWidth !== availableWidth) {
+            availableWidth = container.clientWidth;
+            this.columnWidths.set([]);
+            this.surfaceWidth.set(null);
+          } else {
+            this.updateLayoutGeometry();
+          }
+        });
+        observer.observe(table);
+        observer.observe(viewport);
+        observer.observe(container);
+        if (header) observer.observe(header);
+        onCleanup(() => {
+          observer.disconnect();
+          fonts?.removeEventListener('loadingdone', onFontsLoaded);
+        });
+      },
+    });
   }
 
   // ─── Lifecycle ───────────────────────────────────────────────────────────
@@ -347,9 +522,59 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.renderedDataSub.unsubscribe();
     this.dataSub?.unsubscribe();
     this.filterSubs.forEach((s) => s.unsubscribe());
     this.filterSubjects.forEach((s) => s.complete());
+  }
+
+  protected onTableScroll(): void {
+    const header = this.headerViewport()?.nativeElement;
+    const viewport = this.tableViewport()?.nativeElement;
+    if (header && viewport && header.scrollLeft !== viewport.scrollLeft) {
+      header.scrollLeft = viewport.scrollLeft;
+    }
+  }
+
+  protected onHeaderScroll(): void {
+    const header = this.headerViewport()?.nativeElement;
+    const viewport = this.tableViewport()?.nativeElement;
+    if (header && viewport && viewport.scrollLeft !== header.scrollLeft) {
+      viewport.scrollLeft = header.scrollLeft;
+    }
+  }
+
+  private measureColumnWidths(): void {
+    const header = this.headerElement()?.nativeElement;
+    const table = this.tableElement()?.nativeElement;
+    if (!header || !table) return;
+    const cells = [...header.querySelectorAll('th')];
+    const row = table.querySelector<HTMLTableRowElement>('tr.mat-mdc-row');
+    const bodyCells = row?.cells.length === cells.length ? [...row.cells] : [];
+    const zoom = this.effectiveTableZoom();
+    const widths = cells.map((cell, index) => Math.max(
+      cell.getBoundingClientRect().width,
+      bodyCells[index]?.getBoundingClientRect().width ?? 0,
+    ) / zoom);
+    if (widths.length && widths.every((width) => width > 0)) {
+      this.columnWidths.set(widths);
+    }
+  }
+
+  private updateLayoutGeometry(): void {
+    const table = this.tableElement()?.nativeElement;
+    const viewport = this.tableViewport()?.nativeElement;
+    const container = this.layoutContainer()?.nativeElement;
+    if (!table || !viewport || !container) return;
+    const tableWidth = table.getBoundingClientRect().width;
+    if (!tableWidth || !container.clientWidth) return;
+    const scrollbarWidth = viewport.offsetWidth - viewport.clientWidth;
+    this.surfaceWidth.set(this.effectiveHorizontalDensity() === 'compact'
+      ? Math.min(container.clientWidth,
+        Math.ceil(tableWidth) + scrollbarWidth + 2)
+      : container.clientWidth);
+    this.headerViewportWidth.set(viewport.clientWidth);
+    this.onTableScroll();
   }
 
   // ─── Initialization ─────────────────────────────────────────────────────
@@ -367,6 +592,15 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
     // 2. initialState ha priorità su stored
     const ext = this.initialState();
+
+    this.savedHorizontalDensity.set(
+      this.normalizeHorizontalDensity(
+        ext?.horizontalDensity ?? stored?.horizontalDensity ?? 'standard',
+      ),
+    );
+    this.savedTableZoom.set(
+      this.normalizeTableZoom(ext?.tableZoom ?? stored?.tableZoom ?? 1),
+    );
 
     // Mappa stato salvato delle colonne (key → EafColumnState)
     const savedCols = ext?.columns ?? stored?.columns ?? [];
@@ -565,24 +799,23 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     return val != null && val !== '';
   }
 
-  toggleFilter(event: Event, key: string): void {
+  toggleFilter(event: Event, key: string, origin?: CdkOverlayOrigin): void {
     event.stopPropagation();
     event.preventDefault();
     if (this.openFilterKey() === key) {
-      this.openFilterKey.set(null);
+      this.closeFilter();
     } else {
-      const btn = event.currentTarget as HTMLElement;
-      const rect = btn.getBoundingClientRect();
-      const dropdownWidth = 350; // max-width del dropdown
-      const viewportWidth = window.innerWidth;
-      const left = Math.min(rect.left, viewportWidth - dropdownWidth - 8);
-      this.filterPosition.set({ top: rect.bottom + 4, left });
+      this.filterOrigin.set(origin ?? (event.currentTarget as HTMLElement));
       this.openFilterKey.set(key);
     }
   }
 
-  closeFilter(): void {
+  closeFilter(event?: MouseEvent): void {
+    // Come il backdrop precedente, il click di chiusura non attiva la riga.
+    event?.stopPropagation();
+    event?.preventDefault();
     this.openFilterKey.set(null);
+    this.filterOrigin.set(null);
   }
 
   getFilterValue(key: string): unknown {
@@ -832,6 +1065,7 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
 
   /** Reimposta lo stato della tabella a quello iniziale */
   resetState(): void {
+    this.closeFilter();
     this.storageService.clear(this.tableId());
     this.initializeState();
     this.applyClientData();
@@ -854,7 +1088,26 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
       sort: this.activeSort() ?? undefined,
       filters: this.activeFilters(),
       pageSize: this.currentPageSize(),
+      pageIndex: this.currentPageIndex(),
+      horizontalDensity: this.effectiveHorizontalDensity(),
+      tableZoom: this.effectiveTableZoom(),
     };
+  }
+
+  private normalizeHorizontalDensity(value: unknown): EafTableHorizontalDensity {
+    return value === 'compact' ? 'compact' : 'standard';
+  }
+
+  private normalizeTableZoom(value: unknown): number {
+    if (
+      typeof value !== 'number' ||
+      !Number.isFinite(value) ||
+      value < 0.8 ||
+      value > 1
+    ) {
+      return 1;
+    }
+    return value;
   }
 
   /** Costruisce l'array di EafColumnState dall'ordine e visibilità correnti */

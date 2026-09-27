@@ -1,7 +1,7 @@
 {
   "name": "db-app-sample",
   "productName": "Db App Sample",
-  "version": "2.14.1",
+  "version": "2.15.0",
   "main": "electron/dist-electron/electron/main.js",
   "author": "manu e bibi",
   "workspaces": [
@@ -10,6 +10,7 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
     "ng": "ng",
+    "test:table-layout:browser": "node scripts/run-eaf-table-layout-test.cjs",
     "start": "ng serve --port 4202",
     "dev": "npm run prepare && node scripts/dev.js --port 4202",
     "dev:no-splash": "npm run prepare && node scripts/dev.js --port 4203 --no-splash",

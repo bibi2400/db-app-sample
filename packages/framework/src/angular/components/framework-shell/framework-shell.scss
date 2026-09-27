@@ -16,21 +16,27 @@
     // Annulla lo zoom applicato a <html> per mantenere la sidebar alla dimensione originale.
     zoom: calc(1 / var(--eaf-content-zoom, 1));
   }
+
+  mat-sidenav-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 .main-container {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   padding: 20px;
-  // Lo zoom è applicato sull'elemento <html> (non qui), quindi il margin-top
-  // deve compensare l'altezza "logica" della toolbar nello spazio html-zoomato:
-  // toolbar ha zoom inverso 1/N, quindi occupa (64px / N) unità nello spazio html.
-  margin-top: calc(var(--mat-toolbar-standard-height, 64px) / var(--eaf-content-zoom, 1));
+  overflow: auto;
 }
 
 .fixed-toolbar {
-  position: fixed;
+  position: relative;
+  flex: 0 0 auto;
   z-index: 1000;
-  width: 100%;
-  // Annulla lo zoom applicato a <html> per mantenere la toolbar alla dimensione originale.
+  // Compensa lo zoom Electron per conservare le dimensioni della toolbar.
   zoom: calc(1 / var(--eaf-content-zoom, 1));
 }
 

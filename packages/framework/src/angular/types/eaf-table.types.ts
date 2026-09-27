@@ -144,6 +144,9 @@ export interface EafPageEvent {
 
 export type EafSelectionMode = 'none' | 'single' | 'multiple';
 
+/** Densità dei soli spazi orizzontali; testo e altezza righe invariati. */
+export type EafTableHorizontalDensity = 'standard' | 'compact';
+
 // ─── Filter State ────────────────────────────────────────────────────────────
 
 export interface EafFilterValue {
@@ -166,6 +169,12 @@ export interface EafColumnState {
 }
 
 export interface EafTableState {
+  /** Densità orizzontale. Default: 'standard'. */
+  horizontalDensity?: EafTableHorizontalDensity;
+
+  /** Zoom locale della tabella, da 0.8 a 1 inclusi. Default: 1. */
+  tableZoom?: number;
+
   /** Stato delle colonne (ordine + visibilità) */
   columns?: EafColumnState[];
 
