@@ -23,6 +23,7 @@ const frameworkConfig = new FrameworkConfig({
   databaseUi: consumerConfig.databaseUi,
   notificationConfig: {
     persistHistory: true, // false: history exists only while the application is open
+    historyStorage: 'local', // 'session': keep history only for the current browser/app session
     maxHistory: 500,
     maxVisibleToasts: 3,
   },

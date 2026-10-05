@@ -106,7 +106,7 @@ export class NotificationService {
   /** Retained for consumers that explicitly insert history without a toast. */
   addToHistory(notification: AppNotification): void {
     const parsed = parseNotification(notification);
-    if (!parsed) return;
+    if (!parsed || parsed.saveToHistory === false) return;
     this.updateHistory(list => addNotificationToHistory(list, parsed, this.maxHistory));
   }
 
@@ -141,6 +141,7 @@ export class NotificationService {
 
   async open(notification: AppNotification): Promise<boolean> {
     const destination = isNotificationRoute(notification.route) ? notification.route : undefined;
+    if (!destination && notification.saveToHistory === false) return false;
     if (!destination && !this.history().some(n => n.id === notification.id)) {
       this.updateHistory(list => addNotificationToHistory(
         list.slice(0, this.maxHistory - 1),
@@ -151,7 +152,7 @@ export class NotificationService {
     const route = destination ?? `/notifications?notification=${encodeURIComponent(notification.id)}`;
     const navigated = await this.router.navigateByUrl(route);
     if (navigated) {
-      this.markAsRead(notification.id);
+      if (notification.saveToHistory !== false) this.markAsRead(notification.id);
       this.dismissToast(notification.id);
     }
     return navigated;
@@ -279,28 +280,48 @@ export class NotificationService {
   private updateHistory(update: (list: AppNotification[]) => AppNotification[]): void {
     this.history.update(update);
     if (this.config.persistHistory === false) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.history()));
-    } catch {
-      // History remains available in memory when storage is unavailable or full.
+    for (const storageType of ['local', 'session'] as const) {
+      try {
+        const storage = storageType === 'local' ? localStorage : sessionStorage;
+        const notifications = this.history().filter(n =>
+          (n.historyStorage ?? this.config.historyStorage ?? 'local') === storageType
+        );
+        if (notifications.length) {
+          storage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+        } else {
+          storage.removeItem(STORAGE_KEY);
+        }
+      } catch {
+        // History remains available in memory when storage is unavailable or full.
+      }
     }
   }
 
   private loadFromStorage(): AppNotification[] {
-    try {
-      if (this.config.persistHistory === false) {
-        // Discard previously persisted history when the consumer disables persistence.
-        localStorage.removeItem(STORAGE_KEY);
-        return [];
+    let history: AppNotification[] = [];
+    for (const storageType of ['local', 'session'] as const) {
+      try {
+        const storage = storageType === 'local' ? localStorage : sessionStorage;
+        if (this.config.persistHistory === false) {
+          // Discard previously persisted history when the consumer disables persistence.
+          storage.removeItem(STORAGE_KEY);
+          continue;
+        }
+        const raw: unknown = JSON.parse(storage.getItem(STORAGE_KEY) ?? '[]');
+        if (!Array.isArray(raw)) continue;
+        for (const value of raw) {
+          const notification = parseNotification(value);
+          if (!notification) continue;
+          history = addNotificationToHistory(
+            history,
+            { ...notification, historyStorage: storageType },
+            this.maxHistory,
+          );
+        }
+      } catch {
+        // Restore the other storage even when one is unavailable or malformed.
       }
-      const raw: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-      if (!Array.isArray(raw)) return [];
-      return raw.reduce<AppNotification[]>((history, value) => {
-        const notification = parseNotification(value);
-        return notification ? addNotificationToHistory(history, notification, this.maxHistory) : history;
-      }, []);
-    } catch {
-      return [];
     }
+    return history;
   }
 }

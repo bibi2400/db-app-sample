@@ -58,6 +58,9 @@ export function parseNotification(value: unknown): AppNotification | null {
     level: n['level'] as NotificationLevel,
     timestamp: n['timestamp'],
     read: n['read'] === true,
+    saveToHistory: n['saveToHistory'] !== false,
+    historyStorage: n['historyStorage'] === 'local' || n['historyStorage'] === 'session'
+      ? n['historyStorage'] : undefined,
     icon: typeof n['icon'] === 'string' ? n['icon'] : undefined,
     dedupId: typeof n['dedupId'] === 'string' ? n['dedupId'] : undefined,
     route: isNotificationRoute(n['route']) ? n['route'] : undefined,
@@ -74,6 +77,7 @@ export function addNotificationToHistory(
   notification: AppNotification,
   limit: number,
 ): AppNotification[] {
+  if (notification.saveToHistory === false) return history;
   if (history.some(n => n.id === notification.id)) return history;
   const previous = notification.dedupId
     ? history.find(n => n.dedupId === notification.dedupId)

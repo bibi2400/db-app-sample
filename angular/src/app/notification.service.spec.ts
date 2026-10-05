@@ -12,6 +12,10 @@ import { parseNotification } from '../../../packages/framework/src/shared/notifi
 
 const STORAGE_KEY = 'app-notifications';
 
+function storedNotifications(storage: Storage): AppNotification[] {
+  return JSON.parse(storage.getItem(STORAGE_KEY) ?? '[]');
+}
+
 function notification(id: string, extras: Partial<AppNotification> = {}): AppNotification {
   return {
     id,
@@ -45,6 +49,7 @@ describe('NotificationService', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-09-26T12:00:00Z'));
     localStorage.clear();
+    sessionStorage.clear();
     backend = new Subject();
     navigate = vi.fn().mockResolvedValue(true);
     invoke = vi.fn().mockResolvedValue({ success: true, data: null });
@@ -57,6 +62,7 @@ describe('NotificationService', () => {
     window.electronAPI = originalApi;
     vi.useRealTimers();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('receives backend notifications without mounting a toast panel', async () => {
@@ -76,9 +82,9 @@ describe('NotificationService', () => {
     expect(invoke).toHaveBeenCalledTimes(2);
   });
 
-  it('persists history by default and restores it without replaying toasts', () => {
+  it.each([undefined, true])('persists and restores history with saveToHistory=%s', saveToHistory => {
     let service = create();
-    service.info('Titolo', 'Messaggio');
+    service.info('Titolo', 'Messaggio', { saveToHistory });
     const id = service.notifications()[0].id;
     service.markAsRead(id);
     TestBed.resetTestingModule();
@@ -87,13 +93,198 @@ describe('NotificationService', () => {
     expect(service.toasts()).toEqual([]);
   });
 
+  it.each(['local', 'session'] as const)(
+    'uses %s storage by default and allows per-notification overrides',
+    historyStorage => {
+      let service = create({ historyStorage });
+      const storage = historyStorage === 'local' ? localStorage : sessionStorage;
+      const overrideStorage = historyStorage === 'local' ? sessionStorage : localStorage;
+      service.info('Default', 'Messaggio');
+      service.info('Eccezione', 'Messaggio', {
+        historyStorage: historyStorage === 'local' ? 'session' : 'local',
+      });
+      expect(storedNotifications(storage).map(n => n.title)).toEqual(['Default']);
+      expect(storedNotifications(overrideStorage).map(n => n.title)).toEqual(['Eccezione']);
+      expect(service.unreadCount()).toBe(2);
+      service.markAsRead(service.notifications().find(n => n.title === 'Eccezione')!.id);
+      expect(storedNotifications(overrideStorage)[0].read).toBe(true);
+      TestBed.resetTestingModule();
+      service = create({ historyStorage });
+      expect(service.notifications()).toHaveLength(2);
+      expect(service.unreadCount()).toBe(1);
+      expect(service.toasts()).toEqual([]);
+    },
+  );
+
+  it('restores session history after reload but only local history in a new session', () => {
+    let service = create({ historyStorage: 'session' });
+    service.info('Sessione', 'Messaggio');
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    service.info('Persistente', 'Messaggio', { historyStorage: 'local' });
+    TestBed.resetTestingModule();
+    service = create({ historyStorage: 'session' });
+    expect(service.notifications()).toHaveLength(2);
+    TestBed.resetTestingModule();
+    sessionStorage.clear();
+    service = create({ historyStorage: 'session' });
+    expect(service.notifications().map(n => n.title)).toEqual(['Persistente']);
+    expect(service.unreadCount()).toBe(1);
+  });
+
+  it('preserves storage destinations when the configured default changes', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([notification('legacy')]));
+    let service = create({ historyStorage: 'session' });
+    service.info('Sessione', 'Messaggio');
+    service.markAsRead('legacy');
+    expect(storedNotifications(localStorage).map(n => n.id)).toEqual(['legacy']);
+    expect(storedNotifications(localStorage)[0].read).toBe(true);
+    TestBed.resetTestingModule();
+    service = create();
+    service.markAllAsRead();
+    expect(storedNotifications(localStorage).map(n => n.id)).toEqual(['legacy']);
+    expect(storedNotifications(sessionStorage).map(n => n.title)).toEqual(['Sessione']);
+    expect(storedNotifications(sessionStorage)[0].read).toBe(true);
+  });
+
+  it('updates read status and removes notifications from their respective storage', () => {
+    const service = create();
+    backend.next(notification('local'));
+    backend.next(notification('session', { historyStorage: 'session' }));
+    service.markAllAsRead();
+    expect(storedNotifications(localStorage)[0].read).toBe(true);
+    expect(storedNotifications(sessionStorage)[0].read).toBe(true);
+    service.markAsUnread('session');
+    expect(storedNotifications(sessionStorage)[0].read).toBe(false);
+    service.clearRead();
+    expect(storedNotifications(localStorage)).toEqual([]);
+    expect(storedNotifications(sessionStorage).map(n => n.id)).toEqual(['session']);
+    service.remove('session');
+    expect(storedNotifications(sessionStorage)).toEqual([]);
+    expect(service.notifications()).toEqual([]);
+    expect(service.unreadCount()).toBe(0);
+  });
+
+  it('clears history from both storage locations', () => {
+    const service = create();
+    service.info('Locale', 'Messaggio');
+    service.info('Sessione', 'Messaggio', { historyStorage: 'session' });
+    service.clearAll();
+    TestBed.resetTestingModule();
+    expect(create().notifications()).toEqual([]);
+    expect(storedNotifications(localStorage)).toEqual([]);
+    expect(storedNotifications(sessionStorage)).toEqual([]);
+  });
+
+  it.each(['local', 'session'] as const)(
+    'moves deduplicated notifications to %s storage without restoring old copies',
+    historyStorage => {
+      let service = create();
+      service.error('Errore', 'Prima', {
+        dedupId: 'operation',
+        historyStorage: historyStorage === 'local' ? 'session' : 'local',
+      });
+      service.error('Errore', 'Seconda', { dedupId: 'operation', historyStorage });
+      const storage = historyStorage === 'local' ? localStorage : sessionStorage;
+      const previousStorage = historyStorage === 'local' ? sessionStorage : localStorage;
+      expect(storedNotifications(previousStorage)).toEqual([]);
+      expect(storedNotifications(storage)[0]).toMatchObject({ message: 'Seconda', occurrences: 2 });
+      TestBed.resetTestingModule();
+      service = create();
+      expect(service.notifications()).toHaveLength(1);
+      expect(service.notifications()[0]).toMatchObject({ message: 'Seconda', occurrences: 2 });
+    },
+  );
+
+  it('applies the history limit across both storage locations', () => {
+    let service = create({ maxHistory: 2 });
+    backend.next(notification('old', { timestamp: Date.now() - 1000 }));
+    backend.next(notification('new', { timestamp: Date.now() + 1000, historyStorage: 'session' }));
+    backend.next(notification('middle'));
+    expect(storedNotifications(localStorage).map(n => n.id)).toEqual(['middle']);
+    expect(storedNotifications(sessionStorage).map(n => n.id)).toEqual(['new']);
+    TestBed.resetTestingModule();
+    service = create({ maxHistory: 2 });
+    expect(service.notifications().map(n => n.id)).toEqual(['new', 'middle']);
+  });
+
+  it.each(['local', 'session'] as const)(
+    'restores the other storage when %s storage contains malformed data',
+    historyStorage => {
+      const storage = historyStorage === 'local' ? localStorage : sessionStorage;
+      const otherStorage = historyStorage === 'local' ? sessionStorage : localStorage;
+      storage.setItem(STORAGE_KEY, '{invalid');
+      otherStorage.setItem(STORAGE_KEY, JSON.stringify([notification('valid')]));
+      expect(create().notifications().map(n => n.id)).toEqual(['valid']);
+    },
+  );
+
+  it.each(['local', 'session'] as const)(
+    'does not persist toast-only notifications with an explicit %s storage override',
+    async historyStorage => {
+      const service = create({ historyStorage: historyStorage === 'local' ? 'session' : 'local' });
+      service.info('Copia completata', 'Codici copiati.', { saveToHistory: false, historyStorage });
+      const toast = service.toasts()[0];
+      expect(toast.historyStorage).toBe(historyStorage);
+      expect(await service.open(toast)).toBe(false);
+      expect(service.notifications()).toEqual([]);
+      expect(service.unreadCount()).toBe(0);
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(navigate).not.toHaveBeenCalled();
+    },
+  );
+
+  it('shows toast-only notifications without changing history, storage or unread counts', () => {
+    const service = create();
+    service.info('Salvata', 'Messaggio', { dedupId: 'operation' });
+    const history = service.notifications();
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const listener = vi.fn();
+    service.onNotification(listener);
+    service.info('Copia completata', 'Codici copiati.', {
+      saveToHistory: false,
+      dedupId: 'operation',
+    });
+    const toast = service.toasts()[0];
+    expect(toast).toMatchObject({
+      title: 'Copia completata',
+      message: 'Codici copiati.',
+      saveToHistory: false,
+    });
+    expect(listener).toHaveBeenCalledWith(toast);
+    expect(service.toasts()).toHaveLength(1);
+    expect(service.notifications()).toBe(history);
+    expect(service.unreadCount()).toBe(1);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(stored);
+    service.addToHistory(toast);
+    expect(service.notifications()).toBe(history);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(stored);
+  });
+
+  it('excludes toast-only entries when restoring saved history', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([
+      notification('saved'),
+      notification('transient', { saveToHistory: false }),
+    ]));
+    const service = create();
+    expect(service.notifications().map(n => n.id)).toEqual(['saved']);
+    expect(service.unreadCount()).toBe(1);
+    service.markAllAsRead();
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).map((n: AppNotification) => n.id))
+      .toEqual(['saved']);
+  });
+
   it('keeps disabled persistence in memory and discards old persisted history', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([notification('old')]));
-    let service = create({ persistHistory: false });
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify([notification('old-session')]));
+    let service = create({ persistHistory: false, historyStorage: 'session' });
     expect(service.notifications()).toEqual([]);
-    service.info('Solo sessione', 'Messaggio');
-    expect(service.notifications()).toHaveLength(1);
+    service.info('Solo memoria', 'Messaggio');
+    service.info('Eccezione locale', 'Messaggio', { historyStorage: 'local' });
+    service.info('Eccezione sessione', 'Messaggio', { historyStorage: 'session' });
+    expect(service.notifications()).toHaveLength(3);
     expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
     TestBed.resetTestingModule();
     service = create({ persistHistory: false });
     expect(service.notifications()).toEqual([]);
@@ -149,21 +340,31 @@ describe('NotificationService', () => {
     expect(service.notifications()[0].occurrences).toBe(1);
   });
 
-  it('queues excess toasts and dismisses them without marking history as read', () => {
-    const service = create({ maxVisibleToasts: 2 });
-    for (const id of ['a', 'b', 'c']) backend.next(notification(id));
-    expect(service.toasts().map(n => n.id)).toEqual(['a', 'b']);
-    service.dismissToast('a');
-    expect(service.toasts().map(n => n.id)).toEqual(['b', 'c']);
-    expect(service.unreadCount()).toBe(3);
-    vi.advanceTimersByTime(5000);
-    expect(service.toasts()).toEqual([]);
-    expect(service.unreadCount()).toBe(3);
-  });
+  it.each([undefined, false])(
+    'queues and dismisses toasts without marking history as read with saveToHistory=%s',
+    saveToHistory => {
+      const service = create({ maxVisibleToasts: 2 });
+      for (const id of ['a', 'b', 'c']) backend.next(notification(id, { saveToHistory }));
+      const expectedUnread = saveToHistory === false ? 0 : 3;
+      expect(service.toasts().map(n => n.id)).toEqual(['a', 'b']);
+      service.dismissToast('a');
+      expect(service.toasts().map(n => n.id)).toEqual(['b', 'c']);
+      expect(service.unreadCount()).toBe(expectedUnread);
+      vi.advanceTimersByTime(4999);
+      expect(service.toasts()).toHaveLength(2);
+      vi.advanceTimersByTime(1);
+      expect(service.toasts()).toEqual([]);
+      expect(service.unreadCount()).toBe(expectedUnread);
+      if (saveToHistory === false) {
+        expect(service.notifications()).toEqual([]);
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      }
+    },
+  );
 
-  it('pauses until both pointer and keyboard focus leave, preserving remaining time', () => {
+  it.each([undefined, false])('pauses and resumes toasts with saveToHistory=%s', saveToHistory => {
     const service = create();
-    backend.next(notification('paused'));
+    backend.next(notification('paused', { saveToHistory }));
     vi.advanceTimersByTime(1000);
     service.setToastPaused('paused', 'pointer', true);
     service.setToastPaused('paused', 'focus', true);
@@ -214,6 +415,42 @@ describe('NotificationService', () => {
     const n = service.notifications()[0];
     await service.open(n);
     expect(navigate).toHaveBeenCalledWith(`/notifications?notification=${n.id}`);
+  });
+
+  it.each([undefined, 'https://example.com'])(
+    'does not open or retain a toast-only notification without an internal route: %s',
+    async route => {
+      const service = create();
+      service.info('Copia completata', 'Codici copiati.', { saveToHistory: false, route });
+      const toast = service.toasts()[0];
+      expect(await service.open(toast)).toBe(false);
+      expect(navigate).not.toHaveBeenCalled();
+      expect(service.notifications()).toEqual([]);
+      expect(service.unreadCount()).toBe(0);
+      expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      expect(service.toasts()).toEqual([toast]);
+    },
+  );
+
+  it('opens a toast-only route and dismisses it only after successful navigation', async () => {
+    const service = create();
+    service.notify({
+      level: 'info',
+      title: 'Operazione completata',
+      message: 'Apri il risultato',
+      saveToHistory: false,
+      route: '/updates',
+    });
+    const toast = service.toasts()[0];
+    navigate.mockResolvedValueOnce(false);
+    expect(await service.open(toast)).toBe(false);
+    expect(service.toasts()).toEqual([toast]);
+    expect(await service.open(toast)).toBe(true);
+    expect(navigate).toHaveBeenCalledWith('/updates');
+    expect(service.toasts()).toEqual([]);
+    expect(service.notifications()).toEqual([]);
+    expect(service.unreadCount()).toBe(0);
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 
   it('retains an opened toast even if its original history entry was evicted', async () => {
