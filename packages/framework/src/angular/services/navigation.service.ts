@@ -64,6 +64,7 @@ export class NavigationService {
   updateAvailable = signal(false);
   appName = signal('');
   logoUrl = signal('');
+  /** Immagine decorativa centrata sullo sfondo della toolbar, senza occupare spazio nel layout. */
   toolbarLogoUrl = signal('');
   /** Colore di sfondo della toolbar. Se `null`, viene usato il default del tema Material. */
   toolbarColor = signal<string | null>(null);
@@ -71,6 +72,8 @@ export class NavigationService {
   toolbarTextColor = signal<string | null>(null);
   /** Mostra l'avviso aggiornamenti nella toolbar (default: true); non altera il badge del menu. */
   showUpdateNotice = signal(true);
+  /** Icona decorativa dell'avviso aggiornamenti; `null` la nasconde. */
+  updateNoticeIcon = signal<string | null>('system_update');
   /** Avvisi custom, indipendenti dalle azioni di salvataggio/reset della pagina. */
   toolbarNotices = signal<ToolbarNotice[]>([]);
   /** Centro della finestra per default; nelle finestre strette usa una riga dedicata. */

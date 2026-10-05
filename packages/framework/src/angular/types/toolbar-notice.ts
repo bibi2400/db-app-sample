@@ -8,5 +8,6 @@ export type ToolbarNoticeShape = 'rectangle' | 'rounded' | 'pill';
 export interface ToolbarNotice {
   id: string;
   label: string;
+  icon?: string;
   callback: () => void;
 }

@@ -4,6 +4,15 @@
   [style.color]="navigationService.toolbarTextColor() ?? null"
   [style.--mat-toolbar-container-text-color]="navigationService.toolbarTextColor() ?? null"
 >
+  @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
+    <div class="toolbar-center-logo" aria-hidden="true">
+      <img
+        [src]="navigationService.toolbarLogoUrl()"
+        (error)="toolbarLogoError = true"
+        alt=""
+      />
+    </div>
+  }
   <div class="toolbar-leading">
     <button mat-icon-button (click)="menuToggled.emit()">
       <mat-icon>menu</mat-icon>
@@ -24,15 +33,6 @@
     <div class="toolbar-content">
       <ng-content></ng-content>
     </div>
-    @if (navigationService.toolbarLogoUrl() && !toolbarLogoError) {
-      <div class="toolbar-center-logo">
-        <img
-          [src]="navigationService.toolbarLogoUrl()"
-          (error)="toolbarLogoError = true"
-          [alt]="navigationService.appName()"
-        />
-      </div>
-    }
   </div>
   @if (navigationService.toolbarNoticePosition() === 'center') {
     <ng-container *ngTemplateOutlet="notices" />
@@ -128,11 +128,19 @@
       aria-label="Avvisi"
     >
       @if (updateNotice(); as notice) {
-        <a class="toolbar-notice update-notice" routerLink="/updates">{{ notice }}</a>
+        <a class="toolbar-notice update-notice" routerLink="/updates">
+          @if (navigationService.updateNoticeIcon(); as icon) {
+            <mat-icon aria-hidden="true">{{ icon }}</mat-icon>
+          }
+          <span class="toolbar-notice-label">{{ notice }}</span>
+        </a>
       }
       @for (notice of navigationService.toolbarNotices(); track notice.id) {
         <button type="button" class="toolbar-notice" (click)="notice.callback()">
-          {{ notice.label }}
+          @if (notice.icon) {
+            <mat-icon aria-hidden="true">{{ notice.icon }}</mat-icon>
+          }
+          <span class="toolbar-notice-label">{{ notice.label }}</span>
         </button>
       }
     </div>

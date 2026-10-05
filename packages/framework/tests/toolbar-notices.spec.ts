@@ -83,7 +83,9 @@ describe('Toolbar notices', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const notice: HTMLAnchorElement = fixture.nativeElement.querySelector('.update-notice');
-    expect(notice.textContent?.trim()).toBe(label);
+    expect(notice.querySelector('.toolbar-notice-label')?.textContent).toBe(label);
+    expect(notice.querySelector('mat-icon')?.textContent?.trim()).toBe('system_update');
+    expect(notice.querySelector('mat-icon')?.getAttribute('aria-hidden')).toBe('true');
     expect(notice.getAttribute('href')).toBe('/updates');
     expect(TestBed.inject(NavigationService).updateAvailable()).toBe(true);
     notice.click();
@@ -109,7 +111,7 @@ describe('Toolbar notices', () => {
         ? 'Aggiornamento disponibile'
         : value === 'downloaded' ? 'Aggiornamento pronto da installare' : null;
       const notice = fixture.nativeElement.querySelector('.update-notice');
-      expect(notice?.textContent?.trim() ?? null).toBe(label);
+      expect(notice?.querySelector('.toolbar-notice-label')?.textContent ?? null).toBe(label);
       expect(navigation.updateAvailable()).toBe(label !== null);
     }
   });
@@ -121,6 +123,51 @@ describe('Toolbar notices', () => {
     await fixture.whenStable();
     expect(TestBed.inject(UpdateStateService).status()?.status).toBe(value);
     expect(TestBed.inject(NavigationService).updateAvailable()).toBe(value === 'downloaded');
+  });
+
+  it.each(['available', 'downloaded'] as const)('customizes and hides the %s icon', value => {
+    const fixture = toolbar();
+    const navigation = TestBed.inject(NavigationService);
+    expect(navigation.updateNoticeIcon()).toBe('system_update');
+    changes.next(status(value));
+    fixture.detectChanges();
+    const notice: HTMLAnchorElement = fixture.nativeElement.querySelector('.update-notice');
+    const label = notice.querySelector('.toolbar-notice-label')?.textContent;
+    for (const icon of ['download', null, '', 'system_update']) {
+      navigation.updateNoticeIcon.set(icon);
+      fixture.detectChanges();
+      const element = notice.querySelector('mat-icon');
+      expect(element?.textContent?.trim() ?? null).toBe(icon || null);
+      if (element) expect(element.getAttribute('aria-hidden')).toBe('true');
+      expect(notice.querySelector('.toolbar-notice-label')?.textContent).toBe(label);
+      expect(notice.getAttribute('href')).toBe('/updates');
+      expect(navigation.updateAvailable()).toBe(true);
+    }
+  });
+
+  it('updates decorative custom icons alongside the update notice without changing callbacks', () => {
+    const fixture = toolbar();
+    const navigation = TestBed.inject(NavigationService);
+    const callback = vi.fn();
+    const label = 'Dati da verificare: 2 avvisi';
+    changes.next(status('available'));
+    navigation.toolbarNoticeShape.set('pill');
+    for (const icon of ['warning_amber', 'info', '', undefined]) {
+      navigation.toolbarNotices.set([{ id: 'logistic-data-issues', label, icon, callback }]);
+      fixture.detectChanges();
+      const root: HTMLElement = fixture.nativeElement;
+      const notice = root.querySelector<HTMLButtonElement>('button.toolbar-notice')!;
+      const element = notice.querySelector('mat-icon');
+      expect(root.querySelectorAll('.toolbar-notice')).toHaveLength(2);
+      expect(notice.querySelector('.toolbar-notice-label')?.textContent).toBe(label);
+      expect(element?.textContent?.trim() ?? null).toBe(icon || null);
+      if (element) {
+        expect(element.getAttribute('aria-hidden')).toBe('true');
+        expect(element.nextElementSibling?.textContent).toBe(label);
+      }
+      notice.click();
+    }
+    expect(callback).toHaveBeenCalledTimes(4);
   });
 
   it('allows opting out and adding, updating and removing independent custom notices', () => {
@@ -136,6 +183,7 @@ describe('Toolbar notices', () => {
     expect(navigation.updateAvailable()).toBe(true);
     const notice: HTMLButtonElement = fixture.nativeElement.querySelector('.toolbar-notice');
     expect(notice.textContent?.trim()).toBe('Avviso custom');
+    expect(notice.querySelector('mat-icon')).toBeNull();
     notice.click();
     expect(callback).toHaveBeenCalledTimes(1);
     navigation.toolbarNotices.set([{ id: 'custom', label: 'Testo aggiornato', callback }]);

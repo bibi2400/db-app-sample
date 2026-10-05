@@ -28,6 +28,94 @@ async function settle() {
   await evaluate(() => new Promise(resolve => setTimeout(resolve, 80)));
 }
 
+async function capture(filename) {
+  window.webContents.invalidate();
+  await settle();
+  await fs.writeFile(path.join(artifacts, filename),
+    (await window.webContents.capturePage()).toPNG());
+}
+
+async function verifyNoticeIcons(expectedIcons) {
+  const notices = await evaluate(() => [...document.querySelectorAll('.toolbar-notice')].map(notice => {
+    const icon = notice.querySelector('mat-icon');
+    const label = notice.querySelector('.toolbar-notice-label').getBoundingClientRect();
+    const bounds = notice.getBoundingClientRect();
+    const iconBounds = icon?.getBoundingClientRect();
+    return {
+      icon: icon?.textContent.trim() ?? null,
+      hidden: icon?.getAttribute('aria-hidden'),
+      color: getComputedStyle(notice).color,
+      iconColor: icon ? getComputedStyle(icon).color : null,
+      iconWidth: iconBounds?.width,
+      iconHeight: iconBounds?.height,
+      gap: iconBounds ? label.left - iconBounds.right : null,
+      centerOffset: iconBounds ? (iconBounds.top + iconBounds.bottom - label.top - label.bottom) / 2 : null,
+      clipped: notice.scrollWidth > notice.clientWidth + 1 ||
+        notice.scrollHeight > notice.clientHeight + 1 ||
+        label.right > bounds.right + 1,
+    };
+  }));
+  if (expectedIcons) assert.deepEqual(notices.map(notice => notice.icon), expectedIcons);
+  for (const notice of notices) {
+    assert.equal(notice.clipped, false, JSON.stringify(notice));
+    if (!notice.icon) continue;
+    assert.equal(notice.hidden, 'true');
+    assert.equal(notice.iconColor, notice.color);
+    assert.equal(notice.iconWidth, 20);
+    assert.equal(notice.iconHeight, 20);
+    assert.ok(Math.abs(notice.gap - 8) < 1, JSON.stringify(notice));
+    assert.ok(Math.abs(notice.centerOffset) < 1, JSON.stringify(notice));
+  }
+}
+
+async function verifyBackgroundLogo() {
+  const geometry = await evaluate(() => {
+    const toolbar = document.querySelector('eaf-toolbar mat-toolbar');
+    const logo = toolbar.querySelector('.toolbar-center-logo');
+    const image = logo.querySelector('img');
+    const bounds = toolbar.getBoundingClientRect();
+    const imageBounds = image.getBoundingClientRect();
+    const controls = [...toolbar.querySelectorAll('button, a')];
+    const before = controls.map(control => control.getBoundingClientRect().toJSON());
+    const reachable = controls.every(control => {
+      const rect = control.getBoundingClientRect();
+      const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      return control.contains(target);
+    });
+    logo.style.display = 'none';
+    const withoutLogo = toolbar.getBoundingClientRect().toJSON();
+    const after = controls.map(control => control.getBoundingClientRect().toJSON());
+    logo.style.removeProperty('display');
+    return {
+      loaded: image.complete && image.naturalWidth > 0,
+      centerX: (imageBounds.left + imageBounds.right - bounds.left - bounds.right) / 2,
+      centerY: (imageBounds.top + imageBounds.bottom - bounds.top - bounds.bottom) / 2,
+      width: imageBounds.width,
+      height: imageBounds.height,
+      hidden: logo.getAttribute('aria-hidden'),
+      pointerEvents: getComputedStyle(image).pointerEvents,
+      backgroundLayer: getComputedStyle(logo).zIndex,
+      isolated: getComputedStyle(toolbar).isolation,
+      withLogo: bounds.toJSON(),
+      withoutLogo,
+      before,
+      after,
+      reachable,
+    };
+  });
+  assert.equal(geometry.loaded, true);
+  assert.ok(Math.abs(geometry.centerX) < 1, JSON.stringify(geometry));
+  assert.ok(Math.abs(geometry.centerY) < 1, JSON.stringify(geometry));
+  assert.ok(geometry.width > 0 && geometry.height > 0 && geometry.height <= 40);
+  assert.equal(geometry.hidden, 'true');
+  assert.equal(geometry.pointerEvents, 'none');
+  assert.equal(geometry.backgroundLayer, '-1');
+  assert.equal(geometry.isolated, 'isolate');
+  assert.deepEqual(geometry.withLogo, geometry.withoutLogo);
+  assert.deepEqual(geometry.before, geometry.after);
+  assert.equal(geometry.reachable, true);
+}
+
 async function run() {
   await fs.access(path.join(build, 'index.html'));
   await fs.mkdir(artifacts, { recursive: true });
@@ -79,14 +167,19 @@ async function run() {
     if (await evaluate(() => !!document.querySelector('.update-notice'))) break;
     await settle();
   }
-  assert.equal(await evaluate(() => document.querySelector('.update-notice')?.textContent.trim()),
+  assert.equal(await evaluate(() => document.querySelector('.update-notice .toolbar-notice-label')?.textContent),
     'Aggiornamento pronto da installare');
   await evaluate(() => {
     const toolbar = ng.getComponent(document.querySelector('eaf-toolbar'));
     const nav = toolbar.navigationService;
     nav.setTitle('Titolo della pagina molto lungo con informazioni aggiuntive');
     nav.toolbarNotices.set([
-      { id: 'one', label: 'Avviso custom con un testo lungo e leggibile', callback: () => {} },
+      {
+        id: 'one',
+        label: 'Avviso custom con un testo lungo e leggibile',
+        icon: 'warning_amber',
+        callback: () => {},
+      },
       { id: 'two', label: 'AvvisoSenzaSpazi'.repeat(5), callback: () => {} },
     ]);
     nav.setToolbarActions(() => {}, () => {}, [
@@ -118,7 +211,8 @@ async function run() {
           ':scope > *, :scope > .toolbar-leading > *, :scope > .toolbar-commands > *',
         )].filter(element => {
           const bounds = element.getBoundingClientRect();
-          return bounds.width > 0 && bounds.height > 0;
+          return bounds.width > 0 && bounds.height > 0 &&
+            !element.classList.contains('toolbar-center-logo');
         });
         const overflow = elements.filter(element => {
           const bounds = element.getBoundingClientRect();
@@ -172,14 +266,14 @@ async function run() {
       assert.equal(geometry.clippedNotices, false, JSON.stringify(geometry));
       assert.ok(geometry.contrast >= 4.5, JSON.stringify(geometry));
       assert.ok(geometry.contentTop >= geometry.toolbarBottom - 1, JSON.stringify(geometry));
+      await verifyNoticeIcons(['system_update', 'warning_amber', null]);
+      await verifyBackgroundLogo();
       measurements.push({ position, shape, color, ...geometry });
       if (shape === 'rounded' && color === '#123faf') {
-        await fs.writeFile(path.join(artifacts, `toolbar-${position}-${width}.png`),
-          (await window.webContents.capturePage()).toPNG());
+        await capture(`toolbar-${position}-${width}.png`);
       }
     }
-    await fs.writeFile(path.join(artifacts, `toolbar-${width}.png`),
-      (await window.webContents.capturePage()).toPNG());
+    await capture(`toolbar-${width}.png`);
   }
   await evaluate(() => {
     const toolbar = document.querySelector('eaf-toolbar');
@@ -246,10 +340,63 @@ async function run() {
       minHeight: '48px',
     });
   }
+  await verifyNoticeIcons(['system_update', 'warning_amber', null]);
+  await evaluate(() => {
+    const toolbar = document.querySelector('eaf-toolbar');
+    toolbar.style.removeProperty('--eaf-toolbar-notice-border-radius');
+    toolbar.style.removeProperty('--eaf-toolbar-notice-max-width');
+    const nav = ng.getComponent(toolbar).navigationService;
+    nav.toolbarNoticePosition.set('center');
+    nav.toolbarNoticeShape.set('pill');
+  });
+  const iconVariants = [
+    { update: 'system_update', custom: 'warning_amber' },
+    { update: 'download', custom: undefined },
+    { update: null, custom: 'warning_amber' },
+    { update: null, custom: undefined },
+  ];
+  let iconScenarios = 0;
+  window.webContents.debugger.attach('1.3');
+  await window.webContents.debugger.sendCommand('Accessibility.enable');
+  for (const width of [1440, 960, 801, 800, 600, 360, 320]) {
+    window.setContentSize(width, 1000);
+    for (const status of ['available', 'downloaded']) {
+      for (const icons of iconVariants) {
+        await evaluate((status, icons) => {
+          const nav = ng.getComponent(document.querySelector('eaf-toolbar')).navigationService;
+          window.toolbarFixture.push(status);
+          nav.updateNoticeIcon.set(icons.update);
+          nav.toolbarNotices.set([{
+            id: 'logistic-data-issues',
+            label: 'Dati da verificare: 2 avvisi',
+            icon: icons.custom,
+            callback: () => { window.noticeClicks = (window.noticeClicks ?? 0) + 1; },
+          }]);
+        }, status, icons);
+        await settle();
+        await verifyNoticeIcons([icons.update, icons.custom ?? null]);
+        const { nodes } = await window.webContents.debugger.sendCommand('Accessibility.getFullAXTree');
+        const label = status === 'available'
+          ? 'Aggiornamento disponibile'
+          : 'Aggiornamento pronto da installare';
+        assert.equal(nodes.filter(node => node.role?.value === 'link' && node.name?.value === label).length, 1);
+        assert.equal(nodes.filter(node => node.role?.value === 'button' &&
+          node.name?.value === 'Dati da verificare: 2 avvisi').length, 1);
+        await evaluate(() => document.querySelector('button.toolbar-notice').click());
+        iconScenarios++;
+        assert.equal(await evaluate(() => window.noticeClicks), iconScenarios);
+        if (status === 'downloaded' && icons.update === 'system_update') {
+          await capture(`toolbar-icons-pill-${width}.png`);
+        }
+      }
+    }
+  }
+  window.webContents.debugger.detach();
   for (const status of ['idle', 'checking', 'available', 'not-available', 'downloading', 'downloaded', 'error']) {
     await evaluate(status => window.toolbarFixture.push(status), status);
     await settle();
-    const label = await evaluate(() => document.querySelector('.update-notice')?.textContent.trim() ?? null);
+    const label = await evaluate(() =>
+      document.querySelector('.update-notice .toolbar-notice-label')?.textContent ?? null);
     assert.equal(label, status === 'available' ? 'Aggiornamento disponibile' :
       status === 'downloaded' ? 'Aggiornamento pronto da installare' : null);
   }
@@ -262,11 +409,24 @@ async function run() {
   await evaluate(() => document.querySelector('.update-notice').click());
   await settle();
   assert.equal(await evaluate(() => location.pathname), '/updates');
+  await evaluate(() => {
+    const nav = ng.getComponent(document.querySelector('eaf-toolbar')).navigationService;
+    nav.showUpdateNotice.set(false);
+    nav.toolbarNotices.set([]);
+  });
+  for (const width of [1440, 800, 320]) {
+    window.setContentSize(width, 1000);
+    await settle();
+    await verifyBackgroundLogo();
+    await capture(`toolbar-background-${width}.png`);
+  }
   assert.deepEqual(await evaluate(() => window.toolbarFixture.calls().filter(channel =>
     ['update:check', 'update:download', 'update:install'].includes(channel))), []);
   assert.deepEqual(errors, []);
   await fs.writeFile(path.join(artifacts, 'measurements.json'), JSON.stringify(measurements, null, 2));
-  console.log('PASS: 252 layout/shape/contrast scenarios, window centering, CSS overrides, states and navigation');
+  console.log(`PASS: 252 layout/shape/contrast scenarios and ${iconScenarios} icon/accessibility scenarios`);
+  console.log('PASS: window centering, CSS overrides, states, callbacks and navigation');
+  console.log('PASS: centered background logo, unchanged layout and reachable controls with and without notices');
 }
 
 const deadline = setTimeout(() => {
