@@ -101,6 +101,7 @@ export class FormUploadDemo implements OnInit {
   protected readonly selectFillValue = signal<unknown>(null);
   protected readonly selectAutocompleteValue = signal<unknown>(null);
   protected readonly selectMultiValue = signal<unknown[]>([]);
+  protected readonly selectNonClearableValue = signal<unknown>('mela');
 
   // ─── Esempio eaf-input ──────────────────────────────────────────────────
   protected readonly mmControl = new FormControl<number | null>(null);

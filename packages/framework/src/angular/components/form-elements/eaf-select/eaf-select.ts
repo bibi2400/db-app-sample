@@ -103,6 +103,9 @@ export class EafSelect implements ControlValueAccessor, OnInit {
   /** Campo obbligatorio */
   readonly required = input(false);
 
+  /** Mostra il pulsante per cancellare il valore selezionato. */
+  readonly clearable = input(true);
+
   /** Mappa di chiavi validator → messaggi mostrati dopo il blur. */
   readonly errorMessages = input<Record<string, string>>({});
 
@@ -433,6 +436,7 @@ export class EafSelect implements ControlValueAccessor, OnInit {
 
   protected onClear(event?: Event): void {
     event?.stopPropagation();
+    if (!this.clearable() || this.disabled()) return;
     this.value.set(null);
     this._onChange(null);
     this.searchText.set('');

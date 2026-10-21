@@ -29,7 +29,7 @@
         autocomplete="off"
         [disabled]="disabled()"
         [placeholder]="placeholder()">
-      @if (hasValue() && !disabled()) {
+      @if (clearable() && hasValue() && !disabled()) {
         <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
           (mousedown)="$event.stopPropagation()"
@@ -83,7 +83,7 @@
         (blur)="onTouched()"
         autocomplete="off"
         [placeholder]="placeholder()">
-      @if (hasValue() && !disabled()) {
+      @if (clearable() && hasValue() && !disabled()) {
         <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
           (click)="onClear($event)"
           (mousedown)="$event.stopPropagation()"
@@ -190,7 +190,7 @@
         }
       </mat-select>
     }
-    @if (hasValue() && !disabled()) {
+    @if (clearable() && hasValue() && !disabled()) {
       <button matSuffix mat-icon-button type="button" class="eaf-select-clear"
         (click)="onClear($event)"
         (mousedown)="$event.stopPropagation()"

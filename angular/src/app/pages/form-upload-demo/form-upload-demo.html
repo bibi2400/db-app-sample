@@ -1,10 +1,10 @@
 <div class="page">
   <h2>Demo Form con Upload</h2>
 
-  <!-- Demo: eaf-select appearance input -->
+  <!-- Demo: eaf-select appearance e clearable -->
   <mat-card style="margin-bottom: 16px;">
     <mat-card-content>
-      <strong>EafSelect — appearance input</strong>
+      <strong>EafSelect — appearance e clearable</strong>
       <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; align-items: flex-start;">
         <eaf-select
           label="Frutto (outline)"
@@ -34,12 +34,20 @@
           [options]="selectOptions"
           [(value)]="selectMultiValue"
         />
+        <eaf-select
+          label="Frutto senza cancellazione"
+          [clearable]="false"
+          [showAllOption]="false"
+          [options]="selectOptions"
+          [(value)]="selectNonClearableValue"
+        />
       </div>
       <p style="margin-top: 8px; font-size: 0.85em; color: gray;">
         outline: {{ selectOutlineValue() ?? '—' }} &nbsp;|&nbsp;
         fill: {{ selectFillValue() ?? '—' }} &nbsp;|&nbsp;
         autocomplete: {{ selectAutocompleteValue() ?? '—' }} &nbsp;|&nbsp;
-        multi: {{ $any(selectMultiValue()).join(', ') || '—' }}
+        multi: {{ $any(selectMultiValue()).join(', ') || '—' }} &nbsp;|&nbsp;
+        senza cancellazione: {{ selectNonClearableValue() }}
       </p>
     </mat-card-content>
   </mat-card>
