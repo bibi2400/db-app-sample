@@ -1,12 +1,14 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   signal,
   viewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { map, timer } from 'rxjs';
 import {
   EafCellDefDirective,
   EafTable,
@@ -54,8 +56,10 @@ export class TableLayoutDemo {
   protected readonly tableZoom = signal<number | undefined>(undefined);
   protected readonly selectedRow = signal<number | null>(null);
   protected readonly tableVisible = signal(true);
+  protected readonly tallTable = signal(false);
+  protected readonly stickyColumns = signal<'none' | 'end'>('none');
 
-  protected readonly columns: EafColumnDef<LayoutDemoRow>[] = [
+  private readonly columnDefs: EafColumnDef<LayoutDemoRow>[] = [
     {
       key: 'id',
       header: 'ID',
@@ -85,6 +89,13 @@ export class TableLayoutDemo {
     { key: 'notes', header: 'Note operative', sortable: true, filter: true },
   ];
 
+  protected readonly columns = computed<EafColumnDef<LayoutDemoRow>[]>(() =>
+    this.columnDefs.map(col =>
+      this.stickyColumns() === 'end' && col.key === 'notes'
+        ? { ...col, sticky: 'end' } : col,
+    ),
+  );
+
   protected readonly rows: LayoutDemoRow[] = Array.from(
     { length: 40 },
     (_, index) => ({
@@ -102,6 +113,9 @@ export class TableLayoutDemo {
       notes: 'Concordare consegna e collaudo con il referente di stabilimento',
     }),
   );
+
+  // Riproduce l'arrivo dei dati dopo il primo layout dell'intestazione.
+  protected readonly rows$ = timer(150).pipe(map(() => this.rows));
 
   protected onStateChange(state: EafTableState): void {
     this.horizontalDensity.set(state.horizontalDensity);

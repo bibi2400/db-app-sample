@@ -465,6 +465,10 @@ export class EafTable<T = unknown> implements OnInit, OnDestroy {
     // Le due tabelle condividono le larghezze native di intestazione e dati.
     afterRenderEffect({
       read: () => {
+        // Rilegge il viewport dopo che la nuova larghezza della superficie è
+        // applicata al DOM. Durante il layout compatto ResizeObserver può aver
+        // già osservato la misura finale e saltare la misura intermedia.
+        this.surfaceWidth();
         if (this.separateHeader() && !this.columnWidths().length) {
           this.measureColumnWidths();
         }

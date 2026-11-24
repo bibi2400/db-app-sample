@@ -35,6 +35,9 @@ async function settle() {
       }
     }
     await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
   });
 }
 
@@ -309,6 +312,8 @@ async function headerGeometry() {
       surfaceRight: c.right,
       viewportLeft: b.left,
       viewportRight: b.right,
+      headerClientWidth: header.clientWidth,
+      bodyClientWidth: viewport.clientWidth,
       surfaceBackground: getComputedStyle(surface).backgroundColor,
       tableBackground: getComputedStyle(header.querySelector('table')).backgroundColor,
       dividerWidth: parseFloat(getComputedStyle(surface, '::after').borderBottomWidth),
@@ -317,11 +322,67 @@ async function headerGeometry() {
       columns: headerCells.map((cell, index) => {
         const x = cell.getBoundingClientRect();
         const y = bodyCells[index]?.getBoundingClientRect();
-        return { left: x.left, width: x.width,
+        return { key: cell.textContent.trim(), left: x.left, width: x.width,
           bodyLeft: y?.left, bodyWidth: y?.width };
       }),
     };
   });
+}
+
+async function verifyStickyColumns() {
+  await select(2, 'Una a destra');
+  await select(0, 'Compatta');
+  await resizeWindow(3000, 1000);
+  await button('Altezza pagina e dati asincroni');
+
+  // I dati arrivano dopo l'header e fanno comparire la scrollbar della pagina.
+  // Il ResizeObserver può vedere la stessa larghezza prima e dopo il reflow,
+  // mentre l'header conserva una misura intermedia più stretta del corpo.
+  for (const factor of [1, 1.2]) {
+    window.webContents.setZoomFactor(factor);
+    await evaluate(factor => document.documentElement.style.setProperty(
+      '--eaf-content-zoom', String(factor)), factor);
+    for (const zoom of [1, 0.8]) {
+      await select(1, `${Math.round(zoom * 100)}%`);
+      await button('Chiudi tabella');
+      await button('Riapri tabella');
+      for (let attempt = 0; attempt < 20; attempt++) {
+        await settle();
+        if (await evaluate(() => !!document.querySelector('tr.mat-mdc-row'))) break;
+      }
+      await settle();
+      const overflow = await evaluate(() => {
+        const table = document.querySelector('.eaf-table-wrapper');
+        const page = document.querySelector('.main-container');
+        return { table: table.scrollWidth - table.clientWidth,
+          page: page.scrollHeight - page.clientHeight };
+      });
+      assert.equal(overflow.table, 0, 'The regression requires no horizontal overflow');
+      assert.ok(overflow.page > 0, 'The data must cause page overflow');
+      console.log(`Checking async sticky header: app ${factor}, table ${zoom}`);
+      assertHeader(await headerGeometry(), true);
+    }
+  }
+  const screenshot = await window.webContents.capturePage();
+  await fs.writeFile(path.join(artifacts, 'table-sticky-end-async.png'), screenshot.toPNG());
+
+  // La colonna deve continuare ad allinearsi quando torna lo scroll orizzontale.
+  window.webContents.setZoomFactor(1);
+  await evaluate(() => document.documentElement.style.setProperty('--eaf-content-zoom', '1'));
+  await button('Altezza pagina e dati asincroni');
+  await select(1, '100%');
+  await resizeWindow(1280, 1000);
+  for (const position of [0, 0.5, 1]) {
+    await evaluate(position => {
+      const viewport = document.querySelector('.eaf-table-wrapper');
+      viewport.scrollTo(position * (viewport.scrollWidth - viewport.clientWidth), 80);
+      viewport.dispatchEvent(new Event('scroll'));
+    }, position);
+    await settle();
+    assertHeader(await headerGeometry(), true);
+  }
+  await select(2, 'Nessuna');
+  await select(0, 'Standard');
 }
 
 function assertHeader(geometry, compact = false) {
@@ -331,6 +392,8 @@ function assertHeader(geometry, compact = false) {
   assert.ok(Math.abs(geometry.surfaceLeft - geometry.viewportLeft) < 1);
   assert.ok(Math.abs(geometry.surfaceRight - geometry.viewportRight) < 1,
     `Header scrollbar coverage: ${JSON.stringify(geometry)}`);
+  assert.equal(geometry.headerClientWidth, geometry.bodyClientWidth,
+    `Header viewport width: ${JSON.stringify(geometry)}`);
   assert.equal(geometry.surfaceBackground, geometry.tableBackground);
   assert.ok(geometry.dividerWidth > 0);
   for (const column of geometry.columns) {
@@ -516,6 +579,7 @@ async function run() {
     width: 1280,
     height: 1000,
     webPreferences: {
+      offscreen: true,
       preload: path.join(__dirname, 'eaf-table-layout-preload.cjs'),
       partition: 'eaf-table-layout-test',
       backgroundThrottling: false,
@@ -532,6 +596,7 @@ async function run() {
   }
   await evaluate(() => document.fonts.ready.then(() => undefined));
   await settle();
+  await verifyStickyColumns();
   const measurements = [];
   let baseline;
   let baselineFilter;
