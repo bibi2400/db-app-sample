@@ -10,7 +10,7 @@ import { EafTable } from
   '../../../packages/framework/src/angular/components/eaf-table/eaf-table';
 import { EafTableStorageService } from
   '../../../packages/framework/src/angular/services/eaf-table-storage.service';
-import type { EafTableState } from
+import type { EafColumnDef, EafTableState } from
   '../../../packages/framework/src/angular/types/eaf-table.types';
 
 interface Row {
@@ -239,6 +239,55 @@ describe('EafTable layout preferences', () => {
     expect(root.querySelectorAll('.eaf-table-wrapper th')).toHaveLength(2);
     expect(root.querySelector('mat-paginator')!.closest('.eaf-table-wrapper')).toBeNull();
   });
+
+  it.each([true, false])('styles only sticky columns and clears removed overrides (stickyHeader=%s)',
+    async (stickyHeader) => {
+      const stickyStyle = {
+        backgroundColor: '#eef5ff', color: '#17365d',
+        borderInlineStart: '2px solid #7896bd',
+        borderInlineEnd: '3px dashed #7896bd',
+      };
+      const columns: EafColumnDef<Row>[] = [
+        { key: 'id', header: 'ID', sticky: 'start', stickyStyle },
+        { key: 'name', header: 'Name', stickyStyle },
+      ];
+      await create({ stickyHeader, columns });
+      const root: HTMLElement = fixture.nativeElement;
+      const cells = () => [...root.querySelectorAll<HTMLElement>(
+        'th.mat-column-id, td.mat-column-id',
+      )];
+      expect(cells()).toHaveLength(3);
+      for (const cell of cells()) {
+        expect(cell.style.getPropertyValue('--eaf-sticky-background')).toBe('#eef5ff');
+        expect(cell.style.getPropertyValue('--eaf-sticky-color')).toBe('#17365d');
+        expect(cell.style.borderInlineStart).toContain('2px solid');
+        expect(cell.style.borderInlineEnd).toContain('3px dashed');
+      }
+      for (const cell of root.querySelectorAll<HTMLElement>('.mat-column-name')) {
+        expect(cell.style.getPropertyValue('--eaf-sticky-background')).toBe('');
+        expect(cell.style.borderInlineStart).toBe('');
+      }
+
+      // Rimuovere lo stile o disattivare sticky ripristina l'aspetto precedente.
+      for (const replacement of [
+        { ...columns[0], stickyStyle: undefined },
+        { ...columns[0], sticky: undefined },
+      ]) {
+        fixture.componentRef.setInput('columns', columns);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.componentRef.setInput('columns', [replacement, columns[1]]);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        for (const cell of cells()) {
+          expect(cell.classList.contains('eaf-sticky-background')).toBe(false);
+          expect(cell.style.getPropertyValue('--eaf-sticky-background')).toBe('');
+          expect(cell.style.getPropertyValue('--eaf-sticky-color')).toBe('');
+          expect(cell.style.borderInlineStart).toBe('');
+          expect(cell.style.borderInlineEnd).toBe('');
+        }
+      }
+    });
 
   it('keeps filter portals outside the zoomed table and preserves sorting/clicks',
     async () => {

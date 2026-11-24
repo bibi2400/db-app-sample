@@ -40,7 +40,22 @@
         (selectionChange)="stickyColumns.set($event.value)"
       >
         <mat-option value="none">Nessuna</mat-option>
+        <mat-option value="start">Una a sinistra</mat-option>
         <mat-option value="end">Una a destra</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Aspetto colonne bloccate</mat-label>
+      <mat-select
+        [value]="stickyAppearance()"
+        [disabled]="!tableVisible()"
+        (selectionChange)="stickyAppearance.set($event.value)"
+      >
+        <mat-option value="none">Predefinito</mat-option>
+        <mat-option value="color">Colore</mat-option>
+        <mat-option value="border">Bordi</mat-option>
+        <mat-option value="both">Colore e bordi</mat-option>
       </mat-select>
     </mat-form-field>
 

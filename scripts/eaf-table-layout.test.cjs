@@ -406,6 +406,107 @@ function assertHeader(geometry, compact = false) {
     `Scrollbar gap: ${JSON.stringify(geometry)}`);
 }
 
+async function verifyStickyAppearance() {
+  for (const density of ['Standard', 'Compatta']) {
+    await select(0, density);
+    await select(1, density === 'Standard' ? '100%' : '80%');
+    for (const [side, key] of [['Una a sinistra', 'id'], ['Una a destra', 'notes']]) {
+      await select(2, side);
+      for (const appearance of ['Colore', 'Bordi', 'Colore e bordi', 'Predefinito']) {
+        await select(3, appearance);
+        await evaluate(() => {
+          const viewport = document.querySelector('.eaf-table-wrapper');
+          viewport.scrollLeft = 150;
+          viewport.dispatchEvent(new Event('scroll'));
+        });
+        await settle();
+        const styles = await evaluate(key => {
+          const read = element => {
+            const css = getComputedStyle(element);
+            return { background: css.backgroundColor, color: css.color,
+              start: css.borderInlineStartWidth, end: css.borderInlineEndWidth,
+              declaredStart: element.style.borderInlineStartWidth,
+              declaredEnd: element.style.borderInlineEndWidth,
+              borderColor: css.borderInlineStartColor,
+              custom: element.classList.contains('eaf-sticky-background') };
+          };
+          return {
+            header: read(document.querySelector(`th.mat-column-${key}`)),
+            body: read(document.querySelector(`td.mat-column-${key}`)),
+            other: read(document.querySelector('td.mat-column-customer')),
+          };
+        }, key);
+        const colored = appearance === 'Colore' || appearance === 'Colore e bordi';
+        const bordered = appearance === 'Bordi' || appearance === 'Colore e bordi';
+        for (const cell of [styles.header, styles.body]) {
+          assert.equal(cell.custom, colored);
+          if (colored) {
+            assert.equal(cell.background, 'rgb(238, 245, 255)');
+            assert.equal(cell.color, 'rgb(23, 54, 93)');
+          }
+          // Chromium arrotonda i bordi a pixel fisici con zoom frazionario.
+          assert.equal(cell.declaredStart, bordered ? '2px' : '');
+          assert.equal(cell.declaredEnd, bordered ? '2px' : '');
+          if (bordered) {
+            assert.ok(parseFloat(cell.start) > 0 && parseFloat(cell.end) > 0);
+            assert.equal(cell.borderColor, 'rgb(120, 150, 189)');
+          }
+        }
+        assert.equal(styles.other.custom, false);
+        assertHeader(await headerGeometry(), density === 'Compatta');
+      }
+    }
+  }
+
+  await select(3, 'Colore e bordi');
+  await click('[aria-label="Filtra Note operative"]');
+  await evaluate(() => {
+    const input = document.querySelector('.eaf-filter-dropdown input');
+    input.value = 'Concordare';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await settle();
+  const filtered = await evaluate(() => {
+    const header = document.querySelector('th.mat-column-notes');
+    const css = getComputedStyle(header);
+    return { active: header.classList.contains('eaf-column-filtered'),
+      background: css.backgroundColor, color: css.color,
+      border: css.borderInlineStartWidth };
+  });
+  assert.equal(filtered.active, true);
+  assert.notEqual(filtered.background, 'rgb(238, 245, 255)');
+  assert.notEqual(filtered.color, 'rgb(23, 54, 93)');
+  assert.ok(parseFloat(filtered.border) > 0);
+  await evaluate(() => {
+    const input = document.querySelector('.eaf-filter-dropdown input');
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await settle();
+  await click('.table-layout-demo-page h2');
+  assert.equal(await evaluate(() => getComputedStyle(document.querySelector(
+    'th.mat-column-notes')).backgroundColor), 'rgb(238, 245, 255)');
+
+  // Verifica il contrasto dello stato selezionato anche sullo sfondo custom.
+  const selection = await evaluate(() => {
+    const row = document.querySelector('tr.mat-mdc-row');
+    const cell = row.querySelector('.mat-column-notes');
+    const before = getComputedStyle(cell).backgroundColor;
+    row.classList.add('eaf-row-selected');
+    const selected = getComputedStyle(cell).backgroundColor;
+    row.classList.remove('eaf-row-selected');
+    return { before, selected };
+  });
+  assert.notEqual(selection.selected, selection.before);
+  assertHeader(await headerGeometry(), true);
+  const screenshot = await window.webContents.capturePage();
+  await fs.writeFile(path.join(artifacts, 'table-sticky-style.png'), screenshot.toPNG());
+  await select(3, 'Predefinito');
+  await select(2, 'Nessuna');
+  await select(0, 'Standard');
+  await select(1, '100%');
+}
+
 async function paginatorGeometry() {
   return evaluate(() => {
     const viewport = document.querySelector('.eaf-table-wrapper');
@@ -597,6 +698,7 @@ async function run() {
   await evaluate(() => document.fonts.ready.then(() => undefined));
   await settle();
   await verifyStickyColumns();
+  await verifyStickyAppearance();
   const measurements = [];
   let baseline;
   let baselineFilter;

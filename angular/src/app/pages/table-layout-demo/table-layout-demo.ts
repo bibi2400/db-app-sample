@@ -15,6 +15,7 @@ import {
 } from '@bibi2400/electron-angular-framework/angular';
 import type {
   EafColumnDef,
+  EafStickyColumnStyle,
   EafTableHorizontalDensity,
   EafTableState,
 } from '@bibi2400/electron-angular-framework/angular';
@@ -57,7 +58,8 @@ export class TableLayoutDemo {
   protected readonly selectedRow = signal<number | null>(null);
   protected readonly tableVisible = signal(true);
   protected readonly tallTable = signal(false);
-  protected readonly stickyColumns = signal<'none' | 'end'>('none');
+  protected readonly stickyColumns = signal<'none' | 'start' | 'end'>('none');
+  protected readonly stickyAppearance = signal<'none' | 'color' | 'border' | 'both'>('none');
 
   private readonly columnDefs: EafColumnDef<LayoutDemoRow>[] = [
     {
@@ -89,12 +91,24 @@ export class TableLayoutDemo {
     { key: 'notes', header: 'Note operative', sortable: true, filter: true },
   ];
 
-  protected readonly columns = computed<EafColumnDef<LayoutDemoRow>[]>(() =>
-    this.columnDefs.map(col =>
-      this.stickyColumns() === 'end' && col.key === 'notes'
-        ? { ...col, sticky: 'end' } : col,
-    ),
-  );
+  protected readonly columns = computed<EafColumnDef<LayoutDemoRow>[]>(() => {
+    const sticky = this.stickyColumns();
+    const appearance = this.stickyAppearance();
+    const stickyStyle: EafStickyColumnStyle = {};
+    if (appearance === 'color' || appearance === 'both') {
+      stickyStyle.backgroundColor = '#eef5ff';
+      stickyStyle.color = '#17365d';
+    }
+    if (appearance === 'border' || appearance === 'both') {
+      stickyStyle.borderInlineStart = '2px solid #7896bd';
+      stickyStyle.borderInlineEnd = '2px solid #7896bd';
+    }
+    return this.columnDefs.map(col =>
+      (sticky === 'end' && col.key === 'notes') ||
+      (sticky === 'start' && col.key === 'id')
+        ? { ...col, sticky, stickyStyle } : col,
+    );
+  });
 
   protected readonly rows: LayoutDemoRow[] = Array.from(
     { length: 40 },

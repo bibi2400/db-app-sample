@@ -199,6 +199,30 @@ tr.mat-mdc-header-row {
 
 // ─── Rows ────────────────────────────────────────────────────────────────────
 
+// Il filtro attivo conserva i colori di stato dell'header. I bordi configurati
+// sono applicati alle celle e restano visibili anche con un filtro attivo.
+.mat-mdc-header-cell.eaf-sticky-background:not(.eaf-column-filtered),
+.mat-mdc-cell.eaf-sticky-background {
+  background-color: var(--eaf-sticky-background);
+}
+
+.mat-mdc-header-cell.eaf-sticky-color:not(.eaf-column-filtered),
+.mat-mdc-cell.eaf-sticky-color {
+  color: var(--eaf-sticky-color);
+}
+
+tr.mat-mdc-row:hover .eaf-sticky-background {
+  background-color: color-mix(in srgb, #000 4%, var(--eaf-sticky-background));
+}
+
+tr.mat-mdc-row.eaf-row-selected .eaf-sticky-background {
+  background-color: color-mix(
+    in srgb,
+    var(--mat-sys-primary, #1976d2) 8%,
+    var(--eaf-sticky-background)
+  );
+}
+
 tr.mat-mdc-row {
   // Le celle sticky ereditano lo sfondo: deve restare opaco anche in transizione.
   background-color: var(--mat-table-background-color, var(--mat-sys-surface, #fff));

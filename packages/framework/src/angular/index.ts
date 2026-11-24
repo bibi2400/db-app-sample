@@ -49,6 +49,7 @@ export { EafCellDefDirective, EafFilterDefDirective, EafActionsDefDirective } fr
 export { EafTableStorageService } from './services/eaf-table-storage.service';
 export type {
   EafColumnDef,
+  EafStickyColumnStyle,
   EafColumnState,
   EafFilterType,
   EafFilterConfig,

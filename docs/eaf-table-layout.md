@@ -60,6 +60,45 @@ Nel file HTML separato:
 
 Per lasciare che lo stato salvato determini l'aspetto, ometti gli input oppure passa `undefined`. Non inizializzare i selettori dell'app con `1` e `'standard'` se vuoi ripristinare le preferenze: quei valori sono input espliciti e hanno precedenza. L'esempio `TableLayoutDemo` inizializza i relativi signal a `undefined` e sincronizza i selettori con `(stateChange)`.
 
+## Aspetto delle colonne sticky
+
+Ogni `EafColumnDef` può impostare `sticky: 'start' | 'end'` e un oggetto opzionale
+`stickyStyle` di tipo `EafStickyColumnStyle`, esportato dal package Angular.
+Lo stile riguarda solo quella colonna, sia nell'intestazione sia nelle celle:
+
+```ts
+{
+  key: 'nextCalibrationDate',
+  header: 'Prossima taratura',
+  sticky: 'end',
+  stickyStyle: {
+    backgroundColor: 'var(--mat-sys-secondary-container)',
+    color: 'var(--mat-sys-on-secondary-container)',
+    borderInlineStart: '2px solid var(--mat-sys-outline)',
+    // borderInlineEnd: '2px solid var(--mat-sys-outline)',
+  },
+}
+```
+
+Tutte le proprietà sono indipendenti: si possono usare solo i colori, solo i
+bordi oppure entrambi. `borderInlineStart` indica il lato sinistro in LTR e
+`borderInlineEnd` il destro; in RTL i lati si invertono. Per separare una sticky
+a destra dalle altre colonne basta `borderInlineStart`; per una sticky a
+sinistra si può usare `borderInlineEnd`. I valori sono normali stringhe CSS,
+inclusi colori esadecimali, variabili del tema e bordi come `2px solid #7896bd`.
+Usare sfondi opachi per coprire le celle che scorrono sotto la sticky.
+
+Omettendo `stickyStyle` l'aspetto resta quello attuale. Senza `sticky`, lo stile
+viene ignorato. Funziona con densità standard/compatta, zoom locale e
+`stickyHeader` attivo o disattivo. L'header con filtro attivo mantiene i colori
+di evidenziazione del filtro e i bordi configurati; cancellando il filtro torna
+ai colori della sticky. Hover e selezione tingono lo sfondo personalizzato delle
+celle. La configurazione fa parte delle definizioni delle colonne e non viene
+salvata in `EafTableState`.
+
+La demo offre i selettori «Colonne bloccate» e «Aspetto colonne bloccate» per
+provare sticky a sinistra/destra, solo colore, solo bordi o entrambi.
+
 ## Persistenza, precedenza e ripristino
 
 `EafTableState` aggiunge proprietà opzionali e tipizzate:

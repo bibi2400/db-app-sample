@@ -78,6 +78,21 @@ export interface EafFilterConfig {
 
 // ─── Column Definition ───────────────────────────────────────────────────────
 
+/** Stile opzionale delle sole colonne sticky, applicato a intestazione e celle. */
+export interface EafStickyColumnStyle {
+  /** Colore CSS dello sfondo; usare un colore opaco o una variabile del tema. */
+  backgroundColor?: string;
+
+  /** Colore CSS del testo. */
+  color?: string;
+
+  /** Bordo verticale iniziale (sinistro in LTR), es. '2px solid #90a4ae'. */
+  borderInlineStart?: string;
+
+  /** Bordo verticale finale (destro in LTR), es. '2px solid #90a4ae'. */
+  borderInlineEnd?: string;
+}
+
 export interface EafColumnDef<T = unknown> {
   /** Chiave della proprietà nell'oggetto dati (usata come columnDef di mat-table) */
   key: string & keyof T | string;
@@ -115,6 +130,9 @@ export interface EafColumnDef<T = unknown> {
 
   /** Colonna sticky (fissa a sinistra o destra) */
   sticky?: 'start' | 'end';
+
+  /** Personalizzazione grafica; ignorata quando `sticky` non è impostato. */
+  stickyStyle?: EafStickyColumnStyle;
 }
 
 // ─── Pagination ──────────────────────────────────────────────────────────────
